@@ -1,0 +1,17 @@
+ui_lib = static_library('ui',
+                        'application.cpp',
+                        'main_window.cpp',
+                        'gl_area.cpp',
+                        include_directories: incdir,
+                        dependencies: [
+                            gtkdep,
+                            opengl_dep,
+                            epoxy_dep
+                        ],
+                        link_with: [
+                            core_lib,
+                            math_lib,
+                            rendering_lib,
+                            io_lib
+                        ]
+)
