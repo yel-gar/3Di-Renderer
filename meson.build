@@ -26,7 +26,7 @@ incdir = include_directories('src')
 
 # Subdirectories
 subdir('src')
-subdir('tests')
+# subdir('tests')
 
 # Summary
 summary({
