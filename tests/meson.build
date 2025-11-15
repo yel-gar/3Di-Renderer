@@ -17,7 +17,7 @@ if get_option('tests')
                         'test_rendering.cpp',
                         include_directories: incdir,
                         dependencies: [gtest_dep],
-                        link_with: [rendering_lib, math_lib]
+                        link_with: [render_lib, math_lib]
              )
         )
 
