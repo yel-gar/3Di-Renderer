@@ -1,12 +1,18 @@
 #pragma once
 #include <array>
+#include <functional>
 #include "Vector4.hpp"
 
 class Matrix4x4 {
 public:
-    void set(const std::array<float,16>& values);
     Matrix4x4();
-    
+
+    Matrix4x4(const std::array<float, 16>& values);
+
+    Matrix4x4(const std::function<float(int, int)>& func);
+
+    void set(const std::array<float,16>& values);
+
     static Matrix4x4 identity();
     Matrix4x4 transposed() const;
 
@@ -18,6 +24,7 @@ public:
     Matrix4x4 operator*(const Matrix4x4& other) const;
 
     Vector4 operator*(const Vector4& vec) const;
+
 private:
     std::array<float,16> m_;
 };
