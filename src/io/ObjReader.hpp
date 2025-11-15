@@ -1,13 +1,12 @@
-#ifndef DI_RENDERER_OBJREADER_HPP
-#define DI_RENDERER_OBJREADER_HPP
+#pragma once
 #include <regex>
 
-class ObjReader {
-public:
-    static void read_file(std::string &filename);
+namespace di_renderer::io {
+    class ObjReader {
+    public:
+        static void read_file(std::string &filename);
 
-private:
-    inline static const std::regex face_pattern{R"((\d+)\/?(\d*)\/?(\d*))"};
-};
-
-#endif //DI_RENDERER_OBJREADER_HPP
+    private:
+        inline static const std::regex face_pattern{R"((\d+)\/?(\d*)\/?(\d*))"};
+    };
+}
