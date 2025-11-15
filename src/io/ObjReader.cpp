@@ -13,10 +13,10 @@ void ObjReader::read_file(std::string &filename) {
     }
 
     std::string line;
-    std::vector<std::array<float, 3> > vertices;
-    std::vector<std::array<float, 2> > texture_vertices;
-    std::vector<std::array<float, 3> > normals;
-    std::vector<std::vector<std::array<int, 3> > > faces;
+    std::vector<std::array<float, 3>> vertices;
+    std::vector<std::array<float, 2>> texture_vertices;
+    std::vector<std::array<float, 3>> normals;
+    std::vector<std::vector<std::array<int, 3>>> faces;
 
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == '#') {
