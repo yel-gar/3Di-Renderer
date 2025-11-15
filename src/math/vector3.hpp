@@ -1,33 +1,24 @@
 #pragma once
 
-namespace Math {
-    class Vector3 {
-    public:
-        float x, y, z;
+class Vector3 {
+public:
+    float x;
+    float y;
+    float z;
 
-        Vector3(float x = 0.0f, float y = 0.0f, float z = 0.0f);
+    Vector3();
+    Vector3(float x, float y, float z);
 
-        // Basic operations
-        float length() const;
-        Vector3 normalize() const;
-        float dot(const Vector3& other) const;
-        Vector3 cross(const Vector3& other) const;
+    float length() const;
+    Vector3 normalized() const;
 
-        // Operators
-        Vector3 operator+(const Vector3& other) const;
-        Vector3 operator-(const Vector3& other) const;
-        Vector3 operator*(float scalar) const;
-        Vector3 operator/(float scalar) const;
+    float dot(const Vector3& other) const;
+    Vector3 cross(const Vector3& other) const;
 
-        // Compound assignment
-        Vector3& operator+=(const Vector3& other);
-        Vector3& operator-=(const Vector3& other);
-        Vector3& operator*=(float scalar);
+    Vector3 operator+(const Vector3& other) const;
+    Vector3 operator-(const Vector3& other) const;
 
-        // Static constants
-        static const Vector3 ZERO;
-        static const Vector3 UP;
-        static const Vector3 RIGHT;
-        static const Vector3 FORWARD;
-    };
-}
+    Vector3& operator+=(const Vector3& other);
+    Vector3& operator-=(const Vector3& other);
+};
+
