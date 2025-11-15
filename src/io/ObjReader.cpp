@@ -1,4 +1,6 @@
 #include "ObjReader.hpp"
+#include "math/Vector3.hpp"
+#include "math/UVCoord.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -13,9 +15,9 @@ void ObjReader::read_file(std::string &filename) {
     }
 
     std::string line;
-    std::vector<std::array<float, 3>> vertices;
-    std::vector<std::array<float, 2>> texture_vertices;
-    std::vector<std::array<float, 3>> normals;
+    std::vector<Vector3> vertices;
+    std::vector<UVCoord> texture_vertices;
+    std::vector<Vector3> normals;
     std::vector<std::vector<std::array<int, 3>>> faces;
 
     while (std::getline(file, line)) {
@@ -39,7 +41,7 @@ void ObjReader::read_file(std::string &filename) {
             ss >> x >> y >> z;
             normals.push_back({x, y, z});
         } else if (word == "f") {
-            std::vector<std::array<int, 3> > face_vertices;
+            std::vector<std::array<int, 3>> face_vertices;
             while (ss >> word) {
                 std::smatch match;
                 if (!std::regex_match(word, match, face_pattern)) {
