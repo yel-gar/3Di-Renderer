@@ -1,7 +1,7 @@
-math_lib = static_library('math',
-#                          'vector3.cpp',
-#                          'matrix4.cpp',
-#                          'transformations.cpp',
-                          include_directories: incdir,
-                          dependencies: [glm_dep]
+math_lib = static_library(
+    'math',
+    'Vector3.cpp',
+    'UVCoord.cpp',
+    include_directories: incdir,
+    dependencies: [glm_dep]
 )
