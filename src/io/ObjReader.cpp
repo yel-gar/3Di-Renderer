@@ -55,7 +55,10 @@ namespace di_renderer::io {
                     face_vertices.push_back({vertice_index, texture_index, normal_index});
                 }
                 faces.push_back(face_vertices);
-            } else {
+            } else if (unsupported_lines.find(word) != unsupported_lines.end()) {
+                std::cout << "Skipped unsupported word: " << word << std::endl;
+            }
+            else {
                 throw std::runtime_error("Bad .obj file");
             }
         }
