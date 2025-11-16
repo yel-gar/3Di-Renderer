@@ -1,4 +1,5 @@
 #include "ObjReader.hpp"
+#include "ObjData.hpp"
 #include <math/Vector3.hpp>
 #include <math/UVCoord.hpp>
 #include <iostream>
@@ -8,7 +9,7 @@
 #include <vector>
 
 namespace di_renderer::io {
-    void ObjReader::read_file(std::string &filename) {
+    ObjData ObjReader::read_file(const std::string &filename) {
         std::ifstream file(filename);
         if (!file.is_open()) {
             throw std::runtime_error("Can't open file");
@@ -31,15 +32,15 @@ namespace di_renderer::io {
             if (word == "v") {
                 float x, y, z;
                 ss >> x >> y >> z;
-                vertices.push_back({x, y, z});
+                vertices.emplace_back(x, y, z);
             } else if (word == "vt") {
                 float u, v;
                 ss >> u >> v;
-                texture_vertices.push_back({u, v});
+                texture_vertices.emplace_back(u, v);
             } else if (word == "vn") {
                 float x, y, z;
                 ss >> x >> y >> z;
-                normals.push_back({x, y, z});
+                normals.emplace_back(x, y, z);
             } else if (word == "f") {
                 std::vector<std::array<int, 3>> face_vertices;
                 while (ss >> word) {
@@ -58,5 +59,7 @@ namespace di_renderer::io {
                 throw std::runtime_error("Bad .obj file");
             }
         }
+
+        return {vertices, texture_vertices, normals, faces};
     }
 }
