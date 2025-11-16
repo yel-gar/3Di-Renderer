@@ -45,7 +45,7 @@ namespace di_renderer::io {
                 std::vector<std::array<int, 3>> face_vertices;
                 while (ss >> word) {
                     std::smatch match;
-                    if (!std::regex_match(word, match, face_pattern)) {
+                    if (!std::regex_match(word, match, FACE_PATTERN)) {
                         throw std::runtime_error("Bad face pattern");
                     }
                     int vertice_index = std::stoi(match[1]) - 1;
@@ -55,10 +55,9 @@ namespace di_renderer::io {
                     face_vertices.push_back({vertice_index, texture_index, normal_index});
                 }
                 faces.push_back(face_vertices);
-            } else if (unsupported_lines.find(word) != unsupported_lines.end()) {
+            } else if (UNSUPPORTED_LINES.find(word) != UNSUPPORTED_LINES.end()) {
                 std::cout << "Skipped unsupported word: " << word << std::endl;
-            }
-            else {
+            } else {
                 throw std::runtime_error("Bad .obj file");
             }
         }

@@ -1,6 +1,7 @@
 #pragma once
-#include <set>
 #include <regex>
+#include <unordered_set>
+
 #include "ObjData.hpp"
 
 namespace di_renderer::io {
@@ -9,7 +10,7 @@ namespace di_renderer::io {
         static ObjData read_file(const std::string &filename);
 
     private:
-        inline static const std::regex face_pattern{R"((\d+)\/?(\d*)\/?(\d*))"};
-        inline static const std::set<std::string> unsupported_lines{"o", "g", "s", "usemtl", "mtllib", "vp"};
+        inline static const std::regex FACE_PATTERN{R"((\d+)\/?(\d*)\/?(\d*))"};
+        inline static const std::unordered_set<std::string> UNSUPPORTED_LINES{"o", "g", "s", "usemtl", "mtllib", "vp"};
     };
 }
