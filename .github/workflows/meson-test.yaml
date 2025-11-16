@@ -1,0 +1,31 @@
+name: Meson Tests
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+  workflow_dispatch:  # temporary
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential ninja-build meson \
+              clang cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev \
+              libglm-dev libgl-dev libepoxy-dev libgtest-dev
+
+      - name: Configure Meson
+        run: CXX=clang++ meson setup buildDir
+
+      - name: Build
+        run: meson compile -C buildDir
+
+      - name: Run Tests
+        run: meson test -C buildDir --print-errorlogs
