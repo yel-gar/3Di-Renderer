@@ -10,7 +10,7 @@ executable('3d-renderer',
            'main.cpp',
            include_directories: incdir,
            dependencies: [
-               gtkdep,
+               gtk_dep,
                opengl_dep,
                epoxy_dep,
                glm_dep
