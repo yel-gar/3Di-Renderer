@@ -52,8 +52,6 @@ void MainWindowHandler::init_gl_area() const {
     } else {
         std::cerr << "Error: Box is not a Gtk::Box" << std::endl;
     }
-
-    //gl_area->show();
 }
 
 void MainWindowHandler::on_open_button_click() {
