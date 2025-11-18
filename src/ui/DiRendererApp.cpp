@@ -1,8 +1,8 @@
 #include "DiRendererApp.hpp"
-#include "DiMainWindow.hpp"
+#include "MainWindowHandler.hpp"
 
 using di_renderer::ui::DiRendererApp;
-using di_renderer::ui::DiMainWindow;
+using di_renderer::ui::MainWindowHandler;
 
 Glib::RefPtr<DiRendererApp> DiRendererApp::create() {
     return Glib::RefPtr(new DiRendererApp());
@@ -16,7 +16,6 @@ void DiRendererApp::on_startup() {
 }
 
 void DiRendererApp::on_activate() {
-    auto* win = new DiMainWindow();
-    add_window(*win);
-    win->show();
+    const MainWindowHandler handler{};
+    handler.show(*this);
 }

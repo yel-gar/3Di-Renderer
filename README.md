@@ -1,7 +1,7 @@
 ## Setup for developers
 ### Initial setup
 ```bash
-$ sudo apt install build-essential ninja-build meson clang cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev libglm-dev libgl-dev libepoxy-dev libgtest-dev
+$ sudo apt install build-essential ninja-build meson clang cmake glib2 libgtkmm-3.0-dev libglfw3-dev libglew-dev libglm-dev libgl-dev libepoxy-dev libgtest-dev
 ```
 
 ### Meson project setup

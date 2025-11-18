@@ -1,7 +1,7 @@
 ui_lib = static_library(
     'ui',
     'OpenGLArea.cpp',
-    'DiMainWindow.cpp',
+    'MainWindowHandler.cpp',
     'DiRendererApp.cpp',
     include_directories: incdir,
     dependencies: [
@@ -16,3 +16,5 @@ ui_lib = static_library(
 #        io_lib
     ]
 )
+
+install_data('res/di_renderer.ui', install_tag: 'ui', install_dir: join_paths(get_option('datadir'), 'direnderer/ui'))
