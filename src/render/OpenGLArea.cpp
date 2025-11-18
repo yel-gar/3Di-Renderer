@@ -3,12 +3,15 @@
 
 // this code was written by chatgpt but yaroslav should manage this idk what this does
 
-di_renderer::ui::OpenGLArea::OpenGLArea() {
+using di_renderer::render::OpenGLArea;
+
+
+OpenGLArea::OpenGLArea() {
     set_has_depth_buffer(true);
     set_required_version(3, 3);
 }
 
-void di_renderer::ui::OpenGLArea::on_realize() {
+void OpenGLArea::on_realize() {
     GLArea::on_realize();
 
     make_current();
@@ -20,14 +23,14 @@ void di_renderer::ui::OpenGLArea::on_realize() {
     init_gl_resources();
 }
 
-void di_renderer::ui::OpenGLArea::on_unrealize() {
+void OpenGLArea::on_unrealize() {
     make_current();
     free_gl_resources();
 
     GLArea::on_unrealize();
 }
 
-bool di_renderer::ui::OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext> &context) {
+bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext> &context) {
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -37,7 +40,7 @@ bool di_renderer::ui::OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext> &
     return true;
 }
 
-void di_renderer::ui::OpenGLArea::init_gl_resources() {
+void OpenGLArea::init_gl_resources() {
     const float vertices[] = {
         0.0f, 0.5f,
         -0.5f, -0.5f,
@@ -55,7 +58,7 @@ void di_renderer::ui::OpenGLArea::init_gl_resources() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 }
 
-void di_renderer::ui::OpenGLArea::free_gl_resources() {
+void OpenGLArea::free_gl_resources() {
     if (vbo) glDeleteBuffers(1, &vbo);
     if (vao) glDeleteVertexArrays(1, &vao);
     vbo = vao = 0;

@@ -15,7 +15,7 @@ cpp = meson.get_compiler('cpp')
 
 # Dependencies
 glib_dep = dependency('glib-2.0')
-gtkdep = dependency('gtkmm-3.0')
+gtk_dep = dependency('gtkmm-3.0')
 opengl_dep = dependency('gl')
 glfw_dep = dependency('glfw3')
 glew_dep = dependency('glew')
@@ -33,7 +33,7 @@ subdir('tests')
 summary({
                 'Build type': get_option('buildtype'),
                 'C++ standard': get_option('cpp_std'),
-                'GTK': gtkdep.found(),
+                'GTK': gtk_dep.found(),
                 'OpenGL': opengl_dep.found(),
                 'GLFW': glfw_dep.found(),
         }, section: 'Configuration')

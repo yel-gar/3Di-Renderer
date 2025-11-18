@@ -2,7 +2,7 @@
 #include <gtkmm.h>
 #include <epoxy/gl.h>
 
-namespace di_renderer::ui {
+namespace di_renderer::render {
 class OpenGLArea final : public Gtk::GLArea {
 public:
     OpenGLArea();

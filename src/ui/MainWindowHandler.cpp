@@ -3,10 +3,10 @@
 #include <iostream>
 #include <gtkmm.h>
 
-#include "OpenGLArea.hpp"
+#include "render/OpenGLArea.hpp"
 
 using di_renderer::ui::MainWindowHandler;
-using di_renderer::ui::OpenGLArea;
+using di_renderer::render::OpenGLArea;
 
 MainWindowHandler::MainWindowHandler() {
     builder = Gtk::Builder::create_from_file(Glib::build_filename(
