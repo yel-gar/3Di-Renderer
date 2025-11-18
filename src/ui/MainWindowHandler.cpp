@@ -45,7 +45,7 @@ void MainWindowHandler::init_gl_area() const {
     const auto gl_area = Gtk::make_managed<OpenGLArea>();
 
     Gtk::Widget* placeholder_box = nullptr;
-    builder->get_widget(Glib::ustring("gl_placeholder"), placeholder_box);
+    builder->get_widget("gl_placeholder", placeholder_box);
 
     if (const auto box = dynamic_cast<Gtk::Box*>(placeholder_box)) {
         box->pack_start(*gl_area);
