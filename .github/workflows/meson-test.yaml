@@ -14,15 +14,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Install python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install python dependencies
+        run: pip install meson
+
+      - name: Install LLVM
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21 all
+
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential ninja-build meson \
-              clang cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev \
+          sudo apt install -y build-essential ninja-build \
+              cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev \
               libglm-dev libgl-dev libepoxy-dev libgtest-dev
 
       - name: Configure Meson
-        run: CXX=clang++ meson setup buildDir
+        run: CXX=clang++-21 meson setup buildDir
 
       - name: Run Tests
         run: meson test -C buildDir -j 10 --print-errorlogs
