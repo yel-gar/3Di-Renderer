@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "FaceVerticeData.hpp"
 #include "math/UVCoord.hpp"
 #include "math/Vector3.hpp"
 
@@ -13,7 +14,7 @@ class Mesh {
 public:
   using FaceTriangle = std::array<int, 3>;
   using Face = std::vector<FaceTriangle>;
-  using Faces = std::vector<Face>;
+  using Faces = std::vector<std::vector<FaceVerticeData>>;
 
   std::vector<math::Vector3> vertices;
   std::vector<math::UVCoord> texture_vertices;
@@ -25,7 +26,7 @@ public:
   Mesh(std::vector<math::Vector3> vertices,
        std::vector<math::UVCoord> texture_vertices,
        std::vector<math::Vector3> normals,
-       std::vector<std::vector<std::array<int, 3>>> faces) noexcept;
+       std::vector<std::vector<FaceVerticeData>> faces) noexcept;
 
   ~Mesh();
 

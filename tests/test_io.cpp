@@ -52,11 +52,11 @@ TEST(ObjReaderTests, BasicObjParsing)
     ASSERT_EQ(faces[0].size(), 2);
 
     // Vertex indices, texture indices, normal indices
-    EXPECT_EQ(faces[0][0][0], 0); // vertex 1 → index 0
-    EXPECT_EQ(faces[0][0][1], 0);
-    EXPECT_EQ(faces[0][0][2], 0);
+    EXPECT_EQ(faces[0][0].vi, 0); // vertex 1 → index 0
+    EXPECT_EQ(faces[0][0].ti, 0);
+    EXPECT_EQ(faces[0][0].ni, 0);
 
-    EXPECT_EQ(faces[0][1][0], 1); // vertex 2 → index 1
-    EXPECT_EQ(faces[0][1][1], 0);
-    EXPECT_EQ(faces[0][1][2], 0);
+    EXPECT_EQ(faces[0][1].vi, 1); // vertex 2 → index 1
+    EXPECT_EQ(faces[0][1].ti, 0);
+    EXPECT_EQ(faces[0][1].ni, 0);
 }
