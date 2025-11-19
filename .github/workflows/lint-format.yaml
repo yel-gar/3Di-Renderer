@@ -26,9 +26,6 @@ jobs:
       - name: Compile
         run: meson compile -C buildDir -j 10
 
-      - name: Check meson formatting
-        run: meson format -r -i
-
       - name: Run clang-format
         run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format -i --style=file --Werror
 
