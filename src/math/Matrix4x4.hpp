@@ -1,11 +1,14 @@
 #pragma once
-#include <array>
-#include <functional>
 #include "Vector4.hpp"
 
-namespace di_renderer::math {
-    class Matrix4x4 {
-    public:
+#include <array>
+#include <functional>
+
+namespace di_renderer::math
+{
+    class Matrix4x4
+    {
+      public:
         Matrix4x4();
 
         Matrix4x4(const std::array<float, 16>& values);
@@ -28,7 +31,7 @@ namespace di_renderer::math {
 
         Vector4 operator*(const Vector4& vec) const;
 
-    private:
-        std::array<float,16> m_;
+      private:
+        std::array<float, 16> m_;
     };
-}
+} // namespace di_renderer::math

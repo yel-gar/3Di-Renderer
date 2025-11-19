@@ -1,17 +1,22 @@
 #include "ObjReader.hpp"
+
 #include "ObjData.hpp"
-#include <math/Vector3.hpp>
-#include <math/UVCoord.hpp>
-#include <iostream>
+
 #include <fstream>
-#include <string>
+#include <iostream>
+#include <math/UVCoord.hpp>
+#include <math/Vector3.hpp>
 #include <regex>
+#include <string>
 #include <vector>
 
-namespace di_renderer::io {
-    ObjData ObjReader::read_file(const std::string &filename) {
+namespace di_renderer::io
+{
+    ObjData ObjReader::read_file(const std::string& filename)
+    {
         std::ifstream file(filename);
-        if (!file.is_open()) {
+        if (!file.is_open())
+        {
             throw std::runtime_error("Can't open file");
         }
 
@@ -21,31 +26,42 @@ namespace di_renderer::io {
         std::vector<math::Vector3> normals;
         std::vector<std::vector<std::array<int, 3>>> faces;
 
-        while (std::getline(file, line)) {
-            if (line.empty() || line[0] == '#') {
+        while (std::getline(file, line))
+        {
+            if (line.empty() || line[0] == '#')
+            {
                 continue;
             }
 
             std::stringstream ss(line);
             std::string word;
             ss >> word;
-            if (word == "v") {
+            if (word == "v")
+            {
                 float x, y, z;
                 ss >> x >> y >> z;
                 vertices.emplace_back(x, y, z);
-            } else if (word == "vt") {
+            }
+            else if (word == "vt")
+            {
                 float u, v;
                 ss >> u >> v;
                 texture_vertices.emplace_back(u, v);
-            } else if (word == "vn") {
+            }
+            else if (word == "vn")
+            {
                 float x, y, z;
                 ss >> x >> y >> z;
                 normals.emplace_back(x, y, z);
-            } else if (word == "f") {
+            }
+            else if (word == "f")
+            {
                 std::vector<std::array<int, 3>> face_vertices;
-                while (ss >> word) {
+                while (ss >> word)
+                {
                     std::smatch match;
-                    if (!std::regex_match(word, match, FACE_PATTERN)) {
+                    if (!std::regex_match(word, match, FACE_PATTERN))
+                    {
                         throw std::runtime_error("Bad face pattern");
                     }
                     int vertice_index = std::stoi(match[1]) - 1;
@@ -55,13 +71,17 @@ namespace di_renderer::io {
                     face_vertices.push_back({vertice_index, texture_index, normal_index});
                 }
                 faces.push_back(face_vertices);
-            } else if (UNSUPPORTED_LINES.find(word) != UNSUPPORTED_LINES.end()) {
+            }
+            else if (UNSUPPORTED_LINES.find(word) != UNSUPPORTED_LINES.end())
+            {
                 std::cout << "Skipped unsupported word: " << word << std::endl;
-            } else {
+            }
+            else
+            {
                 throw std::runtime_error("Bad .obj file");
             }
         }
 
         return {vertices, texture_vertices, normals, faces};
     }
-}
+} // namespace di_renderer::io

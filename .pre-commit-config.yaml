@@ -14,10 +14,9 @@ repos:
         name: clang-tidy
         entry: clang-tidy
         language: system
-        types: [c, c++]
         args: [
           "-p", "buildDir",
-          "--fix"
+          "--warnings-as-errors=''"
         ]
         files: '\.(cpp|hpp)$'
 
@@ -25,8 +24,10 @@ repos:
         name: clang-format
         entry: clang-format
         language: system
-        types: [c, c++]
         args: [
           "-i", "--style=file", "--Werror"
         ]
         files: '\.(cpp|hpp)$'
+
+      - id: meson-test
+        name: test
