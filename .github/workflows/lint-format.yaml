@@ -37,8 +37,11 @@ jobs:
               cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev \
               libglm-dev libgl-dev libepoxy-dev libgtest-dev
 
+      - name: echo
+        run: where clang++-21
+
       - name: Configure Meson
-        run: CXX=clang++ meson setup buildDir
+        run: CXX=clang++-21 meson setup buildDir
 
       - name: Compile
         run: meson compile -C buildDir -j 10
@@ -47,7 +50,7 @@ jobs:
         run: meson format -r -i
 
       - name: Run clang-format
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format -i --style=file --Werror
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format-21 -i --style=file --Werror
 
       - name: Run clang-tidy
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-tidy -p buildDir --warnings-as-errors='*'
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-tidy-21 -p buildDir --warnings-as-errors='*'
