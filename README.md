@@ -27,7 +27,7 @@ $ pre-commit run --all-files  # only need to do this once to init environment
 
 ### Meson project setup
 ```bash
-$ CXX=clang++ meson setup buildDir
+$ CXX=clang++-21 meson setup buildDir
 ```
 
 ### Meson project compilation

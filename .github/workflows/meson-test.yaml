@@ -36,7 +36,7 @@ jobs:
               libglm-dev libgl-dev libepoxy-dev libgtest-dev
 
       - name: Configure Meson
-        run: CXX=clang++ meson setup buildDir
+        run: CXX=clang++-21 meson setup buildDir
 
       - name: Run Tests
         run: meson test -C buildDir -j 10 --print-errorlogs
