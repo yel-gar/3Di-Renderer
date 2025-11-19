@@ -28,15 +28,6 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 21 all
 
-      - name: Update alternatives
-        run: |
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 1
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 1
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 1
-          clang++ --version
-          clang-tidy --version
-          clang-format --version
-
       - name: Install dependencies
         run: |
           sudo apt update
@@ -45,7 +36,7 @@ jobs:
               libglm-dev libgl-dev libepoxy-dev libgtest-dev
 
       - name: Configure Meson
-        run: CXX=clang++ meson setup buildDir
+        run: CXX=clang++-21 meson setup buildDir
 
       - name: Run Tests
         run: meson test -C buildDir -j 10 --print-errorlogs
