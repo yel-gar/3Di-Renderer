@@ -25,6 +25,7 @@ namespace di_renderer::io
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;
         std::vector<std::vector<std::array<int, 3>>> faces;
+        float x, y, z, u, v; // NOLINT
 
         while (std::getline(file, line))
         {
@@ -38,19 +39,16 @@ namespace di_renderer::io
             ss >> word;
             if (word == "v")
             {
-                float x, y, z;
                 ss >> x >> y >> z;
                 vertices.emplace_back(x, y, z);
             }
             else if (word == "vt")
             {
-                float u, v;
                 ss >> u >> v;
                 texture_vertices.emplace_back(u, v);
             }
             else if (word == "vn")
             {
-                float x, y, z;
                 ss >> x >> y >> z;
                 normals.emplace_back(x, y, z);
             }
@@ -74,7 +72,7 @@ namespace di_renderer::io
             }
             else if (UNSUPPORTED_LINES.find(word) != UNSUPPORTED_LINES.end())
             {
-                std::cout << "Skipped unsupported word: " << word << std::endl;
+                std::cout << "Skipped unsupported word: " << word << '\n';
             }
             else
             {
