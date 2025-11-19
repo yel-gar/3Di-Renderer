@@ -38,7 +38,7 @@ jobs:
               libglm-dev libgl-dev libepoxy-dev libgtest-dev
 
       - name: echo
-        run: ls /usr/local/bin
+        run: ls /usr/bin
 
       - name: Configure Meson
         run: CXX=clang++-21 meson setup buildDir
@@ -50,7 +50,7 @@ jobs:
         run: meson format -r -i
 
       - name: Run clang-format
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 /usr/local/bin/clang-format -i --style=file --Werror
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 /usr/bin/clang-format -i --style=file --Werror
 
       - name: Run clang-tidy
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 /usr/local/bin/clang-tidy -p buildDir --warnings-as-errors='*'
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 /usr/bin/clang-tidy -p buildDir --warnings-as-errors='*'
