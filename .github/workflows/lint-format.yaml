@@ -18,9 +18,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Clear old preinstalled versions
-        run: sudo apt remove --purge clang*
-
       - name: Install python dependencies
         run: pip install meson
 
@@ -28,7 +25,10 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 21
+          sudo ./llvm.sh 21 all
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 1
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 1
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 1
 
       - name: Install dependencies
         run: |
@@ -41,7 +41,7 @@ jobs:
         run: ls -la /usr/bin/clang-format
 
       - name: Configure Meson
-        run: CXX=clang++-21 meson setup buildDir
+        run: CXX=clang++ meson setup buildDir
 
       - name: Compile
         run: meson compile -C buildDir -j 10
@@ -50,7 +50,7 @@ jobs:
         run: meson format -r -i
 
       - name: Run clang-format
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 /usr/bin/clang-format -i --style=file --Werror
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format -i --style=file --Werror
 
       - name: Run clang-tidy
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 /usr/bin/clang-tidy -p buildDir --warnings-as-errors='*'
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-tidy -p buildDir --warnings-as-errors='*'
