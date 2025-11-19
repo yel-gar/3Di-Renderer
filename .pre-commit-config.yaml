@@ -29,6 +29,15 @@ repos:
         ]
         files: '\.(cpp|hpp)$'
 
+      - id: meson-format
+        name: meson-format
+        entry: meson
+        language: system
+        args: [
+          "format", "-ri"
+        ]
+        pass_filenames: false
+
       - id: meson-compile
         name: compile
         entry: meson
