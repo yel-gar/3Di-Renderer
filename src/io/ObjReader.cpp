@@ -19,7 +19,7 @@ namespace di_renderer::io {
         std::vector<math::Vector3> vertices;
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;
-        std::vector<std::vector<std::array<int, 3>>> faces;
+        std::vector<std::vector<core::FaceVerticeData>> faces;
 
         while (std::getline(file, line)) {
             if (line.empty() || line[0] == '#') {
@@ -42,7 +42,7 @@ namespace di_renderer::io {
                 ss >> x >> y >> z;
                 normals.emplace_back(x, y, z);
             } else if (word == "f") {
-                std::vector<std::array<int, 3>> face_vertices;
+                std::vector<core::FaceVerticeData> face_vertices;
                 while (ss >> word) {
                     std::smatch match;
                     if (!std::regex_match(word, match, FACE_PATTERN)) {
