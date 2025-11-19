@@ -9,6 +9,16 @@ $ sudo apt install build-essential ninja-build meson clang cmake libgtkmm-3.0-de
 $ sudo apt install libgtest-dev clang-tidy clang-format pre-commit
 ```
 
+### Installing latest version of clang and tools
+**Recommended for development, standard packages are outdated!**
+```bash
+$ wget https://apt.llvm.org/llvm.sh
+$ chmod +x llvm.sh
+$ sudo ./llvm.sh 21
+
+$ pip install meson pre-commit
+```
+
 ### Pre-commit setup
 ```bash
 $ pre-commit install
