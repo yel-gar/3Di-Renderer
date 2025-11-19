@@ -19,7 +19,7 @@ jobs:
           python-version: '3.13'
 
       - name: Clear old preinstalled versions
-        run: sudo apt remove --purge clang-16 clang-tidy-16 clang-format-16
+        run: sudo apt remove --purge clang*
 
       - name: Install python dependencies
         run: pip install meson
