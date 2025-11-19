@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint-and-format:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -19,7 +19,7 @@ jobs:
           python-version: '3.13'
 
       - name: Clear old preinstalled versions
-        run: sudo apt remove --purge clang clang-tidy clang-format
+        run: sudo apt remove --purge clang-16 clang-tidy-16 clang-format-16
 
       - name: Install python dependencies
         run: pip install meson
