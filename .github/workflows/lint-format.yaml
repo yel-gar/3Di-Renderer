@@ -38,7 +38,7 @@ jobs:
               libglm-dev libgl-dev libepoxy-dev libgtest-dev
 
       - name: echo
-        run: ls /usr/bin
+        run: ls -la /usr/bin/clang-format
 
       - name: Configure Meson
         run: CXX=clang++-21 meson setup buildDir
