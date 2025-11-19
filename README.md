@@ -1,7 +1,18 @@
 ## Setup for developers
-### Initial setup
+### Required packages
 ```bash
-$ sudo apt install build-essential ninja-build meson clang cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev libglm-dev libgl-dev libepoxy-dev libgtest-dev
+$ sudo apt install build-essential ninja-build meson clang cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev libglm-dev libgl-dev libepoxy-dev
+```
+
+### Testing / development
+```bash
+$ sudo apt install libgtest-dev clang-tidy clang-format pre-commit
+```
+
+### Pre-commit setup
+```bash
+$ pre-commit install
+$ pre-commit run --all-files  # only need to do this once to init environment
 ```
 
 ### Meson project setup
