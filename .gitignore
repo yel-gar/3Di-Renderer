@@ -1,2 +1,4 @@
 /buildDir
 .idea
+.venv
+.python-version
