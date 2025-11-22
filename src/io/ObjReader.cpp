@@ -24,7 +24,7 @@ namespace di_renderer::io
         std::vector<math::Vector3> vertices;
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;
-        std::vector<std::vector<std::array<int, 3>>> faces;
+        std::vector<std::vector<core::FaceVerticeData>> faces;
         float x, y, z, u, v; // NOLINT
 
         while (std::getline(file, line))
@@ -54,7 +54,7 @@ namespace di_renderer::io
             }
             else if (word == "f")
             {
-                std::vector<std::array<int, 3>> face_vertices;
+                std::vector<core::FaceVerticeData> face_vertices;
                 while (ss >> word)
                 {
                     std::smatch match;
