@@ -12,6 +12,7 @@ $ sudo ./llvm.sh 21 all
 $ sudo update-alternatives /usr/bin/clang++ clang++ /usr/bin/clang++-21 1
 $ sudo update-alternatives /usr/bin/clang-format clang-format /usr/bin/clang-format-21 1
 $ sudo update-alternatives /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 1
+$ sudo update-alternatives /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-21 1
 ```
 ### Arch
 ```bash
@@ -26,10 +27,17 @@ $ pre-commit run --all-files  # only need to do this once to init environment
 
 ## Meson project setup
 ```bash
-$ CXX=clang++ meson setup buildDir
+$ CXX=clang++ meson setup buildDir --prefix=$HOME/.local
+$ meson install -C buildDir --tags ui  # currently this only installs ui file
 ```
 
-## Meson project compilation
+### Meson project compilation and running
 ```bash
 $ meson compile -C buildDir
+$ ./buildDir/src/di-renderer
+```
+
+### Meson project testing
+```bash
+$ meson test -C buildDir
 ```

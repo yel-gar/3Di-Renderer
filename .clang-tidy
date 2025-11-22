@@ -37,10 +37,7 @@ openmp-use-default-none,
 portability-simd-intrinsics,
 readability-identifier-naming'
 
-#WarningsAsErrors: ''
-
-HeaderFilterRegex: '.*'
-#AnalyzeTemporaryDtors: false
+HeaderFilterRegex: '.*src\/.*'
 
 CheckOptions:
   - key:  readability-function-cognitive-complexity.Threshold
@@ -70,7 +67,7 @@ CheckOptions:
   - key: readability-identifier-naming.LocalVariableCase
     value: lower_case
 
-  - key: readability-identifier-naming.ConstantCase
+  - key: readability-identifier-naming.GlobalConstantCase
     value: UPPER_CASE
   - key: readability-identifier-naming.StaticConstantCase
     value: UPPER_CASE

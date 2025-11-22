@@ -1,7 +1,7 @@
-#include <iostream>
+#include "ui/DiRendererApp.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-    std::cout << "Hello, World!" << '\n';
-    return 0;
+    const auto app = di_renderer::ui::DiRendererApp::create();
+    return app->run(argc, argv);
 }
