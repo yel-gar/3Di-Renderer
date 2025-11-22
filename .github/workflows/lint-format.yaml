@@ -1,14 +1,13 @@
-name: Meson Tests
+name: Lint and Format
 
 on:
   pull_request:
     types: [opened, reopened, synchronize]
     branches: [main]
-  workflow_dispatch:  # temporary
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  lint-and-format:
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -38,5 +37,14 @@ jobs:
       - name: Configure Meson
         run: CXX=clang++-21 meson setup buildDir
 
-      - name: Run Tests
-        run: meson test -C buildDir -j 10 --print-errorlogs
+      - name: Compile
+        run: meson compile -C buildDir -j 10
+
+      - name: Check meson formatting
+        run: meson format -r -i
+
+      - name: Run clang-format
+        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format-21 -i --style=file --Werror
+
+      - name: Run clang-tidy
+        run: run-clang-tidy-21 -p=buildDir/ -warnings-as-errors='*'

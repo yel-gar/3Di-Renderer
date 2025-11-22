@@ -1,3 +1,5 @@
 /buildDir
 .idea
 .cache
+.venv
+.python-version

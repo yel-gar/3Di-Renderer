@@ -1,0 +1,53 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-yaml
+      - id: check-xml
+
+  - repo: local
+    hooks:
+      - id: meson-compile
+        name: compile
+        entry: meson
+        language: system
+        args: [ "compile", "-C", "buildDir", "-j", "10" ]
+        pass_filenames: false
+
+      - id: meson-test
+        name: test
+        entry: meson
+        language: system
+        args: [ "test", "-C", "buildDir" ]
+        pass_filenames: false
+
+      - id: clang-tidy
+        name: clang-tidy
+        entry: run-clang-tidy
+        language: system
+        args: [
+          "-p=buildDir/",
+          "-warnings-as-errors='*'"
+        ]
+        pass_filenames: false
+
+      - id: clang-format
+        name: clang-format
+        entry: clang-format
+        language: system
+        args: [
+          "-i", "--style=file", "--Werror"
+        ]
+        files: '\.(cpp|hpp)$'
+
+      - id: meson-format
+        name: meson-format
+        entry: meson
+        language: system
+        args: [
+          "format", "-ri"
+        ]
+        pass_filenames: false

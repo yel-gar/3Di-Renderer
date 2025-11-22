@@ -3,5 +3,5 @@ math_lib = static_library(
     'Vector3.cpp',
     'UVCoord.cpp',
     include_directories: incdir,
-    dependencies: [glm_dep]
+    dependencies: [glm_dep],
 )
