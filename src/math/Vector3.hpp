@@ -1,8 +1,10 @@
 #pragma once
 
-namespace di_renderer::math {
-    class Vector3 {
-    public:
+namespace di_renderer::math
+{
+    class Vector3
+    {
+      public:
         float x;
         float y;
         float z;
@@ -22,4 +24,4 @@ namespace di_renderer::math {
         Vector3& operator+=(const Vector3& other);
         Vector3& operator-=(const Vector3& other);
     };
-}
+} // namespace di_renderer::math
