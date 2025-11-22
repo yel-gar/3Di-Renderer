@@ -10,7 +10,7 @@ using di_renderer::io::ObjReader;
 TEST(ObjReaderTests, BasicObjParsing)
 {
     // Temporary test file content
-    auto filename = "test_tmp.obj";
+    const auto* filename = "test_tmp.obj";
     std::ofstream out(filename);
 
     out << "# comment\n"
@@ -27,24 +27,24 @@ TEST(ObjReaderTests, BasicObjParsing)
 
     // Check vertices
     ASSERT_EQ(vertices.size(), 2);
-    EXPECT_FLOAT_EQ(vertices[0].x, 1.0f);
-    EXPECT_FLOAT_EQ(vertices[0].y, 2.0f);
-    EXPECT_FLOAT_EQ(vertices[0].z, 3.0f);
+    EXPECT_FLOAT_EQ(vertices[0].x, 1.0F);
+    EXPECT_FLOAT_EQ(vertices[0].y, 2.0F);
+    EXPECT_FLOAT_EQ(vertices[0].z, 3.0F);
 
-    EXPECT_FLOAT_EQ(vertices[1].x, 4.0f);
-    EXPECT_FLOAT_EQ(vertices[1].y, 5.0f);
-    EXPECT_FLOAT_EQ(vertices[1].z, 6.0f);
+    EXPECT_FLOAT_EQ(vertices[1].x, 4.0F);
+    EXPECT_FLOAT_EQ(vertices[1].y, 5.0F);
+    EXPECT_FLOAT_EQ(vertices[1].z, 6.0F);
 
     // Check texture vertices
     ASSERT_EQ(texture_vertices.size(), 1);
-    EXPECT_FLOAT_EQ(texture_vertices[0].u, 0.1f);
-    EXPECT_FLOAT_EQ(texture_vertices[0].v, 0.2f);
+    EXPECT_FLOAT_EQ(texture_vertices[0].u, 0.1F);
+    EXPECT_FLOAT_EQ(texture_vertices[0].v, 0.2F);
 
     // Check normals
     ASSERT_EQ(normals.size(), 1);
-    EXPECT_FLOAT_EQ(normals[0].x, 0.0f);
-    EXPECT_FLOAT_EQ(normals[0].y, 1.0f);
-    EXPECT_FLOAT_EQ(normals[0].z, 0.0f);
+    EXPECT_FLOAT_EQ(normals[0].x, 0.0F);
+    EXPECT_FLOAT_EQ(normals[0].y, 1.0F);
+    EXPECT_FLOAT_EQ(normals[0].z, 0.0F);
 
     // Check faces
     ASSERT_EQ(faces.size(), 1);

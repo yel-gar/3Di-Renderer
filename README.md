@@ -12,6 +12,7 @@ $ sudo ./llvm.sh 21 all
 $ sudo update-alternatives /usr/bin/clang++ clang++ /usr/bin/clang++-21 1
 $ sudo update-alternatives /usr/bin/clang-format clang-format /usr/bin/clang-format-21 1
 $ sudo update-alternatives /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 1
+$ sudo update-alternatives /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-21 1
 ```
 ### Arch
 ```bash

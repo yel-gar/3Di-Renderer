@@ -26,13 +26,13 @@ repos:
 
       - id: clang-tidy
         name: clang-tidy
-        entry: clang-tidy
+        entry: run-clang-tidy
         language: system
         args: [
-          "-p", "buildDir",
-          "--warnings-as-errors='*'"
+          "-p=buildDir/",
+          "-warnings-as-errors='*'"
         ]
-        files: '\.(cpp|hpp)$'
+        pass_filenames: false
 
       - id: clang-format
         name: clang-format
