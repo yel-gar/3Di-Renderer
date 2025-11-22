@@ -1,13 +1,15 @@
-project('3d-renderer', 'cpp',
-        version : '0.1.0',
-        license : 'MIT',
-        default_options : [
-                'cpp_std=c++17',
-                'warning_level=3',
-                'werror=false',
-                'default_library=static',
-                'buildtype=debugoptimized'
-        ]
+project(
+    '3d-renderer',
+    'cpp',
+    version: '0.1.0',
+    license: 'MIT',
+    default_options: [
+        'cpp_std=c++17',
+        'warning_level=3',
+        'werror=false',
+        'default_library=static',
+        'buildtype=debugoptimized',
+    ],
 )
 
 # Compiler
@@ -29,10 +31,13 @@ subdir('src')
 subdir('tests')
 
 # Summary
-summary({
-                'Build type': get_option('buildtype'),
-                'C++ standard': get_option('cpp_std'),
-                'GTK': gtkdep.found(),
-                'OpenGL': opengl_dep.found(),
-                'GLFW': glfw_dep.found(),
-        }, section: 'Configuration')
+summary(
+    {
+        'Build type': get_option('buildtype'),
+        'C++ standard': get_option('cpp_std'),
+        'GTK': gtkdep.found(),
+        'OpenGL': opengl_dep.found(),
+        'GLFW': glfw_dep.found(),
+    },
+    section: 'Configuration',
+)

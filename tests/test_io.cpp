@@ -1,11 +1,11 @@
-#include <gtest/gtest.h>
-#include <fstream>
-#include <string>
-
 #include "io/ObjReader.hpp"
 
-using di_renderer::io::ObjReader;
+#include <fstream>
+#include <gtest/gtest.h>
+#include <string>
+
 using di_renderer::io::ObjData;
+using di_renderer::io::ObjReader;
 
 TEST(ObjReaderTests, BasicObjParsing)
 {
@@ -13,13 +13,12 @@ TEST(ObjReaderTests, BasicObjParsing)
     auto filename = "test_tmp.obj";
     std::ofstream out(filename);
 
-    out <<
-        "# comment\n"
-        "v 1.0 2.0 3.0\n"
-        "v 4.0 5.0 6.0\n"
-        "vt 0.1 0.2\n"
-        "vn 0.0 1.0 0.0\n"
-        "f 1/1/1 2/1/1\n";
+    out << "# comment\n"
+           "v 1.0 2.0 3.0\n"
+           "v 4.0 5.0 6.0\n"
+           "vt 0.1 0.2\n"
+           "vn 0.0 1.0 0.0\n"
+           "f 1/1/1 2/1/1\n";
 
     out.close();
 
