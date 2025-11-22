@@ -1,4 +1,4 @@
-#include "Vector3.hpp"
+#include "../Vector3.hpp"
 
 di_renderer::math::Vector3::Vector3() : x(0), y(0), z(0) {}
 

@@ -1,4 +1,4 @@
-#include "UVCoord.hpp"
+#include "../UVCoord.hpp"
 
 di_renderer::math::UVCoord::UVCoord() : u(0), v(0) {}
 
