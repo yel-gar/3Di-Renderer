@@ -1,4 +1,4 @@
-#include "../UVCoord.hpp"
+#include "UVCoord.hpp"
 
 namespace di_renderer::math
 {

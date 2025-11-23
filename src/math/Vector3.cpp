@@ -1,4 +1,4 @@
-#include "../Vector3.hpp"
+#include "Vector3.hpp"
 
 #include <cmath>
 
@@ -61,4 +61,8 @@ namespace di_renderer::math
         return *this;
     }
 
+    bool Vector3::operator==(const Vector3& other) const
+    {
+        return std::abs(x - other.x) < EPS && std::abs(y - other.y) < EPS && std::abs(z - other.z) < EPS;
+    }
 } // namespace di_renderer::math

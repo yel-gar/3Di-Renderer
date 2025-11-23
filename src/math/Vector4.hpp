@@ -23,5 +23,7 @@ namespace di_renderer::math
 
         Vector4& operator+=(const Vector4& other);
         Vector4& operator-=(const Vector4& other);
+
+        bool operator==(const Vector4& other) const;
     };
 } // namespace di_renderer::math
