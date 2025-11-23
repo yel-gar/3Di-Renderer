@@ -14,9 +14,9 @@ namespace di_renderer::math
 
     Matrix4x4::Matrix4x4(const std::function<float(int, int)>& func)
     {
-        for (size_t row = 0; row < 4; row++)
+        for (int row = 0; row < 4; row++)
         {
-            for (size_t col = 0; col < 4; col++)
+            for (int col = 0; col < 4; col++)
             {
                 set(row, col, func(row, col));
             }
@@ -40,7 +40,7 @@ namespace di_renderer::math
         {
             for (size_t col = 0; col < 4; col++)
             {
-                result.set(col, row, get(row, col));
+                result.set(col, row, get(row, col)); // NOLINT(readability-suspicious-call-argument)
             }
         }
         return result;
@@ -52,7 +52,7 @@ namespace di_renderer::math
         {
             return 0.0F;
         }
-        return m_data[(row * 4) + col];
+        return m_data[(row * 4) + col]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
     }
 
     void Matrix4x4::set(const size_t row, const size_t col, const float value)
@@ -61,7 +61,7 @@ namespace di_renderer::math
         {
             return;
         }
-        m_data[(row * 4) + col] = value;
+        m_data[(row * 4) + col] = value; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
     }
 
     Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const
@@ -69,7 +69,7 @@ namespace di_renderer::math
         Matrix4x4 result;
         for (size_t i = 0; i < 16; i++)
         {
-            result.m_data[i] = m_data[i] + other.m_data[i];
+            result.m_data[i] = m_data[i] + other.m_data[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
         }
         return result;
     }
@@ -79,7 +79,7 @@ namespace di_renderer::math
         Matrix4x4 result;
         for (size_t i = 0; i < 16; i++)
         {
-            result.m_data[i] = m_data[i] - other.m_data[i];
+            result.m_data[i] = m_data[i] - other.m_data[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
         }
         return result;
     }

@@ -20,9 +20,9 @@ namespace di_renderer::math
         const float length = this->length();
         if (length < EPS)
         {
-            return Vector4(0.0F, 0.0F, 0.0F, 0.0F);
+            return {0.0F, 0.0F, 0.0F, 0.0};
         }
-        return Vector4(x / length, y / length, z / length, w / length);
+        return {x / length, y / length, z / length, w / length};
     }
 
     float Vector4::dot(const Vector4& other) const
@@ -32,12 +32,12 @@ namespace di_renderer::math
 
     Vector4 Vector4::operator+(const Vector4& other) const
     {
-        return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
+        return {x + other.x, y + other.y, z + other.z, w + other.w};
     }
 
     Vector4 Vector4::operator-(const Vector4& other) const
     {
-        return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
+        return {x - other.x, y - other.y, z - other.z, w - other.w};
     }
 
     Vector4& Vector4::operator+=(const Vector4& other)
