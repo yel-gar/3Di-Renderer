@@ -69,14 +69,143 @@ TEST(Vector3Tests, Products)
     EXPECT_FLOAT_EQ(backward.z, -1.0F);
 }
 
-TEST(Vector4Tests, BasicOperations)
+TEST(Vector3Tests, Length)
 {
-    Vector4 v1(1.0F, 2.0F, 3.0F, 4.0F);
-    Vector4 v2(1.0F, 1.0F, 1.0F, 1.0F);
+    Vector3 v(3.0F, 4.0F, 0.0F);
+    EXPECT_FLOAT_EQ(v.length(), 5.0F);
 
-    Vector4 res = v1 - v2;
-    Vector4 expected_res = Vector4(0.0F, 1.0F, 2.0F, 3.0F);
-    EXPECT_TRUE(res == expected_res);
+    Vector3 zero;
+    EXPECT_FLOAT_EQ(zero.length(), 0.0F);
+}
 
-    EXPECT_FLOAT_EQ(v2.length(), std::sqrt(4.0F));
+TEST(Vector4Tests, Arithmetic)
+{
+    Vector4 v1(10, 20, 30, 40);
+    Vector4 v2(1, 2, 3, 4);
+
+    Vector4 sum = v1 + v2;
+    EXPECT_TRUE(sum == Vector4(11, 22, 33, 44));
+
+    Vector4 diff = v1 - v2;
+    EXPECT_TRUE(diff == Vector4(9, 18, 27, 36));
+
+    v1 += v2;
+    EXPECT_TRUE(v1 == Vector4(11, 22, 33, 44));
+}
+
+TEST(Vector4Tests, DotAndLength)
+{
+    Vector4 v1(1, 0, 0, 0);
+    Vector4 v2(0, 1, 0, 0);
+    EXPECT_FLOAT_EQ(v1.dot(v2), 0.0F);
+
+    Vector4 v3(2, 2, 2, 2);
+    EXPECT_FLOAT_EQ(v3.dot(v3), 16.0F);
+    EXPECT_FLOAT_EQ(v3.length(), 4.0F);
+    EXPECT_TRUE(v3.normalized() == Vector4(0.5F, 0.5F, 0.5F, 0.5F));
+}
+
+TEST(Matrix4x4Tests, ConstructorArray)
+{
+    std::array<float, 16> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    Matrix4x4 m(data);
+
+    EXPECT_FLOAT_EQ(m(0, 0), 1.0F);
+    EXPECT_FLOAT_EQ(m(0, 3), 4.0F);
+    EXPECT_FLOAT_EQ(m(3, 3), 16.0F);
+}
+
+TEST(Matrix4x4Tests, Identity)
+{
+    Matrix4x4 id = Matrix4x4::identity();
+    Matrix4x4 expected_identity = Matrix4x4({1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+    EXPECT_TRUE(id == expected_identity);
+}
+
+TEST(Matrix4x4Tests, Transposed)
+{
+    Matrix4x4 m = Matrix4x4::identity();
+    m(0, 3) = 5.0F;
+    m(3, 0) = 2.0F;
+
+    Matrix4x4 t = m.transposed();
+
+    Matrix4x4 expected = Matrix4x4::identity();
+    expected(3, 0) = 5.0F;
+    expected(0, 3) = 2.0F;
+
+    EXPECT_TRUE(t == expected);
+}
+
+TEST(Matrix4x4Tests, Determinant)
+{
+    Matrix4x4 zero;
+    EXPECT_FLOAT_EQ(zero.determinant(), 0.0F);
+
+    Matrix4x4 id = Matrix4x4::identity();
+    EXPECT_FLOAT_EQ(id.determinant(), 1.0F);
+
+    Matrix4x4 scale = Matrix4x4::identity();
+    scale(0, 0) = 2.0F;
+    scale(1, 1) = 2.0F;
+    scale(2, 2) = 2.0F;
+    scale(3, 3) = 1.0F;
+
+    EXPECT_FLOAT_EQ(scale.determinant(), 8.0F);
+}
+
+TEST(Matrix4x4Tests, Inverse)
+{
+    Matrix4x4 id = Matrix4x4::identity();
+    EXPECT_TRUE(id.inverse() == id);
+
+    Matrix4x4 scale = Matrix4x4::identity();
+    scale(0, 0) = 2.0F;
+    scale(1, 1) = 2.0F;
+    scale(2, 2) = 2.0F;
+    scale(3, 3) = 1.0F;
+
+    Matrix4x4 inv_scale = scale.inverse();
+
+    Matrix4x4 expected = Matrix4x4::identity();
+    expected(0, 0) = 0.5F;
+    expected(1, 1) = 0.5F;
+    expected(2, 2) = 0.5F;
+    expected(3, 3) = 1.0F;
+
+    EXPECT_TRUE(inv_scale == expected);
+
+    Matrix4x4 translation = Matrix4x4::identity();
+    translation(0, 3) = 10.0F;
+    translation(1, 3) = 20.0F;
+    translation(2, 3) = 30.0F;
+
+    Matrix4x4 res = translation * translation.inverse();
+    EXPECT_TRUE(res == Matrix4x4::identity());
+}
+
+TEST(Matrix4x4Tests, ChainMultiplication)
+{
+    Matrix4x4 t = Matrix4x4::identity(); // Translate (1, 2, 3)
+    t(0, 3) = 1.0F;
+    t(1, 3) = 2.0F;
+    t(2, 3) = 3.0F;
+
+    Matrix4x4 s = Matrix4x4::identity(); // Scale (2, 2, 2)
+    s(0, 0) = 2.0F;
+    s(1, 1) = 2.0F;
+    s(2, 2) = 2.0F;
+
+    // T * S
+    Matrix4x4 model = t * s;
+
+    Vector4 p(1, 1, 1, 1);
+
+    Vector4 result = model * p;
+    Vector4 expected_vec(3.0F, 4.0F, 5.0F, 1.0F);
+
+    EXPECT_TRUE(result == expected_vec);
+
+    const Matrix4x4 m3 = t * (s * Matrix4x4::identity());
+    EXPECT_TRUE(m3 == model);
 }

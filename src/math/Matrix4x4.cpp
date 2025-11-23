@@ -120,22 +120,22 @@ namespace di_renderer::math
 
     float Matrix4x4::determinant() const
     {
-        const float& m00 = (*this)(0, 0);
-        const float& m01 = (*this)(0, 1);
-        const float& m02 = (*this)(0, 2);
-        const float& m03 = (*this)(0, 3);
-        const float& m10 = (*this)(1, 0);
-        const float& m11 = (*this)(1, 1);
-        const float& m12 = (*this)(1, 2);
-        const float& m13 = (*this)(1, 3);
-        const float& m20 = (*this)(2, 0);
-        const float& m21 = (*this)(2, 1);
-        const float& m22 = (*this)(2, 2);
-        const float& m23 = (*this)(2, 3);
-        const float& m30 = (*this)(3, 0);
-        const float& m31 = (*this)(3, 1);
-        const float& m32 = (*this)(3, 2);
-        const float& m33 = (*this)(3, 3);
+        const float m00 = (*this)(0, 0);
+        const float m01 = (*this)(0, 1);
+        const float m02 = (*this)(0, 2);
+        const float m03 = (*this)(0, 3);
+        const float m10 = (*this)(1, 0);
+        const float m11 = (*this)(1, 1);
+        const float m12 = (*this)(1, 2);
+        const float m13 = (*this)(1, 3);
+        const float m20 = (*this)(2, 0);
+        const float m21 = (*this)(2, 1);
+        const float m22 = (*this)(2, 2);
+        const float m23 = (*this)(2, 3);
+        const float m30 = (*this)(3, 0);
+        const float m31 = (*this)(3, 1);
+        const float m32 = (*this)(3, 2);
+        const float m33 = (*this)(3, 3);
 
         float min0 = (m00 * m11) - (m01 * m10);
         float min1 = (m00 * m12) - (m02 * m10);
@@ -157,22 +157,22 @@ namespace di_renderer::math
     {
         Matrix4x4 inv;
 
-        const float& m00 = (*this)(0, 0);
-        const float& m01 = (*this)(0, 1);
-        const float& m02 = (*this)(0, 2);
-        const float& m03 = (*this)(0, 3);
-        const float& m10 = (*this)(1, 0);
-        const float& m11 = (*this)(1, 1);
-        const float& m12 = (*this)(1, 2);
-        const float& m13 = (*this)(1, 3);
-        const float& m20 = (*this)(2, 0);
-        const float& m21 = (*this)(2, 1);
-        const float& m22 = (*this)(2, 2);
-        const float& m23 = (*this)(2, 3);
-        const float& m30 = (*this)(3, 0);
-        const float& m31 = (*this)(3, 1);
-        const float& m32 = (*this)(3, 2);
-        const float& m33 = (*this)(3, 3);
+        const float m00 = (*this)(0, 0);
+        const float m01 = (*this)(0, 1);
+        const float m02 = (*this)(0, 2);
+        const float m03 = (*this)(0, 3);
+        const float m10 = (*this)(1, 0);
+        const float m11 = (*this)(1, 1);
+        const float m12 = (*this)(1, 2);
+        const float m13 = (*this)(1, 3);
+        const float m20 = (*this)(2, 0);
+        const float m21 = (*this)(2, 1);
+        const float m22 = (*this)(2, 2);
+        const float m23 = (*this)(2, 3);
+        const float m30 = (*this)(3, 0);
+        const float m31 = (*this)(3, 1);
+        const float m32 = (*this)(3, 2);
+        const float m33 = (*this)(3, 3);
 
         float a2323 = (m22 * m33) - (m23 * m32);
         float a1323 = (m21 * m33) - (m23 * m31);
