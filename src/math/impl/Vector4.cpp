@@ -12,20 +12,22 @@ namespace di_renderer::math
 
     float Vector4::length() const
     {
-        return std::sqrt(x * x + y * y + z * z + w * w);
+        return std::sqrt((x * x) + (y * y) + (z * z) + (w * w));
     }
 
     Vector4 Vector4::normalized() const
     {
         const float length = this->length();
         if (length < EPS)
+        {
             return Vector4(0.0F, 0.0F, 0.0F, 0.0F);
+        }
         return Vector4(x / length, y / length, z / length, w / length);
     }
 
     float Vector4::dot(const Vector4& other) const
     {
-        return x * other.x + y * other.y + z * other.z + w * other.w;
+        return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w);
     }
 
     Vector4 Vector4::operator+(const Vector4& other) const

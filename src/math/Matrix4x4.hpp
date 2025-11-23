@@ -32,6 +32,6 @@ namespace di_renderer::math
         Vector4 operator*(const Vector4& vec) const;
 
       private:
-        std::array<float, 16> m_data;
+        std::array<float, 16> m_data{};
     };
 } // namespace di_renderer::math

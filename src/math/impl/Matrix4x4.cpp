@@ -28,7 +28,7 @@ namespace di_renderer::math
         Matrix4x4 result = Matrix4x4();
         for (size_t i = 0; i < 4; i++)
         {
-            result.set(i, i, 1.0f);
+            result.set(i, i, 1.0F);
         }
         return result;
     }
@@ -50,9 +50,9 @@ namespace di_renderer::math
     {
         if (row >= 4 || col >= 4)
         {
-            return 0.0f;
+            return 0.0F;
         }
-        return m_data[row * 4 + col];
+        return m_data[(row * 4) + col];
     }
 
     void Matrix4x4::set(const size_t row, const size_t col, const float value)
@@ -61,7 +61,7 @@ namespace di_renderer::math
         {
             return;
         }
-        m_data[row * 4 + col] = value;
+        m_data[(row * 4) + col] = value;
     }
 
     Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const
@@ -91,7 +91,7 @@ namespace di_renderer::math
         {
             for (size_t col = 0; col < 4; col++)
             {
-                float sum = 0.0f;
+                float sum = 0.0F;
                 for (size_t k = 0; k < 4; k++)
                 {
                     sum += get(row, k) * other.get(k, col);
@@ -122,11 +122,11 @@ namespace di_renderer::math
 
     Vector4 Matrix4x4::operator*(const Vector4& vec) const
     {
-        const float x = get(0, 0) * vec.x + get(0, 1) * vec.y + get(0, 2) * vec.z + get(0, 3) * vec.w;
-        const float y = get(1, 0) * vec.x + get(1, 1) * vec.y + get(1, 2) * vec.z + get(1, 3) * vec.w;
-        const float z = get(2, 0) * vec.x + get(2, 1) * vec.y + get(2, 2) * vec.z + get(2, 3) * vec.w;
-        const float w = get(3, 0) * vec.x + get(3, 1) * vec.y + get(3, 2) * vec.z + get(3, 3) * vec.w;
+        const float x = (get(0, 0) * vec.x) + (get(0, 1) * vec.y) + (get(0, 2) * vec.z) + (get(0, 3) * vec.w);
+        const float y = (get(1, 0) * vec.x) + (get(1, 1) * vec.y) + (get(1, 2) * vec.z) + (get(1, 3) * vec.w);
+        const float z = (get(2, 0) * vec.x) + (get(2, 1) * vec.y) + (get(2, 2) * vec.z) + (get(2, 3) * vec.w);
+        const float w = (get(3, 0) * vec.x) + (get(3, 1) * vec.y) + (get(3, 2) * vec.z) + (get(3, 3) * vec.w);
 
-        return Vector4(x, y, z, w);
+        return {x, y, z, w};
     }
 } // namespace di_renderer::math
