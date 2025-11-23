@@ -1,5 +1,64 @@
 #include "../Vector3.hpp"
 
-di_renderer::math::Vector3::Vector3() : x(0), y(0), z(0) {}
+#include <cmath>
 
-di_renderer::math::Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+namespace di_renderer::math
+{
+    constexpr float EPS = 1e-8;
+
+    Vector3::Vector3() : x(0.0F), y(0.0F), z(0.0F) {}
+
+    Vector3::Vector3(const float x, const float y, const float z) : x(x), y(y), z(z) {}
+
+    float Vector3::length() const
+    {
+        return std::sqrt((x * x) + (y * y) + (z * z));
+    }
+
+    Vector3 Vector3::normalized() const
+    {
+        const float length = this->length();
+        if (length <= EPS)
+        {
+            return {};
+        }
+        return {x / length, y / length, z / length};
+    }
+
+    float Vector3::dot(const Vector3& other) const
+    {
+        return (x * other.x) + (y * other.y) + (z * other.z);
+    }
+
+    Vector3 Vector3::cross(const Vector3& other) const
+    {
+        return {(y * other.z) - (z * other.y), (z * other.x) - (x * other.z), (x * other.y) - (y * other.x)};
+    }
+
+    Vector3 Vector3::operator+(const Vector3& other) const
+    {
+        return {x + other.x, y + other.y, z + other.z};
+    }
+
+    Vector3 Vector3::operator-(const Vector3& other) const
+    {
+        return {x - other.x, y - other.y, z - other.z};
+    }
+
+    Vector3& Vector3::operator+=(const Vector3& other)
+    {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+
+    Vector3& Vector3::operator-=(const Vector3& other)
+    {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
+    }
+
+} // namespace di_renderer::math
