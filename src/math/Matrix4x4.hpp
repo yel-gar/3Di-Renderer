@@ -18,8 +18,8 @@ namespace di_renderer::math
         static Matrix4x4 identity();
         Matrix4x4 transposed() const;
 
-        float get(int row, int col) const;
-        void set(int row, int col, float value);
+        float get(size_t row, size_t col) const;
+        void set(size_t row, size_t col, float value);
 
         Matrix4x4 operator+(const Matrix4x4& other) const;
         Matrix4x4 operator-(const Matrix4x4& other) const;
