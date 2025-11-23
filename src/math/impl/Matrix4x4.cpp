@@ -1,6 +1,5 @@
 #include "../Matrix4x4.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cmath>
 
@@ -8,10 +7,7 @@ namespace di_renderer::math
 {
     Matrix4x4::Matrix4x4()
     {
-        for (size_t i = 0; i < 16; ++i)
-        {
-            m_data[i] = 0.0f;
-        }
+        m_data.fill(0.0F);
     }
 
     Matrix4x4::Matrix4x4(const std::array<float, 16>& values) : m_data(values) {}
@@ -30,7 +26,7 @@ namespace di_renderer::math
     Matrix4x4 Matrix4x4::identity()
     {
         Matrix4x4 result = Matrix4x4();
-        for (int i = 0; i < 4; i++)
+        for (size_t i = 0; i < 4; i++)
         {
             result.set(i, i, 1.0f);
         }
@@ -126,10 +122,10 @@ namespace di_renderer::math
 
     Vector4 Matrix4x4::operator*(const Vector4& vec) const
     {
-        const float x = get(0, 0) * vec.x + get(0, 1) * vec.y + get(0, 2) * vec.z + get(0, 1);
-        const float y = get(1, 0) * vec.x + get(1, 1) * vec.y + get(1, 2) * vec.z + get(1, 3);
-        const float z = get(2, 0) * vec.x + get(2, 1) * vec.y + get(2, 2) * vec.z + get(2, 3);
-        const float w = get(3, 0) * vec.x + get(3, 1) * vec.y + get(3, 2) * vec.z + get(3, 3);
+        const float x = get(0, 0) * vec.x + get(0, 1) * vec.y + get(0, 2) * vec.z + get(0, 3) * vec.w;
+        const float y = get(1, 0) * vec.x + get(1, 1) * vec.y + get(1, 2) * vec.z + get(1, 3) * vec.w;
+        const float z = get(2, 0) * vec.x + get(2, 1) * vec.y + get(2, 2) * vec.z + get(2, 3) * vec.w;
+        const float w = get(3, 0) * vec.x + get(3, 1) * vec.y + get(3, 2) * vec.z + get(3, 3) * vec.w;
 
         return Vector4(x, y, z, w);
     }
