@@ -5,6 +5,7 @@ namespace di_renderer::math
     class Vector3
     {
       public:
+        static constexpr float EPS = 1e-8;
         float x;
         float y;
         float z;

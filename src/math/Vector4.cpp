@@ -4,7 +4,6 @@
 
 namespace di_renderer::math
 {
-    constexpr float EPS = 1e-8;
 
     Vector4::Vector4() : x(0.0F), y(0.0F), z(0.0F), w(0.0F) {}
 

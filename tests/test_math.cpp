@@ -27,6 +27,7 @@ TEST(Vector3Tests, ConstructionAndNormallization)
     const Vector3 norm = vec.normalized();
     const Vector3 expected_norm(1.0F, 0.0F, 0.0F);
     EXPECT_TRUE(norm == expected_norm);
+    EXPECT_FLOAT_EQ(norm.length(), 1.0F);
 
     const Vector3 zero;
     const Vector3 zero_norm = zero.normalized();

@@ -104,12 +104,11 @@ namespace di_renderer::math
 
     bool Matrix4x4::operator==(const Matrix4x4& other) const
     {
-        constexpr float eps = 1e-8F;
         for (size_t i = 0; i < 4; ++i)
         {
             for (size_t j = 0; j < 4; ++j)
             {
-                if (std::abs((*this)(i, j) - other(i, j)) > eps)
+                if (std::abs((*this)(i, j) - other(i, j)) > EPS)
                 {
                     return false; // NOLINT
                 }
