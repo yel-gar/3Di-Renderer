@@ -25,9 +25,8 @@ TEST(Vector3Tests, ConstructionAndNormallization)
     EXPECT_FLOAT_EQ(vec.x, 3.0F);
 
     const Vector3 norm = vec.normalized();
-    EXPECT_FLOAT_EQ(norm.x, 1.0F);
-    EXPECT_FLOAT_EQ(norm.y, 0.0F);
-    EXPECT_FLOAT_EQ(norm.z, 0.0F);
+    const Vector3 expected_norm(1.0F, 0.0F, 0.0F);
+    EXPECT_TRUE(norm == expected_norm);
 
     const Vector3 zero;
     const Vector3 zero_norm = zero.normalized();
@@ -40,17 +39,16 @@ TEST(Vector3Tests, Arithmetic)
     Vector3 v2(4.0F, 5.0F, 6.0F);
 
     const Vector3 sum = v1 + v2;
-    EXPECT_FLOAT_EQ(sum.x, 5.0F);
-    EXPECT_FLOAT_EQ(sum.y, 7.0F);
-    EXPECT_FLOAT_EQ(sum.z, 9.0F);
+    const Vector3 expected_sum(5.0F, 7.0F, 9.0F);
+    EXPECT_TRUE(sum == expected_sum);
 
     const Vector3 diff = v2 - v1;
-    EXPECT_FLOAT_EQ(diff.x, 3.0F);
-    EXPECT_FLOAT_EQ(diff.y, 3.0F);
-    EXPECT_FLOAT_EQ(diff.z, 3.0F);
+    const Vector3 expected_diff(3.0F, 3.0F, 3.0F);
+    EXPECT_TRUE(diff == expected_diff);
 
     v1 += Vector3(1.0F, 1.0F, 1.0F);
-    EXPECT_FLOAT_EQ(v1.x, 2.0F);
+    const Vector3 expected_v1(2.0F, 3.0F, 4.0F);
+    EXPECT_TRUE(v1 == expected_v1);
 }
 
 TEST(Vector3Tests, Products)
@@ -64,9 +62,8 @@ TEST(Vector3Tests, Products)
     EXPECT_FLOAT_EQ(v.dot(right), 2.0F);
 
     Vector3 forward = right.cross(up);
-    EXPECT_FLOAT_EQ(forward.x, 0.0F);
-    EXPECT_FLOAT_EQ(forward.y, 0.0F);
-    EXPECT_FLOAT_EQ(forward.z, 1.0F);
+    Vector3 expected_cross = Vector3(0.0F, 0.0F, 1.0F);
+    EXPECT_TRUE(forward == expected_cross);
 
     Vector3 backward = up.cross(right);
     EXPECT_FLOAT_EQ(backward.z, -1.0F);
@@ -78,10 +75,8 @@ TEST(Vector4Tests, BasicOperations)
     Vector4 v2(1.0F, 1.0F, 1.0F, 1.0F);
 
     Vector4 res = v1 - v2;
-    EXPECT_FLOAT_EQ(res.x, 0.0F);
-    EXPECT_FLOAT_EQ(res.y, 1.0F);
-    EXPECT_FLOAT_EQ(res.z, 2.0F);
-    EXPECT_FLOAT_EQ(res.w, 3.0F);
+    Vector4 expected_res = Vector4(0.0F, 1.0F, 2.0F, 3.0F);
+    EXPECT_TRUE(res == expected_res);
 
     EXPECT_FLOAT_EQ(v2.length(), std::sqrt(4.0F));
 }

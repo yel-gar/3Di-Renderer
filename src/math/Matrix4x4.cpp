@@ -76,6 +76,14 @@ namespace di_renderer::math
             });
     }
 
+    Vector4 Matrix4x4::operator*(const Vector4& vec) const
+    {
+        return {((*this)(0, 0) * vec.x) + ((*this)(0, 1) * vec.y) + ((*this)(0, 2) * vec.z) + ((*this)(0, 3) * vec.w),
+                ((*this)(1, 0) * vec.x) + ((*this)(1, 1) * vec.y) + ((*this)(1, 2) * vec.z) + ((*this)(1, 3) * vec.w),
+                ((*this)(2, 0) * vec.x) + ((*this)(2, 1) * vec.y) + ((*this)(2, 2) * vec.z) + ((*this)(2, 3) * vec.w),
+                ((*this)(3, 0) * vec.x) + ((*this)(3, 1) * vec.y) + ((*this)(3, 2) * vec.z) + ((*this)(3, 3) * vec.w)};
+    }
+
     Matrix4x4& Matrix4x4::operator+=(const Matrix4x4& other)
     {
         *this = *this + other;
@@ -94,55 +102,91 @@ namespace di_renderer::math
         return *this;
     }
 
-    Vector4 Matrix4x4::operator*(const Vector4& vec) const
+    bool Matrix4x4::operator==(const Matrix4x4& other) const
     {
-        return {((*this)(0, 0) * vec.x) + ((*this)(0, 1) * vec.y) + ((*this)(0, 2) * vec.z) + ((*this)(0, 3) * vec.w),
-                ((*this)(1, 0) * vec.x) + ((*this)(1, 1) * vec.y) + ((*this)(1, 2) * vec.z) + ((*this)(1, 3) * vec.w),
-                ((*this)(2, 0) * vec.x) + ((*this)(2, 1) * vec.y) + ((*this)(2, 2) * vec.z) + ((*this)(2, 3) * vec.w),
-                ((*this)(3, 0) * vec.x) + ((*this)(3, 1) * vec.y) + ((*this)(3, 2) * vec.z) + ((*this)(3, 3) * vec.w)};
+        constexpr float eps = 1e-8F;
+        for (size_t i = 0; i < 4; ++i)
+        {
+            for (size_t j = 0; j < 4; ++j)
+            {
+                if (std::abs((*this)(i, j) - other(i, j)) > eps)
+                {
+                    return false; // NOLINT
+                }
+            }
+        }
+        return true;
     }
 
     float Matrix4x4::determinant() const
     {
-        const float* m = m_data.data();
+        const float& m00 = (*this)(0, 0);
+        const float& m01 = (*this)(0, 1);
+        const float& m02 = (*this)(0, 2);
+        const float& m03 = (*this)(0, 3);
+        const float& m10 = (*this)(1, 0);
+        const float& m11 = (*this)(1, 1);
+        const float& m12 = (*this)(1, 2);
+        const float& m13 = (*this)(1, 3);
+        const float& m20 = (*this)(2, 0);
+        const float& m21 = (*this)(2, 1);
+        const float& m22 = (*this)(2, 2);
+        const float& m23 = (*this)(2, 3);
+        const float& m30 = (*this)(3, 0);
+        const float& m31 = (*this)(3, 1);
+        const float& m32 = (*this)(3, 2);
+        const float& m33 = (*this)(3, 3);
 
-        float s0 = (m[0] * m[5]) - (m[1] * m[4]); // NOLINT
-        float s1 = (m[0] * m[6]) - (m[2] * m[4]); // NOLINT
-        float s2 = (m[0] * m[7]) - (m[3] * m[4]); // NOLINT
-        float s3 = (m[1] * m[6]) - (m[2] * m[5]); // NOLINT
-        float s4 = (m[1] * m[7]) - (m[3] * m[5]); // NOLINT
-        float s5 = (m[2] * m[7]) - (m[3] * m[6]); // NOLINT
+        float min0 = (m00 * m11) - (m01 * m10);
+        float min1 = (m00 * m12) - (m02 * m10);
+        float min2 = (m00 * m13) - (m03 * m10);
+        float min3 = (m01 * m12) - (m02 * m11);
+        float min4 = (m01 * m13) - (m03 * m11);
+        float min5 = (m02 * m13) - (m03 * m12);
+        float cof5 = (m22 * m33) - (m23 * m32);
+        float cof4 = (m21 * m33) - (m23 * m31);
+        float cof3 = (m21 * m32) - (m22 * m31);
+        float cof2 = (m20 * m33) - (m23 * m30);
+        float cof1 = (m20 * m32) - (m22 * m30);
+        float cof0 = (m20 * m31) - (m21 * m30);
 
-        float c5 = (m[10] * m[15]) - (m[11] * m[14]); // NOLINT
-        float c4 = (m[9] * m[15]) - (m[11] * m[13]);  // NOLINT
-        float c3 = (m[9] * m[14]) - (m[10] * m[13]);  // NOLINT
-        float c2 = (m[8] * m[15]) - (m[11] * m[12]);  // NOLINT
-        float c1 = (m[8] * m[14]) - (m[10] * m[12]);  // NOLINT
-        float c0 = (m[8] * m[13]) - (m[9] * m[12]);   // NOLINT
-
-        return ((s0 * c5) - (s1 * c4) + (s2 * c3) + (s3 * c2) - (s4 * c1) + (s5 * c0));
+        return ((min0 * cof5) - (min1 * cof4) + (min2 * cof3) + (min3 * cof2) - (min4 * cof1) + (min5 * cof0));
     }
 
     Matrix4x4 Matrix4x4::inverse() const
     {
-        const float* m = m_data.data();
         Matrix4x4 inv;
-        inv.m_data.fill(0.0F);
-        float* out = inv.m_data.data();
 
-        float A2323 = m[10] * m[15] - m[11] * m[14]; // NOLINT
-        float A1323 = m[9] * m[15] - m[11] * m[13];  // NOLINT
-        float A1223 = m[9] * m[14] - m[10] * m[13];  // NOLINT
-        float A0323 = m[8] * m[15] - m[11] * m[12];  // NOLINT
-        float A0223 = m[8] * m[14] - m[10] * m[12];  // NOLINT
-        float A0123 = m[8] * m[13] - m[9] * m[12];   // NOLINT
+        const float& m00 = (*this)(0, 0);
+        const float& m01 = (*this)(0, 1);
+        const float& m02 = (*this)(0, 2);
+        const float& m03 = (*this)(0, 3);
+        const float& m10 = (*this)(1, 0);
+        const float& m11 = (*this)(1, 1);
+        const float& m12 = (*this)(1, 2);
+        const float& m13 = (*this)(1, 3);
+        const float& m20 = (*this)(2, 0);
+        const float& m21 = (*this)(2, 1);
+        const float& m22 = (*this)(2, 2);
+        const float& m23 = (*this)(2, 3);
+        const float& m30 = (*this)(3, 0);
+        const float& m31 = (*this)(3, 1);
+        const float& m32 = (*this)(3, 2);
+        const float& m33 = (*this)(3, 3);
 
-        out[0] = (m[5] * A2323 - m[6] * A1323 + m[7] * A1223);   // NOLINT
-        out[4] = -(m[4] * A2323 - m[6] * A0323 + m[7] * A0223);  // NOLINT
-        out[8] = (m[4] * A1323 - m[5] * A0323 + m[7] * A0123);   // NOLINT
-        out[12] = -(m[4] * A1223 - m[5] * A0223 + m[6] * A0123); // NOLINT
+        float a2323 = (m22 * m33) - (m23 * m32);
+        float a1323 = (m21 * m33) - (m23 * m31);
+        float a1223 = (m21 * m32) - (m22 * m31);
+        float a0323 = (m20 * m33) - (m23 * m30);
+        float a0223 = (m20 * m32) - (m22 * m30);
+        float a0123 = (m20 * m31) - (m21 * m30);
 
-        float det = m[0] * out[0] + m[1] * out[4] + m[2] * out[8] + m[3] * out[12]; // NOLINT
+        inv(0, 0) = ((m11 * a2323) - (m12 * a1323) + (m13 * a1223));
+        inv(1, 0) = -((m10 * a2323) - (m12 * a0323) + (m13 * a0223));
+        inv(2, 0) = ((m10 * a1323) - (m11 * a0323) + (m13 * a0123));
+        inv(3, 0) = -((m10 * a1223) - (m11 * a0223) + (m12 * a0123));
+
+        float det = (m00 * inv(0, 0)) + (m01 * inv(1, 0)) + (m02 * inv(2, 0)) + (m03 * inv(3, 0));
 
         if (std::abs(det) < 1e-5F)
         {
@@ -151,39 +195,42 @@ namespace di_renderer::math
 
         float inv_det = 1.0F / det;
 
-        float A2313 = m[6] * m[15] - m[7] * m[14]; // NOLINT
-        float A1313 = m[5] * m[15] - m[7] * m[13]; // NOLINT
-        float A1213 = m[5] * m[14] - m[6] * m[13]; // NOLINT
-        float A2312 = m[6] * m[11] - m[7] * m[10]; // NOLINT
-        float A1312 = m[5] * m[11] - m[7] * m[9];  // NOLINT
-        float A1212 = m[5] * m[10] - m[6] * m[9];  // NOLINT
+        float a2313 = (m12 * m33) - (m13 * m32);
+        float a1313 = (m11 * m33) - (m13 * m31);
+        float a1213 = (m11 * m32) - (m12 * m31);
+        float a2312 = (m12 * m23) - (m13 * m22);
+        float a1312 = (m11 * m23) - (m13 * m21);
+        float a1212 = (m11 * m22) - (m12 * m21);
 
-        out[1] = -(m[1] * A2323 - m[2] * A1323 + m[3] * A1223); // NOLINT
-        out[5] = (m[0] * A2323 - m[2] * A0323 + m[3] * A0223);  // NOLINT
-        out[9] = -(m[0] * A1323 - m[1] * A0323 + m[3] * A0123); // NOLINT
-        out[13] = (m[0] * A1223 - m[1] * A0223 + m[2] * A0123); // NOLINT
+        inv(0, 1) = -((m01 * a2323) - (m02 * a1323) + (m03 * a1223));
+        inv(1, 1) = ((m00 * a2323) - (m02 * a0323) + (m03 * a0223));
+        inv(2, 1) = -((m00 * a1323) - (m01 * a0323) + (m03 * a0123));
+        inv(3, 1) = ((m00 * a1223) - (m01 * a0223) + (m02 * a0123));
 
-        float A0313 = m[4] * m[15] - m[7] * m[12]; // NOLINT
-        float A0213 = m[4] * m[14] - m[6] * m[12]; // NOLINT
-        float A0113 = m[4] * m[13] - m[5] * m[12]; // NOLINT
+        float a0313 = (m10 * m33) - (m13 * m30);
+        float a0213 = (m10 * m32) - (m12 * m30);
+        float a0113 = (m10 * m31) - (m11 * m30);
 
-        out[2] = (m[1] * A2313 - m[2] * A1313 + m[3] * A1213);   // NOLINT
-        out[6] = -(m[0] * A2313 - m[2] * A0313 + m[3] * A0213);  // NOLINT
-        out[10] = (m[0] * A1313 - m[1] * A0313 + m[3] * A0113);  // NOLINT
-        out[14] = -(m[0] * A1213 - m[1] * A0213 + m[2] * A0113); // NOLINT
+        inv(0, 2) = ((m01 * a2313) - (m02 * a1313) + (m03 * a1213));
+        inv(1, 2) = -((m00 * a2313) - (m02 * a0313) + (m03 * a0213));
+        inv(2, 2) = ((m00 * a1313) - (m01 * a0313) + (m03 * a0113));
+        inv(3, 2) = -((m00 * a1213) - (m01 * a0213) + (m02 * a0113));
 
-        float A0312 = m[4] * m[11] - m[7] * m[8]; // NOLINT
-        float A0212 = m[4] * m[10] - m[6] * m[8]; // NOLINT
-        float A0112 = m[4] * m[9] - m[5] * m[8];  // NOLINT
+        float a0312 = (m10 * m23) - (m13 * m20);
+        float a0212 = (m10 * m22) - (m12 * m20);
+        float a0112 = (m10 * m21) - (m11 * m20);
 
-        out[3] = -(m[1] * A2312 - m[2] * A1312 + m[3] * A1212);  // NOLINT
-        out[7] = (m[0] * A2312 - m[2] * A0312 + m[3] * A0212);   // NOLINT
-        out[11] = -(m[0] * A1312 - m[1] * A0312 + m[3] * A0112); // NOLINT
-        out[15] = (m[0] * A1212 - m[1] * A0212 + m[2] * A0112);  // NOLINT
+        inv(0, 3) = -((m01 * a2312) - (m02 * a1312) + (m03 * a1212));
+        inv(1, 3) = ((m00 * a2312) - (m02 * a0312) + (m03 * a0212));
+        inv(2, 3) = -((m00 * a1312) - (m01 * a0312) + (m03 * a0112));
+        inv(3, 3) = ((m00 * a1212) - (m01 * a0212) + (m02 * a0112));
 
-        for (int i = 0; i < 16; ++i)
+        for (int r = 0; r < 4; ++r)
         {
-            out[i] *= inv_det; // NOLINT
+            for (int c = 0; c < 4; ++c)
+            {
+                inv(r, c) *= inv_det;
+            }
         }
 
         return inv;
