@@ -4,45 +4,6 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace di_renderer::math::util
-{
-    float calculate_determinant_3x3(float m00, float m01, float m02, float m10, float m11, float m12, float m20,
-                                    float m21, float m22)
-    {
-        return (m00 * (m11 * m22 - m12 * m21)) - (m01 * (m10 * m22 - m12 * m20)) + (m02 * (m10 * m21 - m11 * m20));
-    }
-
-    float get_cofactor(const Matrix4x4& mat, int skip_row, int skip_col)
-    {
-        std::array<int, 3> r = {};
-        std::array<int, 3> c = {};
-
-        int k = 0;
-        for (int i = 0; i < 4; ++i)
-        {
-            if (i != skip_row)
-            {
-                r[k++] = i; // NOLINT
-            }
-        }
-
-        k = 0;
-        for (int i = 0; i < 4; ++i)
-        {
-            if (i != skip_col)
-            {
-                c[k++] = i; // NOLINT
-            }
-        }
-
-        float det = calculate_determinant_3x3(mat(r[0], c[0]), mat(r[0], c[1]), mat(r[0], c[2]), mat(r[1], c[0]),
-                                              mat(r[1], c[1]), mat(r[1], c[2]), mat(r[2], c[0]), mat(r[2], c[1]),
-                                              mat(r[2], c[2]));
-
-        return ((skip_row + skip_col) % 2 == 0) ? det : -det;
-    }
-} // namespace di_renderer::math::util
-
 namespace di_renderer::math
 {
     Matrix4x4::Matrix4x4()
@@ -156,12 +117,48 @@ namespace di_renderer::math
         return true;
     }
 
+    float Matrix4x4::calculate_determinant_3x3(float m00, float m01, float m02, float m10, float m11, float m12,
+                                               float m20, float m21, float m22)
+    {
+        return (m00 * (m11 * m22 - m12 * m21)) - (m01 * (m10 * m22 - m12 * m20)) + (m02 * (m10 * m21 - m11 * m20));
+    }
+
+    float Matrix4x4::get_cofactor(int skip_row, int skip_col) const
+    {
+        std::array<int, 3> r = {};
+        std::array<int, 3> c = {};
+
+        int k = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            if (i != skip_row)
+            {
+                r[k++] = i; // NOLINT
+            }
+        }
+
+        k = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            if (i != skip_col)
+            {
+                c[k++] = i; // NOLINT
+            }
+        }
+
+        float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
+                                              (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
+                                              (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
+
+        return ((skip_row + skip_col) % 2 == 0) ? det : -det;
+    }
+
     float Matrix4x4::determinant() const
     {
         float det = 0.0F;
         for (int col = 0; col < 4; ++col)
         {
-            det += (*this)(0, col) * util::get_cofactor(*this, 0, col);
+            det += (*this)(0, col) * Matrix4x4::get_cofactor(0, col);
         }
         return det;
     }
@@ -177,16 +174,15 @@ namespace di_renderer::math
 
         float inv_det = 1.0F / det;
         Matrix4x4 result;
-
         for (int row = 0; row < 4; ++row)
         {
             for (int col = 0; col < 4; ++col)
             {
-                float cofactor = util::get_cofactor(*this, row, col);
+                float cofactor = Matrix4x4::get_cofactor(row, col);
                 result(col, row) = cofactor * inv_det; // NOLINT
             }
         }
-
         return result;
     }
+
 } // namespace di_renderer::math
