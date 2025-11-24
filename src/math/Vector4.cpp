@@ -19,7 +19,7 @@ namespace di_renderer::math
         const float length = this->length();
         if (length < EPS)
         {
-            return {0.0F, 0.0F, 0.0F, 0.0F};
+            return {};
         }
         return {x / length, y / length, z / length, w / length};
     }
