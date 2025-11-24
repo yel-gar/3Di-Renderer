@@ -9,7 +9,6 @@ namespace di_renderer::math
     class Matrix4x4
     {
       public:
-        static constexpr float EPS = 1e-8F;
         Matrix4x4();
 
         explicit Matrix4x4(const std::array<float, 16>& values);
@@ -38,6 +37,7 @@ namespace di_renderer::math
         bool operator==(const Matrix4x4& other) const;
 
       private:
+        static constexpr float EPS = 1e-8F;
         std::array<float, 16> m_data{};
     };
 } // namespace di_renderer::math

@@ -26,9 +26,11 @@ TEST(Vector3Tests, ConstructionAndNormallization)
 
     const Vector3 norm = vec.normalized();
     const Vector3 expected_norm(1.0F, 0.0F, 0.0F);
-    EXPECT_TRUE(norm == expected_norm);
+    EXPECT_EQ(norm, expected_norm);
     EXPECT_FLOAT_EQ(norm.length(), 1.0F);
 
+    const Vector3 vector(321, 2.718281828, 3.1415);
+    EXPECT_FLOAT_EQ(vector.normalized().length(), 1.0F);
     const Vector3 zero;
     const Vector3 zero_norm = zero.normalized();
     EXPECT_FLOAT_EQ(zero_norm.length(), 0.0F);
@@ -41,15 +43,15 @@ TEST(Vector3Tests, Arithmetic)
 
     const Vector3 sum = v1 + v2;
     const Vector3 expected_sum(5.0F, 7.0F, 9.0F);
-    EXPECT_TRUE(sum == expected_sum);
+    EXPECT_EQ(sum, expected_sum);
 
     const Vector3 diff = v2 - v1;
     const Vector3 expected_diff(3.0F, 3.0F, 3.0F);
-    EXPECT_TRUE(diff == expected_diff);
+    EXPECT_EQ(diff, expected_diff);
 
     v1 += Vector3(1.0F, 1.0F, 1.0F);
     const Vector3 expected_v1(2.0F, 3.0F, 4.0F);
-    EXPECT_TRUE(v1 == expected_v1);
+    EXPECT_EQ(v1, expected_v1);
 }
 
 TEST(Vector3Tests, Products)
@@ -64,7 +66,7 @@ TEST(Vector3Tests, Products)
 
     Vector3 forward = right.cross(up);
     Vector3 expected_cross = Vector3(0.0F, 0.0F, 1.0F);
-    EXPECT_TRUE(forward == expected_cross);
+    EXPECT_EQ(forward, expected_cross);
 
     Vector3 backward = up.cross(right);
     EXPECT_FLOAT_EQ(backward.z, -1.0F);
@@ -85,13 +87,13 @@ TEST(Vector4Tests, Arithmetic)
     Vector4 v2(1, 2, 3, 4);
 
     Vector4 sum = v1 + v2;
-    EXPECT_TRUE(sum == Vector4(11, 22, 33, 44));
+    EXPECT_EQ(sum, Vector4(11, 22, 33, 44));
 
     Vector4 diff = v1 - v2;
-    EXPECT_TRUE(diff == Vector4(9, 18, 27, 36));
+    EXPECT_EQ(diff, Vector4(9, 18, 27, 36));
 
     v1 += v2;
-    EXPECT_TRUE(v1 == Vector4(11, 22, 33, 44));
+    EXPECT_EQ(v1, Vector4(11, 22, 33, 44));
 }
 
 TEST(Vector4Tests, DotAndLength)
@@ -103,7 +105,7 @@ TEST(Vector4Tests, DotAndLength)
     Vector4 v3(2, 2, 2, 2);
     EXPECT_FLOAT_EQ(v3.dot(v3), 16.0F);
     EXPECT_FLOAT_EQ(v3.length(), 4.0F);
-    EXPECT_TRUE(v3.normalized() == Vector4(0.5F, 0.5F, 0.5F, 0.5F));
+    EXPECT_EQ(v3.normalized(), Vector4(0.5F, 0.5F, 0.5F, 0.5F));
 }
 
 TEST(Matrix4x4Tests, ConstructorArray)
@@ -120,7 +122,7 @@ TEST(Matrix4x4Tests, Identity)
 {
     Matrix4x4 id = Matrix4x4::identity();
     Matrix4x4 expected_identity = Matrix4x4({1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
-    EXPECT_TRUE(id == expected_identity);
+    EXPECT_EQ(id, expected_identity);
 }
 
 TEST(Matrix4x4Tests, Transposed)
@@ -135,7 +137,7 @@ TEST(Matrix4x4Tests, Transposed)
     expected(3, 0) = 5.0F;
     expected(0, 3) = 2.0F;
 
-    EXPECT_TRUE(t == expected);
+    EXPECT_EQ(t, expected);
 }
 
 TEST(Matrix4x4Tests, Determinant)
@@ -158,7 +160,7 @@ TEST(Matrix4x4Tests, Determinant)
 TEST(Matrix4x4Tests, Inverse)
 {
     Matrix4x4 id = Matrix4x4::identity();
-    EXPECT_TRUE(id.inverse() == id);
+    EXPECT_EQ(id.inverse(), id);
 
     Matrix4x4 scale = Matrix4x4::identity();
     scale(0, 0) = 2.0F;
@@ -174,7 +176,7 @@ TEST(Matrix4x4Tests, Inverse)
     expected(2, 2) = 0.5F;
     expected(3, 3) = 1.0F;
 
-    EXPECT_TRUE(inv_scale == expected);
+    EXPECT_EQ(inv_scale, expected);
 
     Matrix4x4 translation = Matrix4x4::identity();
     translation(0, 3) = 10.0F;
@@ -182,7 +184,7 @@ TEST(Matrix4x4Tests, Inverse)
     translation(2, 3) = 30.0F;
 
     Matrix4x4 res = translation * translation.inverse();
-    EXPECT_TRUE(res == Matrix4x4::identity());
+    EXPECT_EQ(res, Matrix4x4::identity());
 }
 
 TEST(Matrix4x4Tests, ChainMultiplication)
@@ -199,14 +201,22 @@ TEST(Matrix4x4Tests, ChainMultiplication)
 
     // T * S
     Matrix4x4 model = t * s;
-
     Vector4 p(1, 1, 1, 1);
 
     Vector4 result = model * p;
     Vector4 expected_vec(3.0F, 4.0F, 5.0F, 1.0F);
 
-    EXPECT_TRUE(result == expected_vec);
+    EXPECT_EQ(result, expected_vec);
 
     const Matrix4x4 m3 = t * (s * Matrix4x4::identity());
-    EXPECT_TRUE(m3 == model);
+    EXPECT_EQ(m3, model);
+    t *= s;
+    EXPECT_EQ(model, t);
+
+    Matrix4x4 t2 = Matrix4x4::identity(); // Translate (1, 2, 3)
+    t(0, 3) = 1.0F;
+    t(1, 3) = 2.0F;
+    t(2, 3) = 3.0F;
+    s *= t2;
+    EXPECT_FALSE(t == s);
 }

@@ -5,7 +5,6 @@ namespace di_renderer::math
     class Vector3
     {
       public:
-        static constexpr float EPS = 1e-8;
         float x;
         float y;
         float z;
@@ -26,5 +25,8 @@ namespace di_renderer::math
         Vector3& operator-=(const Vector3& other);
 
         bool operator==(const Vector3& other) const;
+
+      private:
+        static constexpr float EPS = 1e-8;
     };
 } // namespace di_renderer::math
