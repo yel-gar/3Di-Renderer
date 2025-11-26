@@ -11,23 +11,21 @@ namespace di_renderer::core {
 
 class Mesh {
 public:
-  using FaceTriangle = std::array<int, 3>;
-  using Face = std::vector<FaceTriangle>;
-  using Faces = std::vector<Face>;
+  using Triangle = std::array<int, 3>;
 
   std::vector<math::Vector3> vertices;
   std::vector<math::UVCoord> texture_vertices;
   std::vector<math::Vector3> normals;
-  Faces faces;
-
-  Mesh() = default;
+  std::vector<Triangle> triangles;
 
   Mesh(std::vector<math::Vector3> vertices,
        std::vector<math::UVCoord> texture_vertices,
        std::vector<math::Vector3> normals,
-       std::vector<std::vector<std::array<int, 3>>> faces) noexcept;
+       std::vector<std::vector<std::array<int, 3>>> faces);
 
-  ~Mesh();
+  Mesh() = default;
+
+  ~Mesh() = default;
 
   Mesh(const Mesh &) = default;
   Mesh(Mesh &&) noexcept = default;
@@ -39,7 +37,15 @@ public:
     return texture_vertices.size();
   }
   std::size_t normal_count() const noexcept { return normals.size(); }
-  std::size_t face_count() const noexcept { return faces.size(); }
+  std::size_t triangle_count() const noexcept { return triangles.size(); }
+
+private:
+  std::vector<Triangle>
+  triangulate_face(const std::vector<std::array<int, 3>> &face) const;
+  std::vector<Triangle>
+  triangulate_face_convex_fan(const std::vector<int> &vertex_indices) const;
+  std::vector<int>
+  extract_vertex_indices(const std::vector<std::array<int, 3>> &face) const;
 };
 
 } // namespace di_renderer::core
