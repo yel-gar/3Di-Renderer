@@ -1,5 +1,8 @@
 #include "UVCoord.hpp"
 
-di_renderer::math::UVCoord::UVCoord() : u(0), v(0) {}
+namespace di_renderer::math
+{
+    UVCoord::UVCoord() : u(0.0F), v(0.0F) {}
 
-di_renderer::math::UVCoord::UVCoord(float u, float v) : u(u), v(v) {}
+    UVCoord::UVCoord(const float u, const float v) : u(u), v(v) {}
+} // namespace di_renderer::math
