@@ -7,8 +7,7 @@
 using di_renderer::io::ObjData;
 using di_renderer::io::ObjReader;
 
-TEST(ObjReaderTests, BasicObjParsing)
-{
+TEST(ObjReaderTests, BasicObjParsing) {
     // Temporary test file content
     const auto* filename = "test_tmp.obj";
     std::ofstream out(filename);

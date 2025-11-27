@@ -4,10 +4,8 @@
 #include <regex>
 #include <unordered_set>
 
-namespace di_renderer::io
-{
-    class ObjReader
-    {
+namespace di_renderer::io {
+    class ObjReader {
       public:
         static ObjData read_file(const std::string& filename);
 

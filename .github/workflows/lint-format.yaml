@@ -44,7 +44,7 @@ jobs:
         run: meson format -r -i
 
       - name: Run clang-format
-        run: find ./src -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format-21 -i --style=file --Werror
+        run: find . -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format-21 --style=file --Werror
 
       - name: Run clang-tidy
         run: run-clang-tidy-21 -p=buildDir/ -warnings-as-errors='*'

@@ -37,7 +37,7 @@ openmp-use-default-none,
 portability-simd-intrinsics,
 readability-identifier-naming'
 
-HeaderFilterRegex: '.*src\/.*'
+HeaderFilterRegex: '.*(src|tests)\/.*'
 
 CheckOptions:
   - key:  readability-function-cognitive-complexity.Threshold

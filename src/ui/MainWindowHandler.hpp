@@ -1,10 +1,8 @@
 #pragma once
 #include <gtkmm.h>
 
-namespace di_renderer::ui
-{
-    class MainWindowHandler final
-    {
+namespace di_renderer::ui {
+    class MainWindowHandler final {
       public:
         MainWindowHandler();
 
