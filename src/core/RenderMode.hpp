@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 namespace di_renderer::core {
     enum class RenderMode : std::uint8_t {

@@ -5,7 +5,6 @@
 using di_renderer::core::AppData;
 using di_renderer::core::Mesh;
 
-
 AppData& AppData::instance() noexcept {
     static AppData instance;
     return instance;
@@ -29,15 +28,14 @@ void AppData::disable_render_mode(RenderMode mode) {
     m_render_mode.reset(static_cast<size_t>(mode));
 }
 
-Mesh & AppData::get_current_mesh() {
+Mesh& AppData::get_current_mesh() {
     if (m_meshes.empty()) {
         throw std::out_of_range("Mesh list empty");
     }
     return m_meshes[m_current_mesh_index];
 }
 
-
-void AppData::add_mesh(Mesh &&mesh) noexcept {
+void AppData::add_mesh(Mesh&& mesh) noexcept {
     m_meshes.push_back(std::move(mesh));
 }
 

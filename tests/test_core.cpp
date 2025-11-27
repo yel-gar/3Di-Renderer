@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
 #include "core/AppData.hpp"
 
-using di_renderer::core::AppData;
-using di_renderer::core::RenderMode;
-using di_renderer::core::Mesh;
+#include <gtest/gtest.h>
 
+using di_renderer::core::AppData;
+using di_renderer::core::Mesh;
+using di_renderer::core::RenderMode;
 
 TEST(CoreTests, InstanceAllocation) {
     const auto& instance = AppData::instance();
