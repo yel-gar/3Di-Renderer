@@ -4,10 +4,8 @@
 #include <array>
 #include <functional>
 
-namespace di_renderer::math
-{
-    class Matrix4x4
-    {
+namespace di_renderer::math {
+    class Matrix4x4 {
       public:
         Matrix4x4();
 

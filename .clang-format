@@ -6,7 +6,7 @@ UseTab: Never
 
 ColumnLimit: 120
 
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
 AllowShortFunctionsOnASingleLine: Empty
 NamespaceIndentation: All
 SortIncludes: true

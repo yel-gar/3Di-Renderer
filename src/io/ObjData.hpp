@@ -5,10 +5,8 @@
 
 #include <vector>
 
-namespace di_renderer::io
-{
-    struct ObjData
-    {
+namespace di_renderer::io {
+    struct ObjData {
         std::vector<math::Vector3> vertices;
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;

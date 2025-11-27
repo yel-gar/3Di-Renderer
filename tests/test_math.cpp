@@ -8,8 +8,7 @@
 
 using namespace di_renderer::math;
 
-TEST(UVCoordTests, Construction)
-{
+TEST(UVCoordTests, Construction) {
     const UVCoord def;
     EXPECT_FLOAT_EQ(def.u, 0.0F);
     EXPECT_FLOAT_EQ(def.v, 0.0F);
@@ -19,8 +18,7 @@ TEST(UVCoordTests, Construction)
     EXPECT_FLOAT_EQ(param.v, 1.0F);
 }
 
-TEST(Vector3Tests, ConstructionAndNormallization)
-{
+TEST(Vector3Tests, ConstructionAndNormallization) {
     const Vector3 vec(3.0F, 0.0F, 0.0F);
     EXPECT_FLOAT_EQ(vec.x, 3.0F);
 
@@ -36,8 +34,7 @@ TEST(Vector3Tests, ConstructionAndNormallization)
     EXPECT_FLOAT_EQ(zero_norm.length(), 0.0F);
 }
 
-TEST(Vector3Tests, Arithmetic)
-{
+TEST(Vector3Tests, Arithmetic) {
     Vector3 v1(1.0F, 2.0F, 3.0F);
     Vector3 v2(4.0F, 5.0F, 6.0F);
 
@@ -54,8 +51,7 @@ TEST(Vector3Tests, Arithmetic)
     EXPECT_EQ(v1, expected_v1);
 }
 
-TEST(Vector3Tests, Products)
-{
+TEST(Vector3Tests, Products) {
     Vector3 right(1.0F, 0.0F, 0.0F);
     Vector3 up(0.0F, 1.0F, 0.0F);
 
@@ -72,8 +68,7 @@ TEST(Vector3Tests, Products)
     EXPECT_FLOAT_EQ(backward.z, -1.0F);
 }
 
-TEST(Vector3Tests, Length)
-{
+TEST(Vector3Tests, Length) {
     Vector3 v(3.0F, 4.0F, 0.0F);
     EXPECT_FLOAT_EQ(v.length(), 5.0F);
 
@@ -81,8 +76,7 @@ TEST(Vector3Tests, Length)
     EXPECT_FLOAT_EQ(zero.length(), 0.0F);
 }
 
-TEST(Vector4Tests, Arithmetic)
-{
+TEST(Vector4Tests, Arithmetic) {
     Vector4 v1(10, 20, 30, 40);
     Vector4 v2(1, 2, 3, 4);
 
@@ -96,8 +90,7 @@ TEST(Vector4Tests, Arithmetic)
     EXPECT_EQ(v1, Vector4(11, 22, 33, 44));
 }
 
-TEST(Vector4Tests, DotAndLength)
-{
+TEST(Vector4Tests, DotAndLength) {
     Vector4 v1(1, 0, 0, 0);
     Vector4 v2(0, 1, 0, 0);
     EXPECT_FLOAT_EQ(v1.dot(v2), 0.0F);
@@ -108,8 +101,7 @@ TEST(Vector4Tests, DotAndLength)
     EXPECT_EQ(v3.normalized(), Vector4(0.5F, 0.5F, 0.5F, 0.5F));
 }
 
-TEST(Matrix4x4Tests, ConstructorArray)
-{
+TEST(Matrix4x4Tests, ConstructorArray) {
     std::array<float, 16> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     Matrix4x4 m(data);
 
@@ -118,15 +110,13 @@ TEST(Matrix4x4Tests, ConstructorArray)
     EXPECT_FLOAT_EQ(m(3, 3), 16.0F);
 }
 
-TEST(Matrix4x4Tests, Identity)
-{
+TEST(Matrix4x4Tests, Identity) {
     Matrix4x4 id = Matrix4x4::identity();
     Matrix4x4 expected_identity = Matrix4x4({1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
     EXPECT_EQ(id, expected_identity);
 }
 
-TEST(Matrix4x4Tests, Transposed)
-{
+TEST(Matrix4x4Tests, Transposed) {
     Matrix4x4 m = Matrix4x4::identity();
     m(0, 3) = 5.0F;
     m(3, 0) = 2.0F;
@@ -140,8 +130,7 @@ TEST(Matrix4x4Tests, Transposed)
     EXPECT_EQ(t, expected);
 }
 
-TEST(Matrix4x4Tests, Determinant)
-{
+TEST(Matrix4x4Tests, Determinant) {
     Matrix4x4 zero;
     EXPECT_FLOAT_EQ(zero.determinant(), 0.0F);
 
@@ -157,8 +146,7 @@ TEST(Matrix4x4Tests, Determinant)
     EXPECT_FLOAT_EQ(scale.determinant(), 8.0F);
 }
 
-TEST(Matrix4x4Tests, Inverse)
-{
+TEST(Matrix4x4Tests, Inverse) {
     Matrix4x4 id = Matrix4x4::identity();
     EXPECT_EQ(id.inverse(), id);
 
@@ -187,8 +175,7 @@ TEST(Matrix4x4Tests, Inverse)
     EXPECT_EQ(res, Matrix4x4::identity());
 }
 
-TEST(Matrix4x4Tests, ChainMultiplication)
-{
+TEST(Matrix4x4Tests, ChainMultiplication) {
     Matrix4x4 t = Matrix4x4::identity(); // Translate (1, 2, 3)
     t(0, 3) = 1.0F;
     t(1, 3) = 2.0F;

@@ -1,9 +1,7 @@
 #pragma once
 
-namespace di_renderer::math
-{
-    class UVCoord
-    {
+namespace di_renderer::math {
+    class UVCoord {
       public:
         float u;
         float v;
