@@ -1,9 +1,7 @@
 #pragma once
 
-namespace di_renderer::math
-{
-    class Vector3
-    {
+namespace di_renderer::math {
+    class Vector3 {
       public:
         float x;
         float y;

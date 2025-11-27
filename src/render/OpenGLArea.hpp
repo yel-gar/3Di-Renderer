@@ -3,10 +3,8 @@
 #include <epoxy/gl.h>
 #include <gtkmm.h>
 
-namespace di_renderer::render
-{
-    class OpenGLArea final : public Gtk::GLArea
-    {
+namespace di_renderer::render {
+    class OpenGLArea final : public Gtk::GLArea {
       public:
         OpenGLArea();
 

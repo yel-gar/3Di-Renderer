@@ -8,11 +8,9 @@
 #include <cstddef>
 #include <vector>
 
-namespace di_renderer::core
-{
+namespace di_renderer::core {
 
-    class Mesh
-    {
+    class Mesh {
       public:
         using FaceTriangle = std::array<int, 3>;
         using Face = std::vector<FaceTriangle>;
@@ -35,20 +33,16 @@ namespace di_renderer::core
         Mesh& operator=(const Mesh&) = default;
         Mesh& operator=(Mesh&&) noexcept = default;
 
-        std::size_t vertex_count() const noexcept
-        {
+        std::size_t vertex_count() const noexcept {
             return vertices.size();
         }
-        std::size_t texcoord_count() const noexcept
-        {
+        std::size_t texcoord_count() const noexcept {
             return texture_vertices.size();
         }
-        std::size_t normal_count() const noexcept
-        {
+        std::size_t normal_count() const noexcept {
             return normals.size();
         }
-        std::size_t face_count() const noexcept
-        {
+        std::size_t face_count() const noexcept {
             return faces.size();
         }
     };

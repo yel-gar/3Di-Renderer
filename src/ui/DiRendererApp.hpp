@@ -1,10 +1,8 @@
 #pragma once
 #include <gtkmm.h>
 
-namespace di_renderer::ui
-{
-    class DiRendererApp final : public Gtk::Application
-    {
+namespace di_renderer::ui {
+    class DiRendererApp final : public Gtk::Application {
       public:
         static Glib::RefPtr<DiRendererApp> create();
 
