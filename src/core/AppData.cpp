@@ -37,6 +37,7 @@ Mesh& AppData::get_current_mesh() {
 
 void AppData::add_mesh(Mesh&& mesh) noexcept {
     m_meshes.push_back(std::move(mesh));
+    m_current_mesh_index = m_meshes.size() - 1;
 }
 
 void AppData::remove_mesh(const size_t index) {

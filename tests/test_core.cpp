@@ -16,20 +16,20 @@ TEST(CoreTests, RenderModeSetting) {
     auto& instance = AppData::instance();
     instance.clean();
 
-    instance.enable_render_mode(RenderMode::POLYGONAL);
-    EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::POLYGONAL));
-    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::TEXTURE));
-    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::VERTICES));
-
     instance.enable_render_mode(RenderMode::TEXTURE);
-    EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::POLYGONAL));
     EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::TEXTURE));
-    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::VERTICES));
+    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::LIGHTING));
+    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::POLYGON));
 
-    instance.disable_render_mode(RenderMode::POLYGONAL);
-    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::POLYGONAL));
+    instance.enable_render_mode(RenderMode::LIGHTING);
     EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::TEXTURE));
-    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::VERTICES));
+    EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::LIGHTING));
+    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::POLYGON));
+
+    instance.disable_render_mode(RenderMode::TEXTURE);
+    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::TEXTURE));
+    EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::LIGHTING));
+    EXPECT_FALSE(instance.is_render_mode_enabled(RenderMode::POLYGON));
 }
 
 TEST(CoreTests, MeshData) {
@@ -42,15 +42,16 @@ TEST(CoreTests, MeshData) {
     instance.add_mesh(std::move(mesh0));
     instance.add_mesh(std::move(mesh1));
 
-    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 0);
+    instance.select_mesh(0);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 0); // first mesh
     instance.select_mesh(1);
-    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 1);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 1); // second mesh
 
     EXPECT_THROW(instance.select_mesh(2), std::out_of_range);
 
     instance.remove_mesh(0);
-    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 1);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 1); // second mesh
 
     instance.remove_mesh(0);
-    EXPECT_THROW(instance.get_current_mesh(), std::out_of_range);
+    EXPECT_THROW(instance.get_current_mesh(), std::out_of_range); // no meshes
 }

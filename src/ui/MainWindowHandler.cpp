@@ -1,5 +1,8 @@
 #include "MainWindowHandler.hpp"
 
+#include "core/AppData.hpp"
+#include "core/Mesh.hpp"
+#include "io/ObjReader.hpp"
 #include "render/OpenGLArea.hpp"
 
 #include <gtkmm.h>
@@ -50,8 +53,25 @@ void MainWindowHandler::init_gl_area() const {
     }
 }
 
-void MainWindowHandler::on_open_button_click() {
-    // TODO
+void MainWindowHandler::on_open_button_click() const {
+    auto dialog =
+        Gtk::FileChooserNative::create("Select model", *m_window, Gtk::FILE_CHOOSER_ACTION_OPEN, "_Open", "_Cancel");
+
+    const auto filter = Gtk::FileFilter::create();
+    filter->set_name("OBJ files");
+    filter->add_pattern("*.obj");
+    dialog->set_filter(filter);
+
+    dialog->signal_response().connect([dialog](const int response_id) {
+        if (response_id == Gtk::RESPONSE_ACCEPT) {
+            const auto filename = dialog->get_filename();
+            const auto [vertices, texture_vertices, normals, faces] = io::ObjReader::read_file(filename);
+            core::Mesh mesh{vertices, texture_vertices, normals, faces};
+            core::AppData::instance().add_mesh(std::move(mesh));
+        }
+    });
+
+    dialog->show();
 }
 
 void MainWindowHandler::on_save_button_click() {

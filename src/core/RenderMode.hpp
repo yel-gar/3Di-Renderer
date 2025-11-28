@@ -3,8 +3,8 @@
 
 namespace di_renderer::core {
     enum class RenderMode : std::uint8_t {
-        VERTICES = 0,
-        POLYGONAL = 1,
-        TEXTURE = 2,
+        POLYGON = 0,
+        TEXTURE = 1,
+        LIGHTING = 2,
     };
 }

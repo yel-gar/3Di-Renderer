@@ -17,7 +17,7 @@ namespace di_renderer::ui {
         void load_ui();
         void connect_buttons();
         void init_gl_area() const;
-        void on_open_button_click();
+        void on_open_button_click() const;
         void on_save_button_click();
     };
 } // namespace di_renderer::ui
