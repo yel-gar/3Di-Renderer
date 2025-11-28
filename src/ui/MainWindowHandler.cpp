@@ -1,12 +1,11 @@
 #include "MainWindowHandler.hpp"
 
-#include <cassert>
-
 #include "core/AppData.hpp"
 #include "core/Mesh.hpp"
 #include "io/ObjReader.hpp"
 #include "render/OpenGLArea.hpp"
 
+#include <cassert>
 #include <gtkmm.h>
 #include <iostream>
 
@@ -14,7 +13,7 @@ using di_renderer::render::OpenGLArea;
 using di_renderer::ui::MainWindowHandler;
 
 MainWindowHandler::MainWindowHandler() {
-    m_builder = Gtk::Builder::create_from_file(Glib::build_filename(Glib::get_user_data_dir(), UI_LAYOUT_FILENAME));
+    m_builder = Gtk::Builder::create_from_resource("/ru/vsu/cs/direnderer/ui/di_renderer.ui");
     m_builder->get_widget("root", m_window);
 
     load_ui();
@@ -46,9 +45,8 @@ void MainWindowHandler::connect_buttons() {
     for (const auto& [button_id, render_mode] : ID_TO_MODE_MAP) {
         m_builder->get_widget(button_id, toggle_button);
         assert(toggle_button != nullptr);
-        toggle_button->signal_toggled().connect([toggle_button, mode = render_mode] {
-            on_render_toggle_button_click(*toggle_button, mode);
-        });
+        toggle_button->signal_toggled().connect(
+            [toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
     }
 }
 

@@ -1,0 +1,5 @@
+<gresources>
+    <gresource prefix="/ru/vsu/cs/direnderer">
+        <file>ui/di_renderer.ui</file>
+    </gresource>
+</gresources>
