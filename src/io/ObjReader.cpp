@@ -25,7 +25,7 @@ namespace di_renderer::io {
         float x, y, z, u, v; // NOLINT
 
         while (std::getline(file, line)) {
-            if (line.empty() || line[0] == '#') {
+            if (line.empty() || line == "\r" || line == "\r\n" || line == "\n" || line[0] == '#') {
                 continue;
             }
 
