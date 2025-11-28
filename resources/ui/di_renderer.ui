@@ -4,8 +4,8 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkApplicationWindow" id="root">
     <property name="can-focus">False</property>
-    <property name="default-width">800</property>
-    <property name="default-height">600</property>
+    <property name="default-width">1600</property>
+    <property name="default-height">900</property>
     <property name="show-menubar">False</property>
     <child>
       <object class="GtkBox">
@@ -52,6 +52,7 @@
               <object class="GtkButtonBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="spacing">7</property>
                 <property name="layout-style">start</property>
                 <child>
                   <object class="GtkToggleButton" id="button_toggle_polygons">
@@ -62,14 +63,15 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="icon-name">emblem-unreadable</property>
+                        <property name="resource">/ru/vsu/cs/direnderer/icons/polygon.ico</property>
                       </object>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
+                    <property name="fill">False</property>
                     <property name="position">0</property>
+                    <property name="non-homogeneous">True</property>
                   </packing>
                 </child>
                 <child>
@@ -81,14 +83,15 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="icon-name">emblem-unreadable</property>
+                        <property name="resource">/ru/vsu/cs/direnderer/icons/texture.ico</property>
                       </object>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
+                    <property name="fill">False</property>
                     <property name="position">1</property>
+                    <property name="non-homogeneous">True</property>
                   </packing>
                 </child>
                 <child>
@@ -100,14 +103,15 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="icon-name">emblem-unreadable</property>
+                        <property name="resource">/ru/vsu/cs/direnderer/icons/light.ico</property>
                       </object>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
+                    <property name="fill">False</property>
                     <property name="position">2</property>
+                    <property name="non-homogeneous">True</property>
                   </packing>
                 </child>
               </object>
