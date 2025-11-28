@@ -1,0 +1,8 @@
+<gresources>
+    <gresource prefix="/ru/vsu/cs/direnderer">
+        <file>ui/di_renderer.ui</file>
+        <file>icons/light.ico</file>
+        <file>icons/polygon.ico</file>
+        <file>icons/texture.ico</file>
+    </gresource>
+</gresources>

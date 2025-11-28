@@ -16,6 +16,6 @@ void DiRendererApp::on_startup() {
 }
 
 void DiRendererApp::on_activate() {
-    const MainWindowHandler handler{};
-    handler.show(*this);
+    m_handler = std::make_unique<MainWindowHandler>();
+    m_handler->show(*this);
 }

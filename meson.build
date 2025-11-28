@@ -12,6 +12,8 @@ project(
     ],
 )
 
+gnome = import('gnome')
+
 # Compiler
 cpp = meson.get_compiler('cpp')
 
@@ -28,6 +30,7 @@ epoxy_dep = dependency('epoxy')  # For GtkGLArea
 incdir = include_directories('src')
 
 # Subdirectories
+subdir('resources')
 subdir('src')
 subdir('tests')
 

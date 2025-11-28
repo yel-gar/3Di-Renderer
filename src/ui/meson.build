@@ -6,9 +6,3 @@ ui_lib = static_library(
     dependencies: [gtk_dep],
     link_with: [render_lib],
 )
-
-install_data(
-    'res/di_renderer.ui',
-    install_tag: 'ui',
-    install_dir: join_paths(get_option('datadir'), 'direnderer/ui'),
-)
