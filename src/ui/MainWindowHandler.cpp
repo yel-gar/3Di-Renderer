@@ -1,5 +1,7 @@
 #include "MainWindowHandler.hpp"
 
+#include <cassert>
+
 #include "core/AppData.hpp"
 #include "core/Mesh.hpp"
 #include "io/ObjReader.hpp"
@@ -38,6 +40,16 @@ void MainWindowHandler::connect_buttons() {
     // button_save
     m_builder->get_widget("button_save", button);
     button->signal_clicked().connect([this] { on_save_button_click(); });
+
+    // render mode toggle buttons
+    Gtk::ToggleButton* toggle_button = nullptr;
+    for (const auto& [button_id, render_mode] : ID_TO_MODE_MAP) {
+        m_builder->get_widget(button_id, toggle_button);
+        assert(toggle_button != nullptr);
+        toggle_button->signal_toggled().connect([toggle_button, mode = render_mode] {
+            on_render_toggle_button_click(*toggle_button, mode);
+        });
+    }
 }
 
 void MainWindowHandler::init_gl_area() const {
@@ -76,4 +88,8 @@ void MainWindowHandler::on_open_button_click() const {
 
 void MainWindowHandler::on_save_button_click() {
     // TODO
+}
+
+void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {
+    core::AppData::instance().set_render_mode(mode, btn.get_active());
 }

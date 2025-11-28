@@ -10,7 +10,7 @@ AppData& AppData::instance() noexcept {
     return instance;
 }
 
-void AppData::clean() {
+void AppData::clean() noexcept {
     m_meshes.clear();
     m_current_mesh_index = 0;
     m_render_mode.reset();
@@ -20,12 +20,16 @@ bool AppData::is_render_mode_enabled(RenderMode mode) const noexcept {
     return m_render_mode.test(static_cast<size_t>(mode));
 }
 
-void AppData::enable_render_mode(RenderMode mode) {
-    m_render_mode.set(static_cast<size_t>(mode));
+void AppData::enable_render_mode(const RenderMode mode) noexcept {
+    set_render_mode(mode, true);
 }
 
-void AppData::disable_render_mode(RenderMode mode) {
-    m_render_mode.reset(static_cast<size_t>(mode));
+void AppData::disable_render_mode(const RenderMode mode) noexcept {
+    set_render_mode(mode, false);
+}
+
+void AppData::set_render_mode(RenderMode mode, const bool value) noexcept {
+    m_render_mode.set(static_cast<size_t>(mode), value);
 }
 
 Mesh& AppData::get_current_mesh() {

@@ -13,11 +13,12 @@ namespace di_renderer::core {
 
         static AppData& instance() noexcept;
 
-        void clean();
+        void clean() noexcept;
 
         bool is_render_mode_enabled(RenderMode mode) const noexcept;
-        void enable_render_mode(RenderMode mode);
-        void disable_render_mode(RenderMode mode);
+        void enable_render_mode(RenderMode mode) noexcept;
+        void disable_render_mode(RenderMode mode) noexcept;
+        void set_render_mode(RenderMode mode, bool value) noexcept;
 
         Mesh& get_current_mesh();
         void add_mesh(Mesh&& mesh) noexcept;
