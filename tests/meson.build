@@ -13,6 +13,18 @@ if get_option('tests')
             ),
         )
 
+        # Transforms tests
+        test(
+            'math_transform_tests',
+            executable(
+                'test_transforms',
+                'test_transforms.cpp',
+                include_directories: incdir,
+                dependencies: [gtest_dep],
+                link_with: [math_lib],
+            ),
+        )
+
         # Rendering tests
         test(
             'rendering_tests',

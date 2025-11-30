@@ -1,7 +1,7 @@
-#include "../src/math/Matrix4x4.hpp"
-#include "../src/math/UVCoord.hpp"
-#include "../src/math/Vector3.hpp"
-#include "../src/math/Vector4.hpp"
+#include "math/Matrix4x4.hpp"
+#include "math/UVCoord.hpp"
+#include "math/Vector3.hpp"
+#include "math/Vector4.hpp"
 
 #include <cmath>
 #include <gtest/gtest.h>
