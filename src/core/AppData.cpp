@@ -51,11 +51,24 @@ void AppData::remove_mesh(const size_t index) {
 
     m_meshes.erase(m_meshes.begin() + static_cast<std::ptrdiff_t>(index));
 
-    if (m_meshes.empty()) {
+    // case: there were 1 or 2 meshes
+    if (m_meshes.size() <= 1) {
         m_current_mesh_index = 0;
-    } else if (m_current_mesh_index >= m_meshes.size()) {
+    }
+    // case: selected mesh was the last and got removed
+    else if (m_current_mesh_index >= m_meshes.size()) {
         m_current_mesh_index = m_meshes.size() - 1;
     }
+    // case: mesh before selected was removed, so we must move current index to the left
+    else if (index < m_current_mesh_index) {
+        m_current_mesh_index--;
+    }
+
+    // case: selected mesh is deleted but is not the last
+    // automatically select next mesh due to vector shift
+
+    // case: deleted mesh is after selected one
+    // selected mesh stays as it is
 }
 
 void AppData::select_mesh(const size_t index) {
