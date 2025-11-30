@@ -1,3 +1,4 @@
+#include "core/Transform.hpp"
 #include "math/MatrixTransforms.hpp"
 #include "math/Vector3.hpp"
 #include "math/Vector4.hpp"
@@ -6,6 +7,7 @@
 #include <gtest/gtest.h>
 
 using namespace di_renderer::math;
+using namespace di_renderer::core;
 
 TEST(TransformTests, Translation) {
     Vector3 offset(10, -5, 3);
@@ -57,4 +59,37 @@ TEST(TransformTests, ModelMatrixTRS) {
     Vector4 result = model * p;
 
     EXPECT_EQ(result, Vector4(0, 7, 0, 1));
+}
+
+TEST(TransformTests, InitialState) {
+    Transform t;
+    EXPECT_EQ(t.get_matrix(), Matrix4x4::identity());
+}
+
+TEST(TransformTests, TranslationChangedCheck) {
+    Transform t;
+    t.set_position(Vector3(10, 0, 0));
+
+    const Matrix4x4& m = t.get_matrix();
+    EXPECT_FLOAT_EQ(m(0, 3), 10.0F);
+
+    t.translate(Vector3(5, 0, 0));
+    EXPECT_FLOAT_EQ(t.get_matrix()(0, 3), 15.0F);
+}
+
+TEST(TransformTests, FullTransformation) {
+    Transform t;
+    t.set_position(Vector3(1, 2, 3));
+    t.set_rotation(Vector3(M_PI / 2.0F, 0, 0));
+    t.set_scale(Vector3(2, 2, 2));
+
+    // Точка (0, 1, 0)
+    // 1. Scale -> (0, 2, 0)
+    // 2. RotateX(90) -> (0, 0, 2) (y переходит в z)
+    // 3. Translate -> (1, 2, 5)
+
+    Vector4 local_point(0, 1, 0, 1);
+    Vector4 world_point = t.get_matrix() * local_point;
+
+    EXPECT_EQ(world_point, Vector4(1, 2, 5, 1));
 }
