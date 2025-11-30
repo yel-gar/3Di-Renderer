@@ -37,7 +37,7 @@ TEST(CoreTests, MeshData) {
     instance.clean();
 
     Mesh mesh0;
-    Mesh mesh1{{{1.0F, 2.0F, 3.0F}}, {}, {}, {}};
+    Mesh mesh1{{{}}, {}, {}, {}};
 
     instance.add_mesh(std::move(mesh0));
     instance.add_mesh(std::move(mesh1));
@@ -54,4 +54,51 @@ TEST(CoreTests, MeshData) {
 
     instance.remove_mesh(0);
     EXPECT_THROW(instance.get_current_mesh(), std::out_of_range); // no meshes
+}
+
+TEST(CoreTests, AdvancedMeshRemove) {
+    auto& instance = AppData::instance();
+    instance.clean();
+
+    // mesh ladder???
+    Mesh mesh0;
+    Mesh mesh1{{{}}, {}, {}, {}};
+    Mesh mesh2{{{}, {}}, {}, {}, {}};
+    Mesh mesh3{{{}, {}, {}}, {}, {}, {}};
+    Mesh mesh4{{{}, {}, {}, {}}, {}, {}, {}};
+
+    for (auto m : {mesh0, mesh1, mesh2, mesh3, mesh4}) {
+        instance.add_mesh(std::move(m));
+    }
+
+    instance.select_mesh(0);
+    // (m0) m1 m2 m3 m4
+
+    // case 1: current mesh is 0, remove it
+    // expected: mesh1 selected
+    // (m1) m2 m3 m4
+    instance.remove_mesh(0);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 1);
+
+    // case 2: current mesh is 2(i=1), remove 3(i=2)
+    // expected: 2 is selected
+    // m1 (m2) m4
+    instance.select_mesh(1);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 2);
+    instance.remove_mesh(2);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 2);
+
+    // case 3: mesh before selected is removed
+    // expected: 2 is selected
+    // (m2) m4
+    instance.remove_mesh(0);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 2);
+
+    // case 4: last mesh is removed (we need to add one more mesh)
+    // expected: 4 is selected
+    // m2 (m4)
+    instance.add_mesh(Mesh{{{}}, {}, {}, {}});
+    // index auto selects to last
+    instance.remove_mesh(2);
+    EXPECT_EQ(instance.get_current_mesh().vertex_count(), 4);
 }
