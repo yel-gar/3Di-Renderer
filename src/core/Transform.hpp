@@ -29,7 +29,7 @@ namespace di_renderer::core {
         math::Vector3 m_scale;
 
         mutable math::Matrix4x4 m_matrix;
-        mutable bool m_is_changed;
+        mutable bool m_is_changed{false};
 
         void recalculate_matrix() const;
     };

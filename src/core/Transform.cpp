@@ -3,8 +3,8 @@
 namespace di_renderer::core {
     // rotation в радианах!
     Transform::Transform()
-        : m_position(0.0f, 0.0f, 0.0f), m_rotation(0.0f, 0.0f, 0.0f), m_scale(1.0f, 1.0f, 1.0f),
-          m_matrix(math::Matrix4x4::identity()), m_is_changed(false) {}
+        : m_position(0.0F, 0.0F, 0.0F), m_rotation(0.0F, 0.0F, 0.0F), m_scale(1.0F, 1.0F, 1.0F),
+          m_matrix(math::Matrix4x4::identity()) {}
 
     void Transform::set_position(const math::Vector3& position) {
         m_position = position;
@@ -61,12 +61,12 @@ namespace di_renderer::core {
         auto t = math::MatrixTransforms::translate(m_position);
         auto s = math::MatrixTransforms::scale(m_scale);
 
-        auto Rx = math::MatrixTransforms::rotate_x(m_rotation.x);
-        auto Ry = math::MatrixTransforms::rotate_y(m_rotation.y);
-        auto Rz = math::MatrixTransforms::rotate_z(m_rotation.z);
+        auto rx = math::MatrixTransforms::rotate_x(m_rotation.x);
+        auto ry = math::MatrixTransforms::rotate_y(m_rotation.y);
+        auto rz = math::MatrixTransforms::rotate_z(m_rotation.z);
 
         // Комбинация вращения
-        auto r = Rz * Ry * Rx;
+        auto r = rz * ry * rx;
 
         m_matrix = t * r * s;
 
