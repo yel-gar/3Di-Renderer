@@ -4,6 +4,7 @@ math_lib = static_library(
     'Vector4.cpp',
     'UVCoord.cpp',
     'Matrix4x4.cpp',
+    'MatrixTransforms.cpp',
     include_directories: incdir,
     dependencies: [glm_dep],
 )
