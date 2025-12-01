@@ -23,7 +23,7 @@ namespace di_renderer::core {
         const math::Matrix4x4& get_matrix() const;
 
       private:
-        math::Vector3 m_position;
+        math::Vector3 m_translation;
         math::Vector3 m_rotation;
         math::Vector3 m_scale;
 

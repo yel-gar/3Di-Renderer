@@ -5,11 +5,11 @@
 namespace di_renderer::core {
     // rotation в радианах!
     Transform::Transform()
-        : m_position(0.0F, 0.0F, 0.0F), m_rotation(0.0F, 0.0F, 0.0F), m_scale(1.0F, 1.0F, 1.0F),
+        : m_translation(0.0F, 0.0F, 0.0F), m_rotation(0.0F, 0.0F, 0.0F), m_scale(1.0F, 1.0F, 1.0F),
           m_matrix(math::Matrix4x4::identity()) {}
 
     void Transform::set_position(const math::Vector3& position) {
-        m_position = position;
+        m_translation = position;
         m_is_changed = true;
     }
 
@@ -24,7 +24,7 @@ namespace di_renderer::core {
     }
 
     void Transform::translate(const math::Vector3& translation) {
-        m_position += translation;
+        m_translation += translation;
         m_is_changed = true;
     }
 
@@ -41,7 +41,7 @@ namespace di_renderer::core {
     }
 
     const math::Vector3& Transform::get_position() const {
-        return m_position;
+        return m_translation;
     }
 
     const math::Vector3& Transform::get_rotation() const {
@@ -60,7 +60,7 @@ namespace di_renderer::core {
     }
 
     void Transform::recalculate_matrix() const {
-        auto t = math::MatrixTransforms::translate(m_position);
+        auto t = math::MatrixTransforms::translate(m_translation);
         auto s = math::MatrixTransforms::scale(m_scale);
 
         auto rx = math::MatrixTransforms::rotate_x(m_rotation.x);
