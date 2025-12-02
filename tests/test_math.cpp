@@ -1,6 +1,6 @@
-#include "../src/math/Transform.hpp"
 #include "math/Matrix4x4.hpp"
 #include "math/MatrixTransforms.hpp"
+#include "math/Transform.hpp"
 #include "math/UVCoord.hpp"
 #include "math/Vector3.hpp"
 #include "math/Vector4.hpp"

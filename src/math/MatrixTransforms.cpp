@@ -7,9 +7,10 @@ namespace di_renderer::math {
         // clang-format off
         Matrix4x4 res({
             1, 0, 0, offset.x,
-            0 ,1, 0, offset.y,
+            0, 1, 0, offset.y,
             0, 0, 1, offset.z,
-            0, 0, 0, 1});
+            0, 0, 0, 1
+        });
         // clang-format on
 
         return res;
@@ -21,7 +22,8 @@ namespace di_renderer::math {
             scale.x, 0, 0, 0,
             0, scale.y, 0, 0,
             0, 0, scale.z, 0,
-            0, 0, 0, 1});
+            0, 0, 0, 1
+        });
         // clang-format on
 
         return res;
@@ -36,7 +38,8 @@ namespace di_renderer::math {
             1, 0, 0, 0,
             0, c, -s, 0,
             0, s, c, 0,
-            0, 0, 0, 1});
+            0, 0, 0, 1
+        });
         // clang-format on
         return res;
     }
@@ -50,7 +53,8 @@ namespace di_renderer::math {
             c, 0, -s, 0,
             0, 1, 0, 0,
             s, 0, c, 0,
-            0, 0, 0, 1});
+            0, 0, 0, 1
+        });
         // clang-format on
 
         return res;
@@ -64,7 +68,8 @@ namespace di_renderer::math {
             c, -s, 0, 0,
             s, c, 0, 0,
             0, 0, 1, 0,
-            0, 0, 0, 1});
+            0, 0, 0, 1
+        });
         // clang-format on
         return res;
     }
