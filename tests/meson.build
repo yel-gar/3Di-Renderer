@@ -37,5 +37,17 @@ if get_option('tests')
                 link_with: [io_lib, math_lib],
             ),
         )
+
+        # Core tests
+        test(
+            'core_tests',
+            executable(
+                'test_core',
+                'test_core.cpp',
+                include_directories: incdir,
+                dependencies: [gtest_dep],
+                link_with: [core_lib, math_lib],
+            ),
+        )
     endif
 endif

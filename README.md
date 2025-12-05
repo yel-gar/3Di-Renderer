@@ -28,7 +28,7 @@ $ pre-commit run --all-files  # only need to do this once to init environment
 ## Meson project setup
 ```bash
 $ CXX=clang++ meson setup buildDir --prefix=$HOME/.local
-$ meson install -C buildDir --tags ui  # currently this only installs ui file
+$ meson install -C buildDir
 ```
 
 ### Meson project compilation and running
