@@ -9,9 +9,10 @@ if get_option('tests')
                 'test_math.cpp',
                 include_directories: incdir,
                 dependencies: [gtest_dep],
-                link_with: [math_lib],
+                link_with: [math_lib, core_lib],
             ),
         )
+
 
         # Rendering tests
         test(
