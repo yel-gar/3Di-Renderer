@@ -73,4 +73,49 @@ namespace di_renderer::math {
         // clang-format on
         return res;
     }
+
+    /**
+     *
+     * @param eye - положение просмотра
+     * @param target - вектор направления просмотра
+     * @param up - вектор определяющий верх
+     * @return - view matrix (V)
+     */
+    Matrix4x4 MatrixTransforms::look_at(const Vector3& eye, const Vector3& target, const Vector3& up) {
+        Vector3 z = (target - eye).normalized();
+        Vector3 x = (up.cross(z)).normalized();
+        Vector3 y = (z.cross(x)).normalized();
+
+        // clang-format off
+        // сразу перемноженная матрица P * T
+        Matrix4x4 res({
+            x.x, x.y, x.z, -eye.dot(x),
+            y.x, y.y, y.z, -eye.dot(y),
+            z.x, z.y, z.z, -eye.dot(z),
+            0, 0, 0, 1});
+        // clang-format on
+        return res;
+    }
+
+    /**
+     *
+     * @param fov_radians - fov в радианах (полный fov)
+     * @param aspect_ratio - соотношение сторон
+     * @param near_plane - ближняя зона видимости
+     * @param far_plane - дальняя зона видимости
+     * @return - projection matrix (P) ну или перспектива
+     */
+    Matrix4x4 MatrixTransforms::perspective(float fov_radians, float aspect_ratio, float near_plane, float far_plane) {
+        float tan_of_half_fov = std::tan(fov_radians * 0.5F);
+        // clang-format off
+        Matrix4x4 res({
+            1 / tan_of_half_fov, 0, 0, 0,
+            0, 1 / (aspect_ratio * tan_of_half_fov), 0, 0,
+            0, 0,(far_plane + near_plane) / (far_plane - near_plane), 2 * far_plane * near_plane / (far_plane - near_plane),
+            0, 0, 1, 0
+        });
+        // clang-format on
+        return res;
+    }
+
 } // namespace di_renderer::math
