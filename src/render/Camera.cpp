@@ -2,6 +2,8 @@
 
 #include "math/MatrixTransforms.hpp"
 
+using namespace di_renderer::math;
+
 namespace di_renderer::render {
     Camera::Camera(Vector3 position, Vector3 target, float fov, float aspectRatio, float nearPlane, float farPlane)
         : m_position(position), m_target(target), m_up(0.0F, 1.0F, 0.0F), m_fov(fov), m_aspect_ratio(aspectRatio),
@@ -25,6 +27,7 @@ namespace di_renderer::render {
     void Camera::set_planes(const float nearPlane, const float farPlane) {
         m_near_plane = nearPlane;
         m_far_plane = farPlane;
+        m_projection_changed = true;
     }
 
     void Camera::set_fov(const float fov) {
@@ -47,29 +50,29 @@ namespace di_renderer::render {
 
     void Camera::move_position(const Vector3 position) {
         m_position += position;
-        m_projection_changed = true;
+        m_view_changed = true;
     }
 
     void Camera::move_target(const Vector3 target) {
         m_target += target;
-        m_projection_changed = true;
+        m_view_changed = true;
     }
 
     void Camera::move(Vector3 direction) {
         m_position += direction;
         m_target += direction;
-        m_projection_changed = true;
+        m_view_changed = true;
     }
 
-    Matrix4x4 Camera::get_view_matrix() const {
+    Matrix4x4& Camera::get_view_matrix() const {
         if (m_view_changed) {
-            m_view_matrix = MatrixTransforms::look_at(m_position, m_target, Vector3(0.0F, 1.0F, 0.0F));
+            m_view_matrix = MatrixTransforms::look_at(m_position, m_target, m_up);
             m_view_changed = false;
         }
         return m_view_matrix;
     }
 
-    Matrix4x4 Camera::get_projection_matrix() const {
+    Matrix4x4& Camera::get_projection_matrix() const {
         if (m_projection_changed) {
             m_projection_matrix = MatrixTransforms::perspective(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
             m_projection_changed = false;

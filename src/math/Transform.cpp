@@ -2,7 +2,7 @@
 
 #include "math/MatrixTransforms.hpp"
 
-namespace di_renderer::core {
+namespace di_renderer::math {
     // rotation в радианах!
     Transform::Transform()
         : m_translation(0.0F, 0.0F, 0.0F), m_rotation(0.0F, 0.0F, 0.0F), m_scale(1.0F, 1.0F, 1.0F),
@@ -74,4 +74,4 @@ namespace di_renderer::core {
 
         m_is_changed = false;
     }
-} // namespace di_renderer::core
+} // namespace di_renderer::math

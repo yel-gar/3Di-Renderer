@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 using namespace di_renderer::math;
-using namespace di_renderer::core;
 
 TEST(UVCoordTests, Construction) {
     const UVCoord def;
