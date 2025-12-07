@@ -7,7 +7,7 @@ using namespace di_renderer::math;
 namespace di_renderer::render {
     Camera::Camera(Vector3 position, Vector3 target, float fov, float aspectRatio, float nearPlane, float farPlane)
         : m_position(position), m_target(target), m_up(0.0F, 1.0F, 0.0F), m_fov(fov), m_aspect_ratio(aspectRatio),
-          m_near_plane(nearPlane), m_far_plane(farPlane), m_view_changed(true), m_projection_changed(true) {}
+          m_near_plane(nearPlane), m_far_plane(farPlane) {}
 
     void Camera::set_position(const Vector3 position) {
         m_position = position;

@@ -35,10 +35,10 @@ namespace di_renderer::render {
         float m_far_plane;
 
         mutable math::Matrix4x4 m_view_matrix;
-        mutable bool m_view_changed;
+        mutable bool m_view_changed{true};
 
         mutable math::Matrix4x4 m_projection_matrix;
-        mutable bool m_projection_changed;
+        mutable bool m_projection_changed{true};
     };
 
 } // namespace di_renderer::render
