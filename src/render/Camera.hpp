@@ -5,14 +5,16 @@
 namespace di_renderer::render {
     class Camera {
       public:
-        Camera(math::Vector3 position, math::Vector3 target, float fov, float aspectRatio, float nearPlane,
-               float farPlane);
+        Camera();
+
+        Camera(math::Vector3 position, math::Vector3 target, float fov, float aspect_ratio, float near_plane,
+               float far_plane);
         void set_position(math::Vector3 position);
         void set_target(math::Vector3 target);
-        void set_aspect_ratio(float aspectRatio);
+        void set_aspect_ratio(float aspect_ratio);
         void set_up_vector(math::Vector3 up);
         void set_fov(float fov);
-        void set_planes(float nearPlane, float farPlane);
+        void set_planes(float near_plane, float far_plane);
 
         math::Vector3 get_position() const;
         math::Vector3 get_target() const;

@@ -5,9 +5,13 @@
 using namespace di_renderer::math;
 
 namespace di_renderer::render {
-    Camera::Camera(Vector3 position, Vector3 target, float fov, float aspectRatio, float nearPlane, float farPlane)
-        : m_position(position), m_target(target), m_up(0.0F, 1.0F, 0.0F), m_fov(fov), m_aspect_ratio(aspectRatio),
-          m_near_plane(nearPlane), m_far_plane(farPlane) {}
+    Camera::Camera()
+        : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(3.141592653589793), m_aspect_ratio(1),
+          m_near_plane(1), m_far_plane(10) {}
+
+    Camera::Camera(Vector3 position, Vector3 target, float fov, float aspect_ratio, float near_plane, float far_plane)
+        : m_position(position), m_target(target), m_up(0.0F, 1.0F, 0.0F), m_fov(fov), m_aspect_ratio(aspect_ratio),
+          m_near_plane(near_plane), m_far_plane(far_plane) {}
 
     void Camera::set_position(const Vector3 position) {
         m_position = position;
@@ -24,9 +28,9 @@ namespace di_renderer::render {
         m_view_changed = true;
     }
 
-    void Camera::set_planes(const float nearPlane, const float farPlane) {
-        m_near_plane = nearPlane;
-        m_far_plane = farPlane;
+    void Camera::set_planes(const float near_plane, const float far_plane) {
+        m_near_plane = near_plane;
+        m_far_plane = far_plane;
         m_projection_changed = true;
     }
 
@@ -35,8 +39,8 @@ namespace di_renderer::render {
         m_projection_changed = true;
     }
 
-    void Camera::set_aspect_ratio(const float aspectRatio) {
-        m_aspect_ratio = aspectRatio;
+    void Camera::set_aspect_ratio(const float aspect_ratio) {
+        m_aspect_ratio = aspect_ratio;
         m_projection_changed = true;
     }
 
