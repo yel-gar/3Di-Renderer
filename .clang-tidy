@@ -67,6 +67,13 @@ CheckOptions:
   - key: readability-identifier-naming.LocalVariableCase
     value: lower_case
 
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.ConstantParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.PointerParameterCase
+    value: lower_case
+
   - key: readability-identifier-naming.GlobalConstantCase
     value: UPPER_CASE
   - key: readability-identifier-naming.StaticConstantCase
