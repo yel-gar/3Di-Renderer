@@ -92,7 +92,8 @@ namespace di_renderer::math {
             x.x, x.y, x.z, -eye.dot(x),
             y.x, y.y, y.z, -eye.dot(y),
             z.x, z.y, z.z, -eye.dot(z),
-            0, 0, 0, 1});
+            0, 0, 0, 1
+        });
         // clang-format on
         return res;
     }
