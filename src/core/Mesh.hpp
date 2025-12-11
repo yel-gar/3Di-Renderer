@@ -22,6 +22,8 @@ namespace di_renderer::core {
         std::vector<math::Vector3> normals;
         Faces faces;
 
+        std::string texture_filename;
+
         Mesh() = default;
 
         Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
@@ -48,6 +50,7 @@ namespace di_renderer::core {
         }
 
         void load_texture(const std::string& filename);
+        const std::string& get_texture_filename() const noexcept;
     };
 
 } // namespace di_renderer::core

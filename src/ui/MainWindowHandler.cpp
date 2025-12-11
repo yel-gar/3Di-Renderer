@@ -50,10 +50,8 @@ void MainWindowHandler::connect_buttons() {
     }
 
     // texture selector
-    Gtk::FileChooserButton* texture_selector = nullptr;
-    m_builder->get_widget("texture_file_selector", texture_selector);
-    texture_selector->signal_file_set().connect(
-        [texture_selector] { on_texture_selection(texture_selector->get_filename()); });
+    m_builder->get_widget("texture_file_selector", m_texture_selector);
+    m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
 }
 
 void MainWindowHandler::init_gl_area() const {
@@ -94,9 +92,9 @@ void MainWindowHandler::on_save_button_click() const {
     // TODO
 }
 
-void MainWindowHandler::on_texture_selection(const std::string& filename) {
+void MainWindowHandler::on_texture_selection() const {
     auto& mesh = core::AppData::instance().get_current_mesh();
-    mesh.load_texture(filename);
+    mesh.load_texture(m_texture_selector->get_filename());
 }
 
 void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {
