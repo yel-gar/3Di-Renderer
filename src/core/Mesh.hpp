@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace di_renderer::core {
@@ -45,6 +46,8 @@ namespace di_renderer::core {
         std::size_t face_count() const noexcept {
             return faces.size();
         }
+
+        void load_texture(const std::string& filename);
     };
 
 } // namespace di_renderer::core
