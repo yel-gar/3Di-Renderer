@@ -17,6 +17,7 @@ MainWindowHandler::MainWindowHandler() {
     m_builder->get_widget("root", m_window);
 
     load_ui();
+    init_error_handling();
 }
 
 void MainWindowHandler::show(Gtk::Application& app) const {
@@ -52,6 +53,33 @@ void MainWindowHandler::connect_buttons() {
     // texture selector
     m_builder->get_widget("texture_file_selector", m_texture_selector);
     m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
+}
+
+void MainWindowHandler::init_error_handling() const {
+    auto handler = [this] {
+        try {
+            throw; // Re-throw the current exception
+        } catch (const std::exception& ex) {
+            std::string error_msg = ex.what();
+            std::cerr << "[ERROR] " << error_msg << '\n';
+
+            Glib::signal_idle().connect_once([this, error_msg] {
+                Gtk::MessageDialog dialog(*m_window, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+                dialog.set_secondary_text(error_msg);
+                dialog.run();
+            });
+        } catch (...) {
+            std::cerr << "[ERROR] Unknown exception" << '\n';
+
+            Glib::signal_idle().connect_once([this] {
+                Gtk::MessageDialog dialog(*m_window, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+                dialog.set_secondary_text("An unknown error occurred");
+                dialog.run();
+            });
+        }
+    };
+
+    Glib::add_exception_handler(handler);
 }
 
 void MainWindowHandler::init_gl_area() const {
