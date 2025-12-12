@@ -34,7 +34,7 @@ if get_option('tests')
                 'test_io.cpp',
                 include_directories: incdir,
                 dependencies: [gtest_dep],
-                link_with: [io_lib, math_lib],
+                link_with: [io_lib, math_lib, core_lib],
             ),
         )
 
