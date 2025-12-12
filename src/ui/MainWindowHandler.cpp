@@ -3,6 +3,7 @@
 #include "core/AppData.hpp"
 #include "core/Mesh.hpp"
 #include "io/ObjReader.hpp"
+#include "io/ObjWriter.hpp"
 #include "render/OpenGLArea.hpp"
 
 #include <cassert>
@@ -117,7 +118,23 @@ void MainWindowHandler::on_open_button_click() const {
 }
 
 void MainWindowHandler::on_save_button_click() const {
-    // TODO
+    auto dialog =
+        Gtk::FileChooserNative::create("Select model", *m_window, Gtk::FILE_CHOOSER_ACTION_SAVE, "_Save", "_Cancel");
+
+    const auto filter = Gtk::FileFilter::create();
+    filter->set_name("OBJ files");
+    filter->add_pattern("*.obj");
+    dialog->set_filter(filter);
+
+    dialog->signal_response().connect([dialog](const int response_id) {
+        if (response_id == Gtk::RESPONSE_ACCEPT) {
+            const auto& filename = dialog->get_filename();
+            const auto& mesh = core::AppData::instance().get_current_mesh();
+            io::ObjWriter::write_file(filename, mesh);
+        }
+    });
+
+    dialog->show();
 }
 
 void MainWindowHandler::on_texture_selection() const {
