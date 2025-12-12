@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace di_renderer::core {
@@ -20,6 +21,8 @@ namespace di_renderer::core {
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;
         Faces faces;
+
+        std::string texture_filename;
 
         Mesh() = default;
 
@@ -45,6 +48,9 @@ namespace di_renderer::core {
         std::size_t face_count() const noexcept {
             return faces.size();
         }
+
+        void load_texture(const std::string& filename);
+        const std::string& get_texture_filename() const noexcept;
     };
 
 } // namespace di_renderer::core

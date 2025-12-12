@@ -1,5 +1,7 @@
 #include "core/Mesh.hpp"
 
+#include <iostream>
+#include <stdexcept>
 #include <utility>
 
 namespace di_renderer::core {
@@ -11,4 +13,13 @@ namespace di_renderer::core {
 
     Mesh::~Mesh() = default;
 
+    void Mesh::load_texture(const std::string& filename) {
+        std::cout << "Loading " << filename << '\n';
+        texture_filename = filename;
+        throw std::runtime_error("Not implemented yet!");
+    }
+
+    const std::string& Mesh::get_texture_filename() const noexcept {
+        return texture_filename;
+    }
 } // namespace di_renderer::core

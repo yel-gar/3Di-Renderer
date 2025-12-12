@@ -48,6 +48,10 @@ void MainWindowHandler::connect_buttons() {
         toggle_button->signal_toggled().connect(
             [toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
     }
+
+    // texture selector
+    m_builder->get_widget("texture_file_selector", m_texture_selector);
+    m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
 }
 
 void MainWindowHandler::init_gl_area() const {
@@ -84,8 +88,13 @@ void MainWindowHandler::on_open_button_click() const {
     dialog->show();
 }
 
-void MainWindowHandler::on_save_button_click() {
+void MainWindowHandler::on_save_button_click() const {
     // TODO
+}
+
+void MainWindowHandler::on_texture_selection() const {
+    auto& mesh = core::AppData::instance().get_current_mesh();
+    mesh.load_texture(m_texture_selector->get_filename());
 }
 
 void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {

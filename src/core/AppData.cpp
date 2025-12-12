@@ -34,7 +34,7 @@ void AppData::set_render_mode(RenderMode mode, const bool value) noexcept {
 
 Mesh& AppData::get_current_mesh() {
     if (m_meshes.empty()) {
-        throw std::out_of_range("Mesh list empty");
+        throw std::out_of_range("There's no active mesh");
     }
     return m_meshes[m_current_mesh_index];
 }
