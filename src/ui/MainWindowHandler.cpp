@@ -3,6 +3,7 @@
 #include "core/AppData.hpp"
 #include "core/Mesh.hpp"
 #include "io/ObjReader.hpp"
+#include "io/ObjWriter.hpp"
 #include "render/OpenGLArea.hpp"
 
 #include <cassert>
@@ -17,6 +18,7 @@ MainWindowHandler::MainWindowHandler() {
     m_builder->get_widget("root", m_window);
 
     load_ui();
+    init_error_handling();
 }
 
 void MainWindowHandler::show(Gtk::Application& app) const {
@@ -48,6 +50,37 @@ void MainWindowHandler::connect_buttons() {
         toggle_button->signal_toggled().connect(
             [toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
     }
+
+    // texture selector
+    m_builder->get_widget("texture_file_selector", m_texture_selector);
+    m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
+}
+
+void MainWindowHandler::init_error_handling() const {
+    auto handler = [this] {
+        try {
+            throw; // Re-throw the current exception
+        } catch (const std::exception& ex) {
+            std::string error_msg = ex.what();
+            std::cerr << "[ERROR] " << error_msg << '\n';
+
+            Glib::signal_idle().connect_once([this, error_msg] {
+                Gtk::MessageDialog dialog(*m_window, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+                dialog.set_secondary_text(error_msg);
+                dialog.run();
+            });
+        } catch (...) {
+            std::cerr << "[ERROR] Unknown exception" << '\n';
+
+            Glib::signal_idle().connect_once([this] {
+                Gtk::MessageDialog dialog(*m_window, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+                dialog.set_secondary_text("An unknown error occurred");
+                dialog.run();
+            });
+        }
+    };
+
+    Glib::add_exception_handler(handler);
 }
 
 void MainWindowHandler::init_gl_area() const {
@@ -84,8 +117,29 @@ void MainWindowHandler::on_open_button_click() const {
     dialog->show();
 }
 
-void MainWindowHandler::on_save_button_click() {
-    // TODO
+void MainWindowHandler::on_save_button_click() const {
+    auto dialog =
+        Gtk::FileChooserNative::create("Select model", *m_window, Gtk::FILE_CHOOSER_ACTION_SAVE, "_Save", "_Cancel");
+
+    const auto filter = Gtk::FileFilter::create();
+    filter->set_name("OBJ files");
+    filter->add_pattern("*.obj");
+    dialog->set_filter(filter);
+
+    dialog->signal_response().connect([dialog](const int response_id) {
+        if (response_id == Gtk::RESPONSE_ACCEPT) {
+            const auto& filename = dialog->get_filename();
+            const auto& mesh = core::AppData::instance().get_current_mesh();
+            io::ObjWriter::write_file(filename, mesh);
+        }
+    });
+
+    dialog->show();
+}
+
+void MainWindowHandler::on_texture_selection() const {
+    auto& mesh = core::AppData::instance().get_current_mesh();
+    mesh.load_texture(m_texture_selector->get_filename());
 }
 
 void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {
