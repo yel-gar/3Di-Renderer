@@ -12,11 +12,15 @@ namespace di_renderer::math {
     Matrix4x4::Matrix4x4(const std::array<float, 16>& values) : m_data(values) {}
 
     Matrix4x4::Matrix4x4(const std::function<float(int, int)>& func) {
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 4; col++) {
+        for (int col = 0; col < 4; col++) {
+            for (int row = 0; row < 4; row++) {
                 (*this)(row, col) = func(row, col);
             }
         }
+    }
+
+    const float* Matrix4x4::data() const {
+        return m_data.data();
     }
 
     Matrix4x4 Matrix4x4::identity() {
@@ -29,16 +33,16 @@ namespace di_renderer::math {
 
     float Matrix4x4::operator()(const size_t row, const size_t col) const {
         if (row >= 4 || col >= 4) {
-            throw std::out_of_range("Couldn't get matrix element,parameters must be 0 < {par, par} < 4");
+            throw std::out_of_range("Couldn't get matrix element, parameters must be 0 < {par, par} < 4");
         }
-        return m_data[(row * 4) + col]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+        return m_data[(col * 4) + row]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
     }
 
     float& Matrix4x4::operator()(const size_t row, const size_t col) {
         if (row >= 4 || col >= 4) {
             throw std::out_of_range("Couldn't set matrix element,parameters must be 0 < (par, par) < 4");
         }
-        return m_data[(row * 4) + col]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+        return m_data[(col * 4) + row]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
     }
 
     Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const {
