@@ -21,6 +21,7 @@ namespace di_renderer::core {
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;
         TriangulatedFaces triangulated_faces;
+        Faces faces;
 
         std::string texture_filename;
 
