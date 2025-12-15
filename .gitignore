@@ -1,17 +1,6 @@
 /buildDir
 .idea
-# Build system
-/build*/
-/meson-private/
-/meson-info/
-/meson-logs/
-*.dylib
-*.dll
-*.exe
-*.out
-*.idx
-*.d
-*.dSYM/
-.vscode/
-.idea/
-.DS_Store
+.cache
+.venv
+.python-version
+compile_commands.json

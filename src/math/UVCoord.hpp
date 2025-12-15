@@ -2,11 +2,11 @@
 
 namespace di_renderer::math {
     class UVCoord {
-    public:
+      public:
         float u;
         float v;
 
         UVCoord();
         UVCoord(float u, float v);
     };
-}
+} // namespace di_renderer::math
