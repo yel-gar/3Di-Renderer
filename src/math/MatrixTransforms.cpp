@@ -6,10 +6,10 @@ namespace di_renderer::math {
     Matrix4x4 MatrixTransforms::translate(const Vector3& offset) {
         // clang-format off
         Matrix4x4 res({
-            1, 0, 0, offset.x,
-            0, 1, 0, offset.y,
-            0, 0, 1, offset.z,
-            0, 0, 0, 1
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            offset.x, offset.y, offset.z, 1
         });
         // clang-format on
 
@@ -36,8 +36,8 @@ namespace di_renderer::math {
         // clang-format off
         Matrix4x4 res({
             1, 0, 0, 0,
-            0, c, -s, 0,
-            0, s, c, 0,
+            0, c, s, 0,
+            0, -s, c, 0,
             0, 0, 0, 1
         });
         // clang-format on
@@ -50,9 +50,9 @@ namespace di_renderer::math {
 
         // clang-format off
         Matrix4x4 res({
-            c, 0, -s, 0,
+            c, 0, s, 0,
             0, 1, 0, 0,
-            s, 0, c, 0,
+            -s, 0, c, 0,
             0, 0, 0, 1
         });
         // clang-format on
@@ -65,8 +65,8 @@ namespace di_renderer::math {
         const float s = std::sin(angle);
         // clang-format off
         Matrix4x4 res({
-            c, -s, 0, 0,
-            s, c, 0, 0,
+            c, s, 0, 0,
+            -s, c, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1
         });
@@ -82,17 +82,17 @@ namespace di_renderer::math {
      * @return - view matrix (V)
      */
     Matrix4x4 MatrixTransforms::look_at(const Vector3& eye, const Vector3& target, const Vector3& up) {
-        Vector3 z = (target - eye).normalized();
+        Vector3 z = (eye - target).normalized();
         Vector3 x = (up.cross(z)).normalized();
         Vector3 y = (z.cross(x)).normalized();
 
         // clang-format off
         // сразу перемноженная матрица P * T
         Matrix4x4 res({
-            x.x, x.y, x.z, -eye.dot(x),
-            y.x, y.y, y.z, -eye.dot(y),
-            z.x, z.y, z.z, -eye.dot(z),
-            0, 0, 0, 1
+            x.x, y.x, z.x, 0,
+            x.y, y.y, z.y, 0,
+            x.z, y.z, z.z, 0,
+            -eye.dot(x), -eye.dot(y), -eye.dot(z), 1
         });
         // clang-format on
         return res;
@@ -112,8 +112,8 @@ namespace di_renderer::math {
         Matrix4x4 res({
             1 / tan_of_half_fov, 0, 0, 0,
             0, 1 / (aspect_ratio * tan_of_half_fov), 0, 0,
-            0, 0,(far_plane + near_plane) / (far_plane - near_plane), 2 * far_plane * near_plane / (far_plane - near_plane),
-            0, 0, 1, 0
+            0, 0, -(far_plane + near_plane) / (far_plane - near_plane), -1,
+            0, 0, -2 * far_plane * near_plane / (far_plane - near_plane), 0
         });
         // clang-format on
         return res;

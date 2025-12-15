@@ -108,7 +108,8 @@ TEST(Matrix4x4Tests, ConstructorArray) {
     Matrix4x4 m(data);
 
     EXPECT_FLOAT_EQ(m(0, 0), 1.0F);
-    EXPECT_FLOAT_EQ(m(0, 3), 4.0F);
+    EXPECT_FLOAT_EQ(m(3, 0), 4.0F);
+    EXPECT_FLOAT_EQ(m(0, 3), 13.0F);
     EXPECT_FLOAT_EQ(m(3, 3), 16.0F);
 }
 

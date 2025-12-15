@@ -13,6 +13,8 @@ namespace di_renderer::math {
 
         explicit Matrix4x4(const std::function<float(int, int)>& func);
 
+        const float* data() const;
+
         static Matrix4x4 identity();
         Matrix4x4 transposed() const;
 
