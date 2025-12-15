@@ -201,3 +201,28 @@ TEST(MeshTriangulationTest, MultipleFacesAllTriangulated) {
 
     EXPECT_EQ(mesh.face_count(), 3); // 1 triangle + 2 from quad = 3
 }
+
+TEST(MeshNormalComputationTest, ProvidedNormalsArePreserved) {
+    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F),
+                                                        di_renderer::math::Vector3(1.0F, 0.0F, 0.0F),
+                                                        di_renderer::math::Vector3(0.0F, 1.0F, 0.0F)};
+
+    std::vector<di_renderer::math::Vector3> provided_normals = {di_renderer::math::Vector3(0.0F, 0.0F, 1.0F),
+                                                                di_renderer::math::Vector3(0.0F, 0.0F, 1.0F),
+                                                                di_renderer::math::Vector3(0.0F, 0.0F, 1.0F)};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
+
+    Mesh mesh(std::move(vertices), {}, std::move(provided_normals), faces);
+
+    ASSERT_EQ(mesh.normals.size(), 3U);
+    EXPECT_NEAR(mesh.normals[0].x, 0.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[0].y, 0.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[0].z, 1.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[1].x, 0.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[1].y, 0.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[1].z, 1.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[2].x, 0.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[2].y, 0.0F, 1e-5F);
+    EXPECT_NEAR(mesh.normals[2].z, 1.0F, 1e-5F);
+}
