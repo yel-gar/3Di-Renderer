@@ -53,6 +53,8 @@ namespace di_renderer::core {
         void load_texture(const std::string& filename);
         const std::string& get_texture_filename() const noexcept;
 
+        void compute_vertex_normals();
+
       private:
         void triangulate_faces(const std::vector<std::vector<FaceVerticeData>>& input_faces) noexcept;
     };
