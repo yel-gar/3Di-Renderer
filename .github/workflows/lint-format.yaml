@@ -1,0 +1,50 @@
+name: Lint and Format
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install python dependencies
+        run: pip install meson
+
+      - name: Install LLVM
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21 all
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential ninja-build \
+              cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev \
+              libglm-dev libgl-dev libepoxy-dev libgtest-dev
+
+      - name: Configure Meson
+        run: CXX=clang++-21 meson setup buildDir
+
+      - name: Compile
+        run: meson compile -C buildDir -j 10
+
+      - name: Check meson formatting
+        run: meson format -r -i
+
+      - name: Run clang-format
+        run: find . -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format-21 --style=file --Werror
+
+      - name: Run clang-tidy
+        run: run-clang-tidy-21 -p=buildDir/ -warnings-as-errors='*'

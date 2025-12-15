@@ -1,0 +1,81 @@
+# Generated from CLion Inspection settings
+---
+Checks: '-*,
+bugprone-*,
+cppcoreguidelines-*,
+hicpp-*,
+performance-*,
+modernize-*,
+readability-*,
+-readability-identifier-length,
+-modernize-use-trailing-return-type,
+-bugprone-easily-swappable-parameters,
+-modernize-use-nodiscard,
+-cppcoreguidelines-avoid-magic-numbers,
+-readability-magic-numbers,
+cert-dcl21-cpp,
+cert-dcl58-cpp,
+cert-err34-c,
+cert-err52-cpp,
+cert-err60-cpp,
+cert-flp30-c,
+cert-msc50-cpp,
+cert-msc51-cpp,
+cert-str34-c,
+google-default-arguments,
+google-explicit-constructor,
+google-runtime-operator,
+misc-misplaced-const,
+misc-new-delete-overloads,
+misc-non-copyable-objects,
+misc-throw-by-value-catch-by-reference,
+misc-unconventional-assign-operator,
+misc-uniqueptr-reset-release,
+mpi-buffer-deref,
+mpi-type-mismatch,
+openmp-use-default-none,
+portability-simd-intrinsics,
+readability-identifier-naming'
+
+HeaderFilterRegex: '.*(src|tests)\/.*'
+
+CheckOptions:
+  - key:  readability-function-cognitive-complexity.Threshold
+    value: 35
+
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+
+  - key: readability-identifier-naming.MethodCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMethodCase
+    value: lower_case
+
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: 'm_'
+  - key: readability-identifier-naming.ProtectedMemberPrefix
+    value: 'm_'
+
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case
+
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.StaticConstantCase
+    value: UPPER_CASE
+
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
