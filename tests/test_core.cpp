@@ -226,3 +226,21 @@ TEST(MeshNormalComputationTest, ProvidedNormalsArePreserved) {
     EXPECT_NEAR(mesh.normals[2].y, 0.0F, 1e-5F);
     EXPECT_NEAR(mesh.normals[2].z, 1.0F, 1e-5F);
 }
+
+TEST(MeshNormalComputationTest, SingleTriangleNormalComputation) {
+    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F),
+                                                        di_renderer::math::Vector3(1.0F, 0.0F, 0.0F),
+                                                        di_renderer::math::Vector3(0.0F, 1.0F, 0.0F)};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
+
+    Mesh mesh(std::move(vertices), {}, {}, faces);
+
+    ASSERT_EQ(mesh.normals.size(), 3U);
+    for (size_t i = 0; i < 3; ++i) {
+        EXPECT_NEAR(mesh.normals[i].x, 0.0F, 1e-5F);
+        EXPECT_NEAR(mesh.normals[i].y, 0.0F, 1e-5F);
+        EXPECT_NEAR(mesh.normals[i].z, 1.0F, 1e-5F);
+        EXPECT_NEAR(mesh.normals[i].length(), 1.0F, 1e-5F);
+    }
+}
