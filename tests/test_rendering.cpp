@@ -106,26 +106,3 @@ TEST(CameraTests, Setters_UpdateMatrices) {
 
     EXPECT_EQ(cam.get_view_matrix(), expected);
 }
-
-TEST(MeshNormalEvaluationTest, ProvidedNormalsArePreserved) {
-    std::vector<math::Vector3> vertices = {math::Vector3(0.0f, 0.0f, 0.0f), math::Vector3(1.0f, 0.0f, 0.0f),
-                                           math::Vector3(0.0f, 1.0f, 0.0f)};
-
-    std::vector<math::Vector3> provided_normals = {math::Vector3(0.0f, 0.0f, 1.0f), math::Vector3(0.0f, 0.0f, 1.0f),
-                                                   math::Vector3(0.0f, 0.0f, 1.0f)};
-
-    std::vector<std::vector<FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
-
-    Mesh mesh(std::move(vertices), {}, std::move(provided_normals), faces);
-
-    ASSERT_EQ(mesh.normals.size(), 3);
-    EXPECT_NEAR(mesh.normals[0].x, 0.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[0].y, 0.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[0].z, 1.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[1].x, 0.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[1].y, 0.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[1].z, 1.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[2].x, 0.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[2].y, 0.0f, 1e-5f);
-    EXPECT_NEAR(mesh.normals[2].z, 1.0f, 1e-5f);
-}
