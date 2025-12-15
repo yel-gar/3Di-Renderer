@@ -1,60 +1,40 @@
 #include "Mesh.hpp"
 
-#include <stdexcept>
-
 namespace di_renderer::core {
 
     Mesh::Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
-               std::vector<math::Vector3> normals, std::vector<std::vector<std::array<int, 3>>> faces)
+               std::vector<math::Vector3> normals, const std::vector<std::vector<FaceVerticeData>>& faces) noexcept
         : vertices(std::move(vertices)), texture_vertices(std::move(texture_vertices)), normals(std::move(normals)) {
-        for (const auto& face : faces) {
-            auto face_triangles = triangulate_face(face);
-            triangles.insert(triangles.end(), face_triangles.begin(), face_triangles.end());
-        }
 
-        if (triangles.empty() && !vertices.empty()) {
-            throw std::invalid_argument("Mesh construction resulted in no triangles from non-empty vertices");
+        triangulate_faces(faces);
+    }
+
+    Mesh::~Mesh() = default;
+
+    void Mesh::triangulate_faces(const std::vector<std::vector<FaceVerticeData>>& input_faces) noexcept {
+        triangulated_faces.reserve(input_faces.size() * 2);
+
+        for (const auto& face : input_faces) {
+            if (face.size() < 3) {
+                continue;
+            }
+
+            if (face.size() == 3) {
+                triangulated_faces.push_back({{face[0].vi, face[1].vi, face[2].vi}});
+            } else if (face.size() > 3) {
+                for (size_t i = 1; i < face.size() - 1; ++i) {
+                    triangulated_faces.push_back({{face[0].vi, face[i].vi, face[i + 1].vi}});
+                }
+            }
         }
     }
 
-    std::vector<Mesh::Triangle> Mesh::triangulate_face(const std::vector<std::array<int, 3>>& face) const {
-        if (face.size() < 3) {
-            return {};
-        }
-
-        if (face.size() == 3) {
-            return {{{face[0][0], face[1][0], face[2][0]}}};
-        }
-
-        std::vector<int> vertex_indices = extract_vertex_indices(face);
-
-        return triangulate_face_convex_fan(vertex_indices);
+    void Mesh::load_texture(const std::string& filename) {
+        texture_filename = filename;
     }
 
-    std::vector<int> Mesh::extract_vertex_indices(const std::vector<std::array<int, 3>>& face) const {
-        std::vector<int> indices;
-        indices.reserve(face.size());
-
-        for (const auto& vertex_data : face) {
-            indices.push_back(vertex_data[0]);
-        }
-
-        return indices;
-    }
-
-    std::vector<Mesh::Triangle> Mesh::triangulate_face_convex_fan(const std::vector<int>& vertex_indices) const {
-        std::vector<Triangle> triangles;
-
-        if (vertex_indices.size() < 3) {
-            return triangles;
-        }
-
-        int first_index = vertex_indices[0];
-        for (size_t i = 1; i < vertex_indices.size() - 1; ++i) {
-            triangles.push_back({first_index, vertex_indices[i], vertex_indices[i + 1]});
-        }
-
-        return triangles;
+    const std::string& Mesh::get_texture_filename() const noexcept {
+        return texture_filename;
     }
 
 } // namespace di_renderer::core

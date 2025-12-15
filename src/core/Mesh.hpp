@@ -1,29 +1,35 @@
 #pragma once
 
+#include "FaceVerticeData.hpp"
 #include "math/UVCoord.hpp"
 #include "math/Vector3.hpp"
 
 #include <array>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace di_renderer::core {
 
     class Mesh {
       public:
-        using Triangle = std::array<int, 3>;
+        using FaceTriangle = std::array<int, 3>;
+        using Faces = std::vector<std::vector<FaceVerticeData>>;
+        using TriangulatedFaces = std::vector<FaceTriangle>;
 
         std::vector<math::Vector3> vertices;
         std::vector<math::UVCoord> texture_vertices;
         std::vector<math::Vector3> normals;
-        std::vector<Triangle> triangles;
+        TriangulatedFaces triangulated_faces;
 
-        Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
-             std::vector<math::Vector3> normals, std::vector<std::vector<std::array<int, 3>>> faces);
+        std::string texture_filename;
 
         Mesh() = default;
 
-        ~Mesh() = default;
+        Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
+             std::vector<math::Vector3> normals, const std::vector<std::vector<FaceVerticeData>>& faces) noexcept;
+
+        ~Mesh();
 
         Mesh(const Mesh&) = default;
         Mesh(Mesh&&) noexcept = default;
@@ -39,14 +45,15 @@ namespace di_renderer::core {
         std::size_t normal_count() const noexcept {
             return normals.size();
         }
-        std::size_t triangle_count() const noexcept {
-            return triangles.size();
+        std::size_t face_count() const noexcept {
+            return triangulated_faces.size();
         }
 
+        void load_texture(const std::string& filename);
+        const std::string& get_texture_filename() const noexcept;
+
       private:
-        std::vector<Triangle> triangulate_face(const std::vector<std::array<int, 3>>& face) const;
-        std::vector<Triangle> triangulate_face_convex_fan(const std::vector<int>& vertex_indices) const;
-        std::vector<int> extract_vertex_indices(const std::vector<std::array<int, 3>>& face) const;
+        void triangulate_faces(const std::vector<std::vector<FaceVerticeData>>& input_faces) noexcept;
     };
 
 } // namespace di_renderer::core
