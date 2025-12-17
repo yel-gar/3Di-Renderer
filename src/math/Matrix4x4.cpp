@@ -25,11 +25,11 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::identity() {
-        return Matrix4x4([](int r, int c) { return r == c ? 1.0F : 0.0F; });
+        return Matrix4x4([](int row, int col) { return row == col ? 1.0F : 0.0F; });
     }
 
     Matrix4x4 Matrix4x4::transposed() const {
-        return Matrix4x4([this](int r, int c) { return (*this)(c, r); });
+        return Matrix4x4([this](int row, int col) { return (*this)(col, row); }); // NOLINT
     }
 
     float Matrix4x4::operator()(const size_t row, const size_t col) const {
@@ -47,18 +47,18 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const {
-        return Matrix4x4([this, &other](int r, int c) { return (*this)(r, c) + other(r, c); });
+        return Matrix4x4([this, &other](int row, int col) { return (*this)(row, col) + other(row, col); });
     }
 
     Matrix4x4 Matrix4x4::operator-(const Matrix4x4& other) const {
-        return Matrix4x4([this, &other](int r, int c) { return (*this)(r, c) - other(r, c); });
+        return Matrix4x4([this, &other](int row, int col) { return (*this)(row, col) - other(row, col); });
     }
 
     Matrix4x4 Matrix4x4::operator*(const Matrix4x4& other) const {
-        return Matrix4x4([this, &other](int r, int c) {
+        return Matrix4x4([this, &other](int row, int col) {
             float result = 0;
             for (int k = 0; k < 4; k++) {
-                result += (*this)(r, k) * other(k, c);
+                result += (*this)(row, k) * other(k, col);
             }
             return result;
         });
@@ -87,9 +87,9 @@ namespace di_renderer::math {
     }
 
     bool Matrix4x4::operator==(const Matrix4x4& other) const {
-        for (size_t i = 0; i < 4; ++i) {
-            for (size_t j = 0; j < 4; ++j) {
-                if (std::abs((*this)(i, j) - other(i, j)) > std::numeric_limits<float>::epsilon()) {
+        for (size_t row = 0; row < 4; ++row) {
+            for (size_t col = 0; col < 4; ++col) {
+                if (std::abs((*this)(row, col) - other(row, col)) > std::numeric_limits<float>::epsilon()) {
                     return false;
                 }
             }
@@ -103,26 +103,27 @@ namespace di_renderer::math {
     }
 
     float Matrix4x4::get_cofactor(int skip_row, int skip_col) const {
-        std::array<int, 3> r = {};
-        std::array<int, 3> c = {};
+        std::array<int, 3> rows = {};
+        std::array<int, 3> cols = {};
 
         int k = 0;
         for (int row = 0; row < 4; ++row) {
             if (row != skip_row) {
-                r[k++] = row; // NOLINT
+                rows[k++] = row; // NOLINT
             }
         }
 
         k = 0;
         for (int col = 0; col < 4; ++col) {
             if (col != skip_col) {
-                c[k++] = col; // NOLINT
+                cols[k++] = col; // NOLINT
             }
         }
 
-        const float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
-                                                    (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
-                                                    (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
+        const float det =
+            calculate_determinant_3x3((*this)(rows[0], cols[0]), (*this)(rows[0], cols[1]), (*this)(rows[0], cols[2]),
+                                      (*this)(rows[1], cols[0]), (*this)(rows[1], cols[1]), (*this)(rows[1], cols[2]),
+                                      (*this)(rows[2], cols[0]), (*this)(rows[2], cols[1]), (*this)(rows[2], cols[2]));
 
         return ((skip_row + skip_col) % 2 == 0) ? det : -det;
     }
