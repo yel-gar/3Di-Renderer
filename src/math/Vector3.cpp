@@ -1,6 +1,7 @@
 #include "Vector3.hpp"
 
 #include <cmath>
+#include <limits>
 
 namespace di_renderer::math {
 
@@ -14,7 +15,7 @@ namespace di_renderer::math {
 
     Vector3 Vector3::normalized() const {
         const float length = this->length();
-        if (length <= EPS) {
+        if (length <= std::numeric_limits<float>::epsilon()) {
             return {};
         }
         return {x / length, y / length, z / length};
@@ -51,6 +52,8 @@ namespace di_renderer::math {
     }
 
     bool Vector3::operator==(const Vector3& other) const {
-        return std::abs(x - other.x) < EPS && std::abs(y - other.y) < EPS && std::abs(z - other.z) < EPS;
+        return std::abs(x - other.x) < std::numeric_limits<float>::epsilon() &&
+               std::abs(y - other.y) < std::numeric_limits<float>::epsilon() &&
+               std::abs(z - other.z) < std::numeric_limits<float>::epsilon();
     }
 } // namespace di_renderer::math

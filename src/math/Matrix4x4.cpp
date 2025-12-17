@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace di_renderer::math {
@@ -88,7 +89,7 @@ namespace di_renderer::math {
     bool Matrix4x4::operator==(const Matrix4x4& other) const {
         for (size_t i = 0; i < 4; ++i) {
             for (size_t j = 0; j < 4; ++j) {
-                if (std::abs((*this)(i, j) - other(i, j)) > EPS) {
+                if (std::abs((*this)(i, j) - other(i, j)) > std::numeric_limits<float>::epsilon()) {
                     return false;
                 }
             }
@@ -106,22 +107,22 @@ namespace di_renderer::math {
         std::array<int, 3> c = {};
 
         int k = 0;
-        for (int i = 0; i < 4; ++i) {
-            if (i != skip_row) {
-                r[k++] = i; // NOLINT
+        for (int row = 0; row < 4; ++row) {
+            if (row != skip_row) {
+                r[k++] = row; // NOLINT
             }
         }
 
         k = 0;
-        for (int i = 0; i < 4; ++i) {
-            if (i != skip_col) {
-                c[k++] = i; // NOLINT
+        for (int col = 0; col < 4; ++col) {
+            if (col != skip_col) {
+                c[k++] = col; // NOLINT
             }
         }
 
-        float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
-                                              (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
-                                              (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
+        const float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
+                                                    (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
+                                                    (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
 
         return ((skip_row + skip_col) % 2 == 0) ? det : -det;
     }
@@ -135,13 +136,13 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::inverse() const {
-        float det = determinant();
+        const float det = determinant();
 
-        if (std::abs(det) < EPS) {
+        if (std::abs(det) < std::numeric_limits<float>::epsilon()) {
             return identity();
         }
 
-        float inv_det = 1.0F / det;
+        const float inv_det = 1.0F / det;
         Matrix4x4 result;
         for (int row = 0; row < 4; ++row) {
             for (int col = 0; col < 4; ++col) {

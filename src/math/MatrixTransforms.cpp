@@ -4,6 +4,7 @@
 
 namespace di_renderer::math {
     Matrix4x4 MatrixTransforms::translate(const Vector3& offset) {
+
         // clang-format off
         Matrix4x4 res({
             1, 0, 0, 0,
@@ -17,6 +18,7 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 MatrixTransforms::scale(const Vector3& scale) {
+
         // clang-format off
         Matrix4x4 res({
             scale.x, 0, 0, 0,
@@ -29,7 +31,7 @@ namespace di_renderer::math {
         return res;
     }
 
-    Matrix4x4 MatrixTransforms::rotate_x(float angle) {
+    Matrix4x4 MatrixTransforms::rotate_x(const float angle) {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
 
@@ -44,7 +46,7 @@ namespace di_renderer::math {
         return res;
     }
 
-    Matrix4x4 MatrixTransforms::rotate_y(float angle) {
+    Matrix4x4 MatrixTransforms::rotate_y(const float angle) {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
 
@@ -60,9 +62,10 @@ namespace di_renderer::math {
         return res;
     }
 
-    Matrix4x4 MatrixTransforms::rotate_z(float angle) {
+    Matrix4x4 MatrixTransforms::rotate_z(const float angle) {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
+
         // clang-format off
         Matrix4x4 res({
             c, s, 0, 0,

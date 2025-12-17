@@ -23,8 +23,5 @@ namespace di_renderer::math {
         Vector4& operator-=(const Vector4& other);
 
         bool operator==(const Vector4& other) const;
-
-      private:
-        static constexpr float EPS = 1e-5;
     };
 } // namespace di_renderer::math
