@@ -61,11 +61,11 @@ TEST(CoreTests, AdvancedMeshRemove) {
     instance.clean();
 
     // mesh ladder???
-    Mesh mesh0;
-    Mesh mesh1{{{}}, {}, {}, {}};
-    Mesh mesh2{{{}, {}}, {}, {}, {}};
-    Mesh mesh3{{{}, {}, {}}, {}, {}, {}};
-    Mesh mesh4{{{}, {}, {}, {}}, {}, {}, {}};
+    const Mesh mesh0;
+    const Mesh mesh1{{{}}, {}, {}, {}};
+    const Mesh mesh2{{{}, {}}, {}, {}, {}};
+    const Mesh mesh3{{{}, {}, {}}, {}, {}, {}};
+    const Mesh mesh4{{{}, {}, {}, {}}, {}, {}, {}};
 
     for (auto m : {mesh0, mesh1, mesh2, mesh3, mesh4}) {
         instance.add_mesh(std::move(m));

@@ -61,7 +61,7 @@ void MainWindowHandler::init_error_handling() const {
         try {
             throw; // Re-throw the current exception
         } catch (const std::exception& ex) {
-            std::string error_msg = ex.what();
+            const std::string error_msg = ex.what();
             std::cerr << "[ERROR] " << error_msg << '\n';
 
             Glib::signal_idle().connect_once([this, error_msg] {

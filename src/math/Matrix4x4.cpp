@@ -6,7 +6,7 @@
 
 namespace di_renderer::math {
     Matrix4x4::Matrix4x4() {
-        m_data.fill(0.0F);
+        m_data.fill(0.0f);
     }
 
     Matrix4x4::Matrix4x4(const std::array<float, 16>& values) : m_data(values) {}
@@ -24,7 +24,7 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::identity() {
-        return Matrix4x4([](int r, int c) { return r == c ? 1.0F : 0.0F; });
+        return Matrix4x4([](int r, int c) { return r == c ? 1.0f : 0.0f; });
     }
 
     Matrix4x4 Matrix4x4::transposed() const {
@@ -119,15 +119,15 @@ namespace di_renderer::math {
             }
         }
 
-        float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
-                                              (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
-                                              (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
+        const float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
+                                                    (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
+                                                    (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
 
         return ((skip_row + skip_col) % 2 == 0) ? det : -det;
     }
 
     float Matrix4x4::determinant() const {
-        float det = 0.0F;
+        float det = 0.0f;
         for (int col = 0; col < 4; ++col) {
             det += (*this)(0, col) * Matrix4x4::get_cofactor(0, col);
         }
@@ -135,17 +135,17 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::inverse() const {
-        float det = determinant();
+        const float det = determinant();
 
         if (std::abs(det) < EPS) {
             return identity();
         }
 
-        float inv_det = 1.0F / det;
+        const float inv_det = 1.0f / det;
         Matrix4x4 result;
         for (int row = 0; row < 4; ++row) {
             for (int col = 0; col < 4; ++col) {
-                float cofactor = Matrix4x4::get_cofactor(row, col);
+                const float cofactor = Matrix4x4::get_cofactor(row, col);
                 result(col, row) = cofactor * inv_det; // NOLINT
             }
         }
