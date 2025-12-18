@@ -14,7 +14,7 @@ namespace di_renderer::math {
 
     Vector4 Vector4::normalized() const {
         const float length = this->length();
-        if (length < std::numeric_limits<float>::epsilon()) {
+        if (length < EPSILON) {
             return {};
         }
         return {x / length, y / length, z / length, w / length};
@@ -49,9 +49,7 @@ namespace di_renderer::math {
     }
 
     bool Vector4::operator==(const Vector4& other) const {
-        return std::abs(x - other.x) < std::numeric_limits<float>::epsilon() &&
-               std::abs(y - other.y) < std::numeric_limits<float>::epsilon() &&
-               std::abs(z - other.z) < std::numeric_limits<float>::epsilon() &&
-               std::abs(w - other.w) < std::numeric_limits<float>::epsilon();
+        return std::abs(x - other.x) < EPSILON && std::abs(y - other.y) < EPSILON && std::abs(z - other.z) < EPSILON &&
+               std::abs(w - other.w) < EPSILON;
     }
 } // namespace di_renderer::math

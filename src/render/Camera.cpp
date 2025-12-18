@@ -2,12 +2,14 @@
 
 #include "math/MatrixTransforms.hpp"
 
+#include <cmath>
+
 using namespace di_renderer::math;
 
 namespace di_renderer::render {
     Camera::Camera()
-        : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(3.141592653589793), m_aspect_ratio(1),
-          m_near_plane(1), m_far_plane(10) {}
+        : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(M_PI), m_aspect_ratio(1), m_near_plane(1),
+          m_far_plane(10) {}
 
     Camera::Camera(const Vector3& position, const Vector3& target, float fov, float aspect_ratio, float near_plane,
                    float far_plane)
