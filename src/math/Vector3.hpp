@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 namespace di_renderer::math {
     class Vector3 {
       public:
@@ -25,6 +26,6 @@ namespace di_renderer::math {
         bool operator==(const Vector3& other) const;
 
       private:
-        static constexpr float EPS = 1e-5;
+        constexpr const static float EPSILON = std::numeric_limits<float>::epsilon();
     };
 } // namespace di_renderer::math
