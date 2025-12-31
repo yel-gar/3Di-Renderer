@@ -184,68 +184,68 @@ TEST(MeshTriangulationTest, MultipleFacesAllTriangulated) {
 }
 
 TEST(MeshNormalComputationTest, ProvidedNormalsArePreserved) {
-    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(1.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(0.0F, 1.0F, 0.0F)};
+    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(1.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(0.0f, 1.0f, 0.0f)};
 
-    std::vector<di_renderer::math::Vector3> provided_normals = {di_renderer::math::Vector3(0.0F, 0.0F, 1.0F),
-                                                                di_renderer::math::Vector3(0.0F, 0.0F, 1.0F),
-                                                                di_renderer::math::Vector3(0.0F, 0.0F, 1.0F)};
+    std::vector<di_renderer::math::Vector3> provided_normals = {di_renderer::math::Vector3(0.0f, 0.0f, 1.0f),
+                                                                di_renderer::math::Vector3(0.0f, 0.0f, 1.0f),
+                                                                di_renderer::math::Vector3(0.0f, 0.0f, 1.0f)};
 
     std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
 
-    Mesh mesh(std::move(vertices), {}, std::move(provided_normals), faces);
+    Mesh mesh(vertices, {}, provided_normals, faces);
 
-    ASSERT_EQ(mesh.normals.size(), 3U);
-    EXPECT_NEAR(mesh.normals[0].x, 0.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[0].y, 0.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[0].z, 1.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[1].x, 0.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[1].y, 0.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[1].z, 1.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[2].x, 0.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[2].y, 0.0F, 1e-5F);
-    EXPECT_NEAR(mesh.normals[2].z, 1.0F, 1e-5F);
+    ASSERT_EQ(mesh.normals.size(), 3u);
+    EXPECT_NEAR(mesh.normals[0].x, 0.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[0].y, 0.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[0].z, 1.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[1].x, 0.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[1].y, 0.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[1].z, 1.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[2].x, 0.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[2].y, 0.0f, 1e-5f);
+    EXPECT_NEAR(mesh.normals[2].z, 1.0f, 1e-5f);
 }
 
 TEST(MeshNormalComputationTest, SingleTriangleNormalComputation) {
-    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(1.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(0.0F, 1.0F, 0.0F)};
+    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(1.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(0.0f, 1.0f, 0.0f)};
 
     std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
 
-    Mesh mesh(std::move(vertices), {}, {}, faces);
+    Mesh mesh(vertices, {}, {}, faces);
 
-    ASSERT_EQ(mesh.normals.size(), 3U);
+    ASSERT_EQ(mesh.normals.size(), 3u);
     for (size_t i = 0; i < 3; ++i) {
-        EXPECT_NEAR(mesh.normals[i].x, 0.0F, 1e-5F);
-        EXPECT_NEAR(mesh.normals[i].y, 0.0F, 1e-5F);
-        EXPECT_NEAR(mesh.normals[i].z, 1.0F, 1e-5F);
-        EXPECT_NEAR(mesh.normals[i].length(), 1.0F, 1e-5F);
+        EXPECT_NEAR(mesh.normals[i].x, 0.0f, 1e-5f);
+        EXPECT_NEAR(mesh.normals[i].y, 0.0f, 1e-5f);
+        EXPECT_NEAR(mesh.normals[i].z, 1.0f, 1e-5f);
+        EXPECT_NEAR(mesh.normals[i].length(), 1.0f, 1e-5f);
     }
 }
 
 TEST(MeshNormalComputationTest, InvalidIndicesHandling) {
-    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(1.0F, 0.0F, 0.0F)};
+    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(1.0f, 0.0f, 0.0f)};
 
     std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {99, -1, -1}}};
 
-    Mesh mesh(std::move(vertices), {}, {}, faces);
-    EXPECT_EQ(mesh.normals.size(), 2U);
+    Mesh mesh(vertices, {}, {}, faces);
+    EXPECT_EQ(mesh.normals.size(), 2u);
 }
 
 TEST(MeshNormalComputationTest, NormalNormalization) {
-    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(2.0F, 0.0F, 0.0F),
-                                                        di_renderer::math::Vector3(0.0F, 2.0F, 0.0F)};
+    std::vector<di_renderer::math::Vector3> vertices = {di_renderer::math::Vector3(0.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(2.0f, 0.0f, 0.0f),
+                                                        di_renderer::math::Vector3(0.0f, 2.0f, 0.0f)};
 
     std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
 
-    Mesh mesh(std::move(vertices), {}, {}, faces);
+    Mesh mesh(vertices, {}, {}, faces);
 
     for (const auto& normal : mesh.normals) {
-        EXPECT_NEAR(normal.length(), 1.0F, 1e-5F);
+        EXPECT_NEAR(normal.length(), 1.0f, 1e-5f);
     }
 }

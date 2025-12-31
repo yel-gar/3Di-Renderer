@@ -60,9 +60,9 @@ namespace di_renderer::core {
                 continue;
             }
 
-            int v0_idx = face[0].vi;
-            int v1_idx = face[1].vi;
-            int v2_idx = face[2].vi;
+            const int v0_idx = face[0].vi;
+            const int v1_idx = face[1].vi;
+            const int v2_idx = face[2].vi;
 
             if (v0_idx < 0 || v1_idx < 0 || v2_idx < 0 || v0_idx >= static_cast<int>(vertices.size()) ||
                 v1_idx >= static_cast<int>(vertices.size()) || v2_idx >= static_cast<int>(vertices.size())) {
@@ -83,7 +83,7 @@ namespace di_renderer::core {
         }
 
         for (auto& normal : normals) {
-            float length = normal.length();
+            const float length = normal.length();
             if (length > std::numeric_limits<float>::epsilon()) {
                 normal = normal.normalized();
             }
