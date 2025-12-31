@@ -371,7 +371,13 @@ namespace di_renderer::io {
             EXPECT_EQ(vertex_count, mesh.vertex_count());
             EXPECT_EQ(texcoord_count, mesh.texcoord_count());
             EXPECT_EQ(normal_count, mesh.normal_count());
-            EXPECT_EQ(face_count, mesh.face_count());
+            int expected_triangulated_faces = 0;
+            for (const auto& face : mesh.faces) {
+                if (face.size() >= 3) {
+                    expected_triangulated_faces += static_cast<int>(face.size()) - 2;
+                }
+            }
+            EXPECT_EQ(face_count, expected_triangulated_faces);
         }
 
         // Test that 0-based indices are converted to 1-based

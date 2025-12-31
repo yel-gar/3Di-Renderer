@@ -2,11 +2,12 @@
 
 #include <array>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace di_renderer::math {
     Matrix4x4::Matrix4x4() {
-        m_data.fill(0.0f);
+        m_data.fill(0.0F);
     }
 
     Matrix4x4::Matrix4x4(const std::array<float, 16>& values) : m_data(values) {}
@@ -24,11 +25,11 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::identity() {
-        return Matrix4x4([](int r, int c) { return r == c ? 1.0f : 0.0f; });
+        return Matrix4x4([](int row, int col) { return row == col ? 1.0F : 0.0F; });
     }
 
     Matrix4x4 Matrix4x4::transposed() const {
-        return Matrix4x4([this](int r, int c) { return (*this)(c, r); });
+        return Matrix4x4([this](int row, int col) { return (*this)(col, row); }); // NOLINT
     }
 
     float Matrix4x4::operator()(const size_t row, const size_t col) const {
@@ -46,18 +47,18 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const {
-        return Matrix4x4([this, &other](int r, int c) { return (*this)(r, c) + other(r, c); });
+        return Matrix4x4([this, &other](int row, int col) { return (*this)(row, col) + other(row, col); });
     }
 
     Matrix4x4 Matrix4x4::operator-(const Matrix4x4& other) const {
-        return Matrix4x4([this, &other](int r, int c) { return (*this)(r, c) - other(r, c); });
+        return Matrix4x4([this, &other](int row, int col) { return (*this)(row, col) - other(row, col); });
     }
 
     Matrix4x4 Matrix4x4::operator*(const Matrix4x4& other) const {
-        return Matrix4x4([this, &other](int r, int c) {
+        return Matrix4x4([this, &other](int row, int col) {
             float result = 0;
             for (int k = 0; k < 4; k++) {
-                result += (*this)(r, k) * other(k, c);
+                result += (*this)(row, k) * other(k, col);
             }
             return result;
         });
@@ -86,9 +87,9 @@ namespace di_renderer::math {
     }
 
     bool Matrix4x4::operator==(const Matrix4x4& other) const {
-        for (size_t i = 0; i < 4; ++i) {
-            for (size_t j = 0; j < 4; ++j) {
-                if (std::abs((*this)(i, j) - other(i, j)) > EPS) {
+        for (size_t row = 0; row < 4; ++row) {
+            for (size_t col = 0; col < 4; ++col) {
+                if (std::abs((*this)(row, col) - other(row, col)) > std::numeric_limits<float>::epsilon()) {
                     return false;
                 }
             }
@@ -102,32 +103,33 @@ namespace di_renderer::math {
     }
 
     float Matrix4x4::get_cofactor(int skip_row, int skip_col) const {
-        std::array<int, 3> r = {};
-        std::array<int, 3> c = {};
+        std::array<int, 3> rows = {};
+        std::array<int, 3> cols = {};
 
         int k = 0;
-        for (int i = 0; i < 4; ++i) {
-            if (i != skip_row) {
-                r[k++] = i; // NOLINT
+        for (int row = 0; row < 4; ++row) {
+            if (row != skip_row) {
+                rows[k++] = row; // NOLINT
             }
         }
 
         k = 0;
-        for (int i = 0; i < 4; ++i) {
-            if (i != skip_col) {
-                c[k++] = i; // NOLINT
+        for (int col = 0; col < 4; ++col) {
+            if (col != skip_col) {
+                cols[k++] = col; // NOLINT
             }
         }
 
-        const float det = calculate_determinant_3x3((*this)(r[0], c[0]), (*this)(r[0], c[1]), (*this)(r[0], c[2]),
-                                                    (*this)(r[1], c[0]), (*this)(r[1], c[1]), (*this)(r[1], c[2]),
-                                                    (*this)(r[2], c[0]), (*this)(r[2], c[1]), (*this)(r[2], c[2]));
+        const float det =
+            calculate_determinant_3x3((*this)(rows[0], cols[0]), (*this)(rows[0], cols[1]), (*this)(rows[0], cols[2]),
+                                      (*this)(rows[1], cols[0]), (*this)(rows[1], cols[1]), (*this)(rows[1], cols[2]),
+                                      (*this)(rows[2], cols[0]), (*this)(rows[2], cols[1]), (*this)(rows[2], cols[2]));
 
         return ((skip_row + skip_col) % 2 == 0) ? det : -det;
     }
 
     float Matrix4x4::determinant() const {
-        float det = 0.0f;
+        float det = 0.0F;
         for (int col = 0; col < 4; ++col) {
             det += (*this)(0, col) * Matrix4x4::get_cofactor(0, col);
         }
@@ -137,15 +139,15 @@ namespace di_renderer::math {
     Matrix4x4 Matrix4x4::inverse() const {
         const float det = determinant();
 
-        if (std::abs(det) < EPS) {
+        if (std::abs(det) < std::numeric_limits<float>::epsilon()) {
             return identity();
         }
 
-        const float inv_det = 1.0f / det;
+        const float inv_det = 1.0F / det;
         Matrix4x4 result;
         for (int row = 0; row < 4; ++row) {
             for (int col = 0; col < 4; ++col) {
-                const float cofactor = Matrix4x4::get_cofactor(row, col);
+                float cofactor = Matrix4x4::get_cofactor(row, col);
                 result(col, row) = cofactor * inv_det; // NOLINT
             }
         }

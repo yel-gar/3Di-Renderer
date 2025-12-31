@@ -37,12 +37,10 @@ namespace di_renderer::math {
         bool operator==(const Matrix4x4& other) const;
 
       private:
-        static constexpr float EPS = 1e-5f;
         std::array<float, 16> m_data{};
         inline static float calculate_determinant_3x3(float m00, float m01, float m02, float m10, float m11, float m12,
                                                       float m20, float m21, float m22);
 
-        // Константный метод (имеет доступ к this)
         float get_cofactor(int skip_row, int skip_col) const;
     };
 } // namespace di_renderer::math
