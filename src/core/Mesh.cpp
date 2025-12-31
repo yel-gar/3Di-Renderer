@@ -1,6 +1,7 @@
 #include "Mesh.hpp"
 
 #include <cmath>
+#include <iostream>
 
 namespace di_renderer::core {
 
@@ -13,8 +14,6 @@ namespace di_renderer::core {
             compute_vertex_normals();
         }
     }
-
-    Mesh::~Mesh() = default;
 
     void Mesh::triangulate_faces(const std::vector<std::vector<FaceVerticeData>>& input_faces) noexcept {
         std::size_t expected = 0;
@@ -56,7 +55,9 @@ namespace di_renderer::core {
     }
 
     void Mesh::load_texture(const std::string& filename) {
+        std::cout << "Loading " << filename << '\n';
         texture_filename = filename;
+        throw std::runtime_error("Not implemented yet!");
     }
 
     const std::string& Mesh::get_texture_filename() const noexcept {
