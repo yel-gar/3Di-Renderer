@@ -239,7 +239,11 @@ TEST(TransformTests, RotationZ) {
     Vector4 vec_x(1, 0, 0, 1);
     Vector4 result = r * vec_x;
 
-    EXPECT_EQ(result, Vector4(0, 1, 0, 1));
+    // Ожидаем (0, 1, 0, 1), но из-за cos(pi/2) X будет не 0, а ~ -4.37e-8
+    EXPECT_NEAR(result.x, 0.0F, 1e-6F);
+    EXPECT_NEAR(result.y, 1.0F, 1e-6F);
+    EXPECT_NEAR(result.z, 0.0F, 1e-6F);
+    EXPECT_NEAR(result.w, 1.0F, 1e-6F);
 }
 
 TEST(TransformTests, ModelMatrixTRS) {
@@ -261,7 +265,10 @@ TEST(TransformTests, ModelMatrixTRS) {
     Vector4 p(1, 0, 0, 1);
     Vector4 result = model * p;
 
-    EXPECT_EQ(result, Vector4(0, 7, 0, 1));
+    EXPECT_NEAR(result.x, 0.0F, 1e-6F);
+    EXPECT_NEAR(result.y, 7.0F, 1e-6F);
+    EXPECT_NEAR(result.z, 0.0F, 1e-6F);
+    EXPECT_NEAR(result.w, 1.0F, 1e-6F);
 }
 
 TEST(TransformTests, InitialState) {
@@ -294,5 +301,8 @@ TEST(TransformTests, FullTransformation) {
     Vector4 local_point(0, 1, 0, 1);
     Vector4 world_point = t.get_matrix() * local_point;
 
-    EXPECT_EQ(world_point, Vector4(1, 2, 5, 1));
+    EXPECT_NEAR(world_point.x, 1.0F, 1e-6F);
+    EXPECT_NEAR(world_point.y, 2.0F, 1e-6F);
+    EXPECT_NEAR(world_point.z, 5.0F, 1e-6F);
+    EXPECT_NEAR(world_point.w, 1.0F, 1e-6F);
 }
