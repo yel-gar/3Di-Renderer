@@ -1,10 +1,16 @@
 #include "core/AppData.hpp"
+#include "core/FaceVerticeData.hpp"
+#include "math/UVCoord.hpp"
+#include "math/Vector3.hpp"
 
+#include <core/Mesh.hpp>
 #include <gtest/gtest.h>
 
 using di_renderer::core::AppData;
 using di_renderer::core::Mesh;
 using di_renderer::core::RenderMode;
+
+constexpr float EPS = std::numeric_limits<float>::epsilon();
 
 TEST(CoreTests, InstanceAllocation) {
     const auto& instance = AppData::instance();
@@ -101,4 +107,161 @@ TEST(CoreTests, AdvancedMeshRemove) {
     // index auto selects to last
     instance.remove_mesh(2);
     EXPECT_EQ(instance.get_current_mesh().vertex_count(), 4);
+}
+
+TEST(MeshTriangulationTest, TriangleFaceRemainsUnchanged) {
+    std::vector<di_renderer::math::Vector3> vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+    std::vector<di_renderer::math::UVCoord> tex_coords = {{0, 0}, {1, 0}, {0, 1}};
+    std::vector<di_renderer::math::Vector3> normals = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, 0, 0}, {1, 1, 1}, {2, 2, 2}}};
+
+    Mesh mesh(vertices, tex_coords, normals, faces);
+
+    EXPECT_EQ(mesh.face_count(), 1);
+    auto triangle = mesh.triangulated_faces[0];
+    EXPECT_EQ(triangle[0], 0);
+    EXPECT_EQ(triangle[1], 1);
+    EXPECT_EQ(triangle[2], 2);
+}
+
+TEST(MeshTriangulationTest, QuadFaceTriangulatesToTwoTriangles) {
+    std::vector<di_renderer::math::Vector3> vertices = {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}};
+    std::vector<di_renderer::math::UVCoord> tex_coords = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+    std::vector<di_renderer::math::Vector3> normals = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, 0, 0}, {1, 1, 1}, {2, 2, 2}, {3, 3, 3}}};
+
+    Mesh mesh(vertices, tex_coords, normals, faces);
+
+    EXPECT_EQ(mesh.face_count(), 2);
+
+    auto triangle1 = mesh.triangulated_faces[0];
+    EXPECT_EQ(triangle1[0], 0);
+    EXPECT_EQ(triangle1[1], 1);
+    EXPECT_EQ(triangle1[2], 2);
+
+    auto triangle2 = mesh.triangulated_faces[1];
+    EXPECT_EQ(triangle2[0], 0);
+    EXPECT_EQ(triangle2[1], 2);
+    EXPECT_EQ(triangle2[2], 3);
+}
+
+TEST(MeshTriangulationTest, PentagonFaceTriangulatesToThreeTriangles) {
+    std::vector<di_renderer::math::Vector3> vertices = {{0, 0, 0}, {1, 0, 0}, {2, 1, 0}, {1, 2, 0}, {0, 1, 0}};
+    std::vector<di_renderer::math::UVCoord> tex_coords = {{0, 0}, {1, 0}, {2, 1}, {1, 2}, {0, 1}};
+    std::vector<di_renderer::math::Vector3> normals = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {
+        {{0, 0, 0}, {1, 1, 1}, {2, 2, 2}, {3, 3, 3}, {4, 4, 4}}};
+
+    Mesh mesh(vertices, tex_coords, normals, faces);
+
+    EXPECT_EQ(mesh.face_count(), 3);
+
+    auto triangle1 = mesh.triangulated_faces[0];
+    EXPECT_EQ(triangle1[0], 0);
+    EXPECT_EQ(triangle1[1], 1);
+    EXPECT_EQ(triangle1[2], 2);
+
+    auto triangle2 = mesh.triangulated_faces[1];
+    EXPECT_EQ(triangle2[0], 0);
+    EXPECT_EQ(triangle2[1], 2);
+    EXPECT_EQ(triangle2[2], 3);
+
+    auto triangle3 = mesh.triangulated_faces[2];
+    EXPECT_EQ(triangle3[0], 0);
+    EXPECT_EQ(triangle3[1], 3);
+    EXPECT_EQ(triangle3[2], 4);
+}
+
+TEST(MeshTriangulationTest, SingleFaceWithLessThanThreeVerticesIgnored) {
+    std::vector<di_renderer::math::Vector3> vertices = {{0, 0, 0}, {1, 0, 0}};
+    std::vector<di_renderer::math::UVCoord> tex_coords = {{0, 0}, {1, 0}};
+    std::vector<di_renderer::math::Vector3> normals = {{0, 0, 1}, {0, 0, 1}};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{
+        {0, 0, 0}, {1, 1, 1} // Only 2 vertices
+    }};
+
+    Mesh mesh(vertices, tex_coords, normals, faces);
+
+    EXPECT_EQ(mesh.face_count(), 0);
+}
+
+TEST(MeshTriangulationTest, MultipleFacesAllTriangulated) {
+    std::vector<di_renderer::math::Vector3> vertices = {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}, {2, 0, 0}};
+    std::vector<di_renderer::math::UVCoord> tex_coords = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {2, 0}};
+    std::vector<di_renderer::math::Vector3> normals = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {
+        {{0, 0, 0}, {1, 1, 1}, {2, 2, 2}},           // Triangle
+        {{0, 0, 0}, {1, 1, 1}, {2, 2, 2}, {3, 3, 3}} // Quad
+    };
+
+    Mesh mesh(vertices, tex_coords, normals, faces);
+
+    EXPECT_EQ(mesh.face_count(), 3); // 1 triangle + 2 from quad = 3
+}
+
+TEST(MeshNormalComputationTest, ProvidedNormalsArePreserved) {
+    auto vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F), di_renderer::math::Vector3(1.0F, 0.0F, 0.0F),
+                     di_renderer::math::Vector3(0.0F, 1.0F, 0.0F)};
+
+    auto provided_normals = {di_renderer::math::Vector3(0.0F, 0.0F, 1.0F), di_renderer::math::Vector3(0.0F, 0.0F, 1.0F),
+                             di_renderer::math::Vector3(0.0F, 0.0F, 1.0F)};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
+
+    Mesh mesh(vertices, {}, provided_normals, faces);
+
+    ASSERT_EQ(mesh.normals.size(), 3U);
+    EXPECT_NEAR(mesh.normals[0].x, 0.0F, EPS);
+    EXPECT_NEAR(mesh.normals[0].y, 0.0F, EPS);
+    EXPECT_NEAR(mesh.normals[0].z, 1.0F, EPS);
+    EXPECT_NEAR(mesh.normals[1].x, 0.0F, EPS);
+    EXPECT_NEAR(mesh.normals[1].y, 0.0F, EPS);
+    EXPECT_NEAR(mesh.normals[1].z, 1.0F, EPS);
+    EXPECT_NEAR(mesh.normals[2].x, 0.0F, EPS);
+    EXPECT_NEAR(mesh.normals[2].y, 0.0F, EPS);
+    EXPECT_NEAR(mesh.normals[2].z, 1.0F, EPS);
+}
+
+TEST(MeshNormalComputationTest, SingleTriangleNormalComputation) {
+    auto vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F), di_renderer::math::Vector3(1.0F, 0.0F, 0.0F),
+                     di_renderer::math::Vector3(0.0F, 1.0F, 0.0F)};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
+
+    Mesh mesh(vertices, {}, {}, faces);
+
+    ASSERT_EQ(mesh.normals.size(), 3U);
+    for (size_t i = 0; i < 3; ++i) {
+        EXPECT_NEAR(mesh.normals[i].x, 0.0F, EPS);
+        EXPECT_NEAR(mesh.normals[i].y, 0.0F, EPS);
+        EXPECT_NEAR(mesh.normals[i].z, 1.0F, EPS);
+        EXPECT_NEAR(mesh.normals[i].length(), 1.0F, EPS);
+    }
+}
+
+TEST(MeshNormalComputationTest, InvalidIndicesHandling) {
+    auto vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F), di_renderer::math::Vector3(1.0F, 0.0F, 0.0F)};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {99, -1, -1}}};
+
+    Mesh mesh(vertices, {}, {}, faces);
+    EXPECT_EQ(mesh.normals.size(), 2U);
+}
+
+TEST(MeshNormalComputationTest, NormalNormalization) {
+    auto vertices = {di_renderer::math::Vector3(0.0F, 0.0F, 0.0F), di_renderer::math::Vector3(2.0F, 0.0F, 0.0F),
+                     di_renderer::math::Vector3(0.0F, 2.0F, 0.0F)};
+
+    std::vector<std::vector<di_renderer::core::FaceVerticeData>> faces = {{{0, -1, -1}, {1, -1, -1}, {2, -1, -1}}};
+
+    Mesh mesh(vertices, {}, {}, faces);
+
+    for (const auto& normal : mesh.normals) {
+        EXPECT_NEAR(normal.length(), 1.0F, EPS);
+    }
 }
