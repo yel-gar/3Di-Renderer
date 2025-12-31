@@ -13,6 +13,8 @@ readability-*,
 -modernize-use-nodiscard,
 -cppcoreguidelines-avoid-magic-numbers,
 -readability-magic-numbers,
+-cert-dcl16-c,
+-hicpp-uppercase-literal-suffix,
 cert-dcl21-cpp,
 cert-dcl58-cpp,
 cert-err34-c,
@@ -31,6 +33,7 @@ misc-non-copyable-objects,
 misc-throw-by-value-catch-by-reference,
 misc-unconventional-assign-operator,
 misc-uniqueptr-reset-release,
+misc-const-correctness,
 mpi-buffer-deref,
 mpi-type-mismatch,
 openmp-use-default-none,
@@ -40,8 +43,11 @@ readability-identifier-naming'
 HeaderFilterRegex: '.*(src|tests)\/.*'
 
 CheckOptions:
-  - key:  readability-function-cognitive-complexity.Threshold
+  - key: readability-function-cognitive-complexity.Threshold
     value: 35
+
+  - key: readability-uppercase-literal-suffix.NewSuffixes
+    value: f;L;LL;uL;uLL;u
 
   - key: readability-identifier-naming.ClassCase
     value: CamelCase

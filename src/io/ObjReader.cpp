@@ -48,9 +48,10 @@ namespace di_renderer::io {
                     if (!std::regex_match(word, match, FACE_PATTERN)) {
                         throw std::runtime_error("Bad face pattern");
                     }
-                    int vertice_index = std::stoi(match[1]) - 1;
-                    int texture_index = match[2].matched && !match[2].str().empty() ? std::stoi(match[2]) - 1 : -1;
-                    int normal_index = match[3].matched && !match[3].str().empty() ? std::stoi(match[3]) - 1 : -1;
+                    const int vertice_index = std::stoi(match[1]) - 1;
+                    const int texture_index =
+                        match[2].matched && !match[2].str().empty() ? std::stoi(match[2]) - 1 : -1;
+                    const int normal_index = match[3].matched && !match[3].str().empty() ? std::stoi(match[3]) - 1 : -1;
 
                     face_vertices.push_back({vertice_index, texture_index, normal_index});
                 }

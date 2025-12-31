@@ -13,7 +13,7 @@ namespace di_renderer::render {
 
     Camera::Camera(const Vector3& position, const Vector3& target, float fov, float aspect_ratio, float near_plane,
                    float far_plane)
-        : m_position(position), m_target(target), m_up(0.0F, 1.0F, 0.0F), m_fov(fov), m_aspect_ratio(aspect_ratio),
+        : m_position(position), m_target(target), m_up(0.0f, 1.0f, 0.0f), m_fov(fov), m_aspect_ratio(aspect_ratio),
           m_near_plane(near_plane), m_far_plane(far_plane) {}
 
     void Camera::set_position(const Vector3& position) {

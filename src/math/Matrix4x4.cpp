@@ -7,7 +7,7 @@
 
 namespace di_renderer::math {
     Matrix4x4::Matrix4x4() {
-        m_data.fill(0.0F);
+        m_data.fill(0.0f);
     }
 
     Matrix4x4::Matrix4x4(const std::array<float, 16>& values) : m_data(values) {}
@@ -25,7 +25,7 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 Matrix4x4::identity() {
-        return Matrix4x4([](int row, int col) { return row == col ? 1.0F : 0.0F; });
+        return Matrix4x4([](int row, int col) { return row == col ? 1.0f : 0.0f; });
     }
 
     Matrix4x4 Matrix4x4::transposed() const {
@@ -129,7 +129,7 @@ namespace di_renderer::math {
     }
 
     float Matrix4x4::determinant() const {
-        float det = 0.0F;
+        float det = 0.0f;
         for (int col = 0; col < 4; ++col) {
             det += (*this)(0, col) * Matrix4x4::get_cofactor(0, col);
         }
@@ -143,11 +143,11 @@ namespace di_renderer::math {
             return identity();
         }
 
-        const float inv_det = 1.0F / det;
+        const float inv_det = 1.0f / det;
         Matrix4x4 result;
         for (int row = 0; row < 4; ++row) {
             for (int col = 0; col < 4; ++col) {
-                float cofactor = Matrix4x4::get_cofactor(row, col);
+                const float cofactor = Matrix4x4::get_cofactor(row, col);
                 result(col, row) = cofactor * inv_det; // NOLINT
             }
         }
