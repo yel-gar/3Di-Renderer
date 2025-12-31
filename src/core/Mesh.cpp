@@ -1,6 +1,7 @@
 #include "Mesh.hpp"
 
 #include <cmath>
+#include <limits>
 #include <string_view>
 
 namespace di_renderer::core {
@@ -85,7 +86,7 @@ namespace di_renderer::core {
 
         for (auto& normal : normals) {
             float length = normal.length();
-            if (length > 1e-8F) {
+            if (length > std::numeric_limits<float>::epsilon()) {
                 normal = normal.normalized();
             }
         }
