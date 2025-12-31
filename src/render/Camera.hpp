@@ -31,7 +31,7 @@ namespace di_renderer::render {
       private:
         math::Vector3 m_position;
         math::Vector3 m_target;
-        math::Vector3 m_up{0.0F, 1.0F, 0.0F};
+        math::Vector3 m_up{0.0f, 1.0f, 0.0f};
 
         float m_fov;
         float m_aspect_ratio;

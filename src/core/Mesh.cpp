@@ -70,7 +70,7 @@ namespace di_renderer::core {
             return;
         }
 
-        normals.assign(vertices.size(), math::Vector3(0.0F, 0.0F, 0.0F));
+        normals.assign(vertices.size(), math::Vector3(0.0f, 0.0f, 0.0f));
 
         if (triangulated_faces.empty()) {
             return;
@@ -94,22 +94,22 @@ namespace di_renderer::core {
             const math::Vector3& v1 = vertices[i1];
             const math::Vector3& v2 = vertices[i2];
 
-            math::Vector3 edge1 = v1 - v0;
-            math::Vector3 edge2 = v2 - v0;
-            math::Vector3 face_normal = edge1.cross(edge2);
+            const math::Vector3 edge1 = v1 - v0;
+            const math::Vector3 edge2 = v2 - v0;
+            const math::Vector3 face_normal = edge1.cross(edge2);
 
             normals[i0] = normals[i0] + face_normal;
             normals[i1] = normals[i1] + face_normal;
             normals[i2] = normals[i2] + face_normal;
         }
 
-        const float eps = 1e-8F;
+        const float eps = 1e-8f;
         for (auto& normal : normals) {
             const float length = normal.length();
             if (length > eps) {
                 normal = normal.normalized();
             } else {
-                normal = math::Vector3(0.0F, 0.0F, 0.0F);
+                normal = math::Vector3(0.0f, 0.0f, 0.0f);
             }
         }
     }
