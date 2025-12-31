@@ -16,8 +16,6 @@ namespace di_renderer::core {
         }
     }
 
-    Mesh::~Mesh() = default;
-
     void Mesh::triangulate_faces(const std::vector<std::vector<FaceVerticeData>>& input_faces) noexcept {
         faces.clear();
         faces.reserve(input_faces.size() * 2);
@@ -51,7 +49,7 @@ namespace di_renderer::core {
     }
 
     void Mesh::compute_vertex_normals() {
-        normals.assign(vertices.size(), math::Vector3(0.0F, 0.0F, 0.0F));
+        normals.assign(vertices.size(), math::Vector3(0.0f, 0.0f, 0.0f));
 
         if (vertices.empty() || faces.empty()) {
             return;

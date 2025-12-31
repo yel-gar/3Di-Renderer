@@ -13,6 +13,7 @@ SortIncludes: true
 IncludeBlocks: Regroup
 
 PointerAlignment: Left
+QualifierAlignment: Left
 
 ReflowComments: Always
 AlignTrailingComments: true

@@ -4,6 +4,7 @@
 
 namespace di_renderer::math {
     Matrix4x4 MatrixTransforms::translate(const Vector3& offset) {
+
         // clang-format off
         Matrix4x4 res({
             1, 0, 0, 0,
@@ -17,6 +18,7 @@ namespace di_renderer::math {
     }
 
     Matrix4x4 MatrixTransforms::scale(const Vector3& scale) {
+
         // clang-format off
         Matrix4x4 res({
             scale.x, 0, 0, 0,
@@ -29,7 +31,7 @@ namespace di_renderer::math {
         return res;
     }
 
-    Matrix4x4 MatrixTransforms::rotate_x(float angle) {
+    Matrix4x4 MatrixTransforms::rotate_x(const float angle) {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
 
@@ -44,7 +46,7 @@ namespace di_renderer::math {
         return res;
     }
 
-    Matrix4x4 MatrixTransforms::rotate_y(float angle) {
+    Matrix4x4 MatrixTransforms::rotate_y(const float angle) {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
 
@@ -60,9 +62,10 @@ namespace di_renderer::math {
         return res;
     }
 
-    Matrix4x4 MatrixTransforms::rotate_z(float angle) {
+    Matrix4x4 MatrixTransforms::rotate_z(const float angle) {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
+
         // clang-format off
         Matrix4x4 res({
             c, s, 0, 0,
@@ -82,9 +85,9 @@ namespace di_renderer::math {
      * @return - view matrix (V)
      */
     Matrix4x4 MatrixTransforms::look_at(const Vector3& eye, const Vector3& target, const Vector3& up) {
-        Vector3 z = (eye - target).normalized();
-        Vector3 x = (up.cross(z)).normalized();
-        Vector3 y = (z.cross(x)).normalized();
+        const Vector3 z = (eye - target).normalized();
+        const Vector3 x = (up.cross(z)).normalized();
+        const Vector3 y = (z.cross(x)).normalized();
 
         // clang-format off
         // сразу перемноженная матрица P * T
@@ -107,7 +110,7 @@ namespace di_renderer::math {
      * @return - projection matrix (P) ну или перспектива
      */
     Matrix4x4 MatrixTransforms::perspective(float fov_radians, float aspect_ratio, float near_plane, float far_plane) {
-        float tan_of_half_fov = std::tan(fov_radians * 0.5F);
+        const float tan_of_half_fov = std::tan(fov_radians * 0.5f);
         // clang-format off
         Matrix4x4 res({
             1 / tan_of_half_fov, 0, 0, 0,

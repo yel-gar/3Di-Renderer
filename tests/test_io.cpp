@@ -59,29 +59,29 @@ namespace di_renderer::io {
 
                 // 8 vertices of a cube
                 mesh.vertices = {
-                    {0.0F, 0.0F, 0.0F}, // 0
-                    {1.0F, 0.0F, 0.0F}, // 1
-                    {1.0F, 1.0F, 0.0F}, // 2
-                    {0.0F, 1.0F, 0.0F}, // 3
-                    {0.0F, 0.0F, 1.0F}, // 4
-                    {1.0F, 0.0F, 1.0F}, // 5
-                    {1.0F, 1.0F, 1.0F}, // 6
-                    {0.0F, 1.0F, 1.0F}  // 7
+                    {0.0f, 0.0f, 0.0f}, // 0
+                    {1.0f, 0.0f, 0.0f}, // 1
+                    {1.0f, 1.0f, 0.0f}, // 2
+                    {0.0f, 1.0f, 0.0f}, // 3
+                    {0.0f, 0.0f, 1.0f}, // 4
+                    {1.0f, 0.0f, 1.0f}, // 5
+                    {1.0f, 1.0f, 1.0f}, // 6
+                    {0.0f, 1.0f, 1.0f}  // 7
                 };
 
                 // 14 texture coordinates (for cube unwrap)
-                mesh.texture_vertices = {{0.0F, 0.0F},  {0.25F, 0.0F},  {0.5F, 0.0F},  {0.75F, 0.0F},  {1.0F, 0.0F},
-                                         {0.0F, 0.25F}, {0.25F, 0.25F}, {0.5F, 0.25F}, {0.75F, 0.25F}, {1.0F, 0.25F},
-                                         {0.0F, 0.5F},  {0.25F, 0.5F},  {0.5F, 0.5F},  {0.75F, 0.5F},  {1.0F, 0.5F}};
+                mesh.texture_vertices = {{0.0f, 0.0f},  {0.25f, 0.0f},  {0.5f, 0.0f},  {0.75f, 0.0f},  {1.0f, 0.0f},
+                                         {0.0f, 0.25f}, {0.25f, 0.25f}, {0.5f, 0.25f}, {0.75f, 0.25f}, {1.0f, 0.25f},
+                                         {0.0f, 0.5f},  {0.25f, 0.5f},  {0.5f, 0.5f},  {0.75f, 0.5f},  {1.0f, 0.5f}};
 
                 // 6 face normals (one for each cube face)
                 mesh.normals = {
-                    {0.0F, 0.0F, -1.0F}, // front
-                    {0.0F, 0.0F, 1.0F},  // back
-                    {0.0F, -1.0F, 0.0F}, // bottom
-                    {0.0F, 1.0F, 0.0F},  // top
-                    {-1.0F, 0.0F, 0.0F}, // left
-                    {1.0F, 0.0F, 0.0F}   // right
+                    {0.0f, 0.0f, -1.0f}, // front
+                    {0.0f, 0.0f, 1.0f},  // back
+                    {0.0f, -1.0f, 0.0f}, // bottom
+                    {0.0f, 1.0f, 0.0f},  // top
+                    {-1.0f, 0.0f, 0.0f}, // left
+                    {1.0f, 0.0f, 0.0f}   // right
                 };
 
                 // 12 faces (2 triangles per cube face)
@@ -105,9 +105,9 @@ namespace di_renderer::io {
 
             static core::Mesh create_mesh_with_partial_face_data() {
                 core::Mesh mesh;
-                mesh.vertices = {{1.0F, 0.0F, 0.0F}, {0.0F, 1.0F, 0.0F}, {0.0F, 0.0F, 1.0F}};
-                mesh.texture_vertices = {{0.0F, 0.0F}, {1.0F, 0.0F}, {0.5F, 1.0F}};
-                mesh.normals = {{0.0F, 0.0F, 1.0F}};
+                mesh.vertices = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
+                mesh.texture_vertices = {{0.0f, 0.0f}, {1.0f, 0.0f}, {0.5f, 1.0f}};
+                mesh.normals = {{0.0f, 0.0f, 1.0f}};
 
                 // Mixed face data: v only, v/vt, v//vn, v/vt/vn
                 mesh.faces = {
@@ -127,9 +127,9 @@ namespace di_renderer::io {
 
         // Test basic file creation
         TEST_F(ObjWriterTest, CreatesFileSuccessfully) {
-            std::string filename = get_test_file_path("test_create.obj");
+            const std::string filename = get_test_file_path("test_create.obj");
 
-            core::Mesh mesh;
+            const core::Mesh mesh;
             ASSERT_NO_THROW(ObjWriter::write_file(filename, mesh));
 
             EXPECT_TRUE(fs::exists(filename));
@@ -138,20 +138,20 @@ namespace di_renderer::io {
         // Test exception on invalid file path
         TEST_F(ObjWriterTest, ThrowsExceptionOnInvalidPath) {
             // Try to write to a directory that doesn't exist
-            std::string invalid_path = "/nonexistent/path/test.obj";
+            const std::string invalid_path = "/nonexistent/path/test.obj";
 
-            core::Mesh mesh;
+            const core::Mesh mesh;
             EXPECT_THROW(ObjWriter::write_file(invalid_path, mesh), std::runtime_error);
         }
 
         // Test writing empty mesh
         TEST_F(ObjWriterTest, WritesEmptyMeshCorrectly) {
-            std::string filename = get_test_file_path("empty_mesh.obj");
-            core::Mesh mesh;
+            const std::string filename = get_test_file_path("empty_mesh.obj");
+            const core::Mesh mesh;
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Should contain header and nothing else
             EXPECT_TRUE(content.find("# Generated with Di-Renderer ObjWriter") != std::string::npos);
@@ -161,14 +161,14 @@ namespace di_renderer::io {
 
         // Test writing vertices
         TEST_F(ObjWriterTest, WritesVerticesCorrectly) {
-            std::string filename = get_test_file_path("vertices.obj");
+            const std::string filename = get_test_file_path("vertices.obj");
 
             core::Mesh mesh;
-            mesh.vertices = {{1.0F, 2.0F, 3.0F}, {4.5F, 6.7F, 8.9F}, {-1.0F, -2.0F, -3.0F}};
+            mesh.vertices = {{1.0f, 2.0f, 3.0f}, {4.5f, 6.7f, 8.9f}, {-1.0f, -2.0f, -3.0f}};
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Check for vertex lines
             EXPECT_TRUE(content.find("v 1 2 3") != std::string::npos);
@@ -178,14 +178,14 @@ namespace di_renderer::io {
 
         // Test writing texture coordinates
         TEST_F(ObjWriterTest, WritesTextureVerticesCorrectly) {
-            std::string filename = get_test_file_path("texcoords.obj");
+            const std::string filename = get_test_file_path("texcoords.obj");
 
             core::Mesh mesh;
-            mesh.texture_vertices = {{0.0F, 1.0F}, {0.5F, 0.5F}, {1.0F, 0.0F}};
+            mesh.texture_vertices = {{0.0f, 1.0f}, {0.5f, 0.5f}, {1.0f, 0.0f}};
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             EXPECT_TRUE(content.find("vt 0 1") != std::string::npos);
             EXPECT_TRUE(content.find("vt 0.5 0.5") != std::string::npos);
@@ -194,14 +194,14 @@ namespace di_renderer::io {
 
         // Test writing normals
         TEST_F(ObjWriterTest, WritesNormalsCorrectly) {
-            std::string filename = get_test_file_path("normals.obj");
+            const std::string filename = get_test_file_path("normals.obj");
 
             core::Mesh mesh;
-            mesh.normals = {{0.0F, 0.0F, 1.0F}, {1.0F, 0.0F, 0.0F}, {0.0F, 1.0F, 0.0F}};
+            mesh.normals = {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             EXPECT_TRUE(content.find("vn 0 0 1") != std::string::npos);
             EXPECT_TRUE(content.find("vn 1 0 0") != std::string::npos);
@@ -210,7 +210,7 @@ namespace di_renderer::io {
 
         // Test writing faces with all components
         TEST_F(ObjWriterTest, WritesFacesWithAllComponents) {
-            std::string filename = get_test_file_path("full_faces.obj");
+            const std::string filename = get_test_file_path("full_faces.obj");
 
             core::Mesh mesh;
             mesh.vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
@@ -220,18 +220,18 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Face should be written with 1-based indices: 1/1/1 2/2/1 3/3/1
             EXPECT_TRUE(content.find("f 1/1/1 2/2/1 3/3/1") != std::string::npos);
         }
 
         TEST_F(ObjWriterTest, WritesFacesWithMissingTextureCoords) {
-            std::string filename = get_test_file_path("faces_no_tex.obj");
+            const std::string filename = get_test_file_path("faces_no_tex.obj");
 
             core::Mesh mesh;
-            mesh.vertices = {{1.0F, 2.0F, 3.0F}};
-            mesh.normals = {{0.0F, 0.0F, 1.0F}}; // Add a normal
+            mesh.vertices = {{1.0f, 2.0f, 3.0f}};
+            mesh.normals = {{0.0f, 0.0f, 1.0f}}; // Add a normal
 
             // Face with missing texture coordinate (-1) but WITH normal (0)
             mesh.faces = {{{0, -1, 0}, // No texture coordinate, but has normal
@@ -240,7 +240,7 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Should write vertex//normal format: f 1//1 1//1 1//1
             EXPECT_TRUE(content.find("f 1//1 1//1 1//1") != std::string::npos);
@@ -249,10 +249,10 @@ namespace di_renderer::io {
 
         // Also add a test for truly NO normal either:
         TEST_F(ObjWriterTest, WritesFacesWithNoTextureAndNoNormal) {
-            std::string filename = get_test_file_path("faces_no_tex_no_normal.obj");
+            const std::string filename = get_test_file_path("faces_no_tex_no_normal.obj");
 
             core::Mesh mesh;
-            mesh.vertices = {{1.0F, 2.0F, 3.0F}};
+            mesh.vertices = {{1.0f, 2.0f, 3.0f}};
 
             // Face with no texture coordinate AND no normal (both -1)
             mesh.faces = {{{0, -1, -1}, // No texture, no normal
@@ -261,7 +261,7 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Should write vertex indices only: f 1 1 1
             EXPECT_TRUE(content.find("f 1 1 1") != std::string::npos);
@@ -270,7 +270,7 @@ namespace di_renderer::io {
 
         // Test writing faces with missing normals
         TEST_F(ObjWriterTest, WritesFacesWithMissingNormals) {
-            std::string filename = get_test_file_path("faces_no_normals.obj");
+            const std::string filename = get_test_file_path("faces_no_normals.obj");
 
             core::Mesh mesh;
             mesh.vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
@@ -281,7 +281,7 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Should write v/vt format: f 1/1 2/2 3/3
             EXPECT_TRUE(content.find("f 1/1 2/2 3/3") != std::string::npos);
@@ -289,7 +289,7 @@ namespace di_renderer::io {
 
         // Test writing faces with texture but no normals
         TEST_F(ObjWriterTest, WritesFacesWithTextureOnly) {
-            std::string filename = get_test_file_path("faces_tex_only.obj");
+            const std::string filename = get_test_file_path("faces_tex_only.obj");
 
             core::Mesh mesh;
             mesh.vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
@@ -298,14 +298,14 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             EXPECT_TRUE(content.find("f 1/1 2/2 3/3") != std::string::npos);
         }
 
         // Test writing faces with normals but no texture
         TEST_F(ObjWriterTest, WritesFacesWithNormalsOnly) {
-            std::string filename = get_test_file_path("faces_normals_only.obj");
+            const std::string filename = get_test_file_path("faces_normals_only.obj");
 
             core::Mesh mesh;
             mesh.vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
@@ -314,7 +314,7 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Should write v//vn format: f 1//1 2//1 3//1
             EXPECT_TRUE(content.find("f 1//1 2//1 3//1") != std::string::npos);
@@ -322,12 +322,12 @@ namespace di_renderer::io {
 
         // Test mixed face formats in same file
         TEST_F(ObjWriterTest, WritesMixedFaceFormats) {
-            std::string filename = get_test_file_path("mixed_faces.obj");
+            const std::string filename = get_test_file_path("mixed_faces.obj");
 
             auto mesh = create_mesh_with_partial_face_data();
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Check all formats are present
             EXPECT_TRUE(content.find("f 1 2 3") != std::string::npos);             // v only
@@ -338,12 +338,12 @@ namespace di_renderer::io {
 
         // Test writing a complex mesh
         TEST_F(ObjWriterTest, WritesComplexMeshCorrectly) {
-            std::string filename = get_test_file_path("cube.obj");
+            const std::string filename = get_test_file_path("cube.obj");
 
             auto mesh = create_cube_mesh();
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Basic checks
             EXPECT_TRUE(content.find("# Generated with Di-Renderer ObjWriter") != std::string::npos);
@@ -371,12 +371,18 @@ namespace di_renderer::io {
             EXPECT_EQ(vertex_count, mesh.vertex_count());
             EXPECT_EQ(texcoord_count, mesh.texcoord_count());
             EXPECT_EQ(normal_count, mesh.normal_count());
-            EXPECT_EQ(face_count, mesh.face_count());
+            int expected_triangulated_faces = 0;
+            for (const auto& face : mesh.faces) {
+                if (face.size() >= 3) {
+                    expected_triangulated_faces += static_cast<int>(face.size()) - 2;
+                }
+            }
+            EXPECT_EQ(face_count, expected_triangulated_faces);
         }
 
         // Test that 0-based indices are converted to 1-based
         TEST_F(ObjWriterTest, ConvertsIndicesTo1Based) {
-            std::string filename = get_test_file_path("index_conversion.obj");
+            const std::string filename = get_test_file_path("index_conversion.obj");
 
             core::Mesh mesh;
             mesh.vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
@@ -388,7 +394,7 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Should be converted to 1-based: 1/1/1 2/2/1 3/3/1
             EXPECT_TRUE(content.find("1/1/1") != std::string::npos);
@@ -401,7 +407,7 @@ namespace di_renderer::io {
 
         // Test file is properly formatted with newlines
         TEST_F(ObjWriterTest, FileHasCorrectFormatting) {
-            std::string filename = get_test_file_path("formatting.obj");
+            const std::string filename = get_test_file_path("formatting.obj");
 
             core::Mesh mesh;
             mesh.vertices = {{1, 2, 3}};
@@ -411,7 +417,7 @@ namespace di_renderer::io {
 
             ObjWriter::write_file(filename, mesh);
 
-            std::string content = read_file_content(filename);
+            const std::string content = read_file_content(filename);
 
             // Check sections are separated by empty lines
             std::stringstream ss(content);
@@ -438,7 +444,7 @@ namespace di_renderer::io {
 
         // Test with very large mesh (stress test)
         TEST_F(ObjWriterTest, WritesLargeMeshWithoutCrashing) {
-            std::string filename = get_test_file_path("large_mesh.obj");
+            const std::string filename = get_test_file_path("large_mesh.obj");
 
             core::Mesh mesh;
 
@@ -483,29 +489,29 @@ TEST(ObjReaderTests, BasicObjParsing) {
 
     out.close();
 
-    std::string name = filename;
+    const std::string name = filename;
     auto [vertices, texture_vertices, normals, faces] = ObjReader::read_file(name);
 
     // Check vertices
     ASSERT_EQ(vertices.size(), 2);
-    EXPECT_FLOAT_EQ(vertices[0].x, 1.0F);
-    EXPECT_FLOAT_EQ(vertices[0].y, 2.0F);
-    EXPECT_FLOAT_EQ(vertices[0].z, 3.0F);
+    EXPECT_FLOAT_EQ(vertices[0].x, 1.0f);
+    EXPECT_FLOAT_EQ(vertices[0].y, 2.0f);
+    EXPECT_FLOAT_EQ(vertices[0].z, 3.0f);
 
-    EXPECT_FLOAT_EQ(vertices[1].x, 4.0F);
-    EXPECT_FLOAT_EQ(vertices[1].y, 5.0F);
-    EXPECT_FLOAT_EQ(vertices[1].z, 6.0F);
+    EXPECT_FLOAT_EQ(vertices[1].x, 4.0f);
+    EXPECT_FLOAT_EQ(vertices[1].y, 5.0f);
+    EXPECT_FLOAT_EQ(vertices[1].z, 6.0f);
 
     // Check texture vertices
     ASSERT_EQ(texture_vertices.size(), 1);
-    EXPECT_FLOAT_EQ(texture_vertices[0].u, 0.1F);
-    EXPECT_FLOAT_EQ(texture_vertices[0].v, 0.2F);
+    EXPECT_FLOAT_EQ(texture_vertices[0].u, 0.1f);
+    EXPECT_FLOAT_EQ(texture_vertices[0].v, 0.2f);
 
     // Check normals
     ASSERT_EQ(normals.size(), 1);
-    EXPECT_FLOAT_EQ(normals[0].x, 0.0F);
-    EXPECT_FLOAT_EQ(normals[0].y, 1.0F);
-    EXPECT_FLOAT_EQ(normals[0].z, 0.0F);
+    EXPECT_FLOAT_EQ(normals[0].x, 0.0f);
+    EXPECT_FLOAT_EQ(normals[0].y, 1.0f);
+    EXPECT_FLOAT_EQ(normals[0].z, 0.0f);
 
     // Check faces
     ASSERT_EQ(faces.size(), 1);

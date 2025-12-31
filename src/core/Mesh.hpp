@@ -28,13 +28,6 @@ namespace di_renderer::core {
              const std::vector<math::Vector3>& normals,
              const std::vector<std::vector<FaceVerticeData>>& faces) noexcept;
 
-        ~Mesh();
-
-        Mesh(const Mesh&) = default;
-        Mesh(Mesh&&) noexcept = default;
-        Mesh& operator=(const Mesh&) = default;
-        Mesh& operator=(Mesh&&) noexcept = default;
-
         std::size_t vertex_count() const noexcept {
             return vertices.size();
         }
