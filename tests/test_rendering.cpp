@@ -6,13 +6,13 @@ using namespace di_renderer::render;
 using namespace di_renderer::math;
 
 TEST(CameraTests, ViewMatrix_Identity) {
-    const Camera cam({0, 0, 0}, {0, 0, -1}, 1.0F, 1.0F, 0.1F, 100.0F);
+    const Camera cam({0, 0, 0}, {0, 0, -1}, 1.0f, 1.0f, 0.1f, 100.0f);
     // clang-format off
     Matrix4x4 const expected({
-        1.0F, 0.0F, 0.0F, 0.0F,
-        0.0F, 1.0F, 0.0F, 0.0F,
-        0.0F, 0.0F, 1.0F, 0.0F,
-        0.0F, 0.0F, 0.0F, 1.0F
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
     });
     // clang-format on
 
@@ -20,13 +20,13 @@ TEST(CameraTests, ViewMatrix_Identity) {
 }
 
 TEST(CameraTests, ViewMatrix_TranslationZ) {
-    const Camera cam({0, 0, 10}, {0, 0, 0}, 1.0F, 1.0F, 0.1F, 100.0F);
+    const Camera cam({0, 0, 10}, {0, 0, 0}, 1.0f, 1.0f, 0.1f, 100.0f);
     // clang-format off
     Matrix4x4 const expected({
-        1.0F, 0.0F, 0.0F, 0.0F,
-        0.0F, 1.0F, 0.0F, 0.0F,
-        0.0F, 0.0F, 1.0F, 0.0F,
-        0.0F, 0.0F, -10.0F, 1.0F
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, -10.0f, 1.0f
     });
     // clang-format on
 
@@ -34,14 +34,14 @@ TEST(CameraTests, ViewMatrix_TranslationZ) {
 }
 
 TEST(CameraTests, ViewMatrix_TranslationX_Strafing) {
-    Camera cam({0, 0, 0}, {0, 0, -1}, 1.0F, 1.0F, 0.1F, 100.0F);
-    cam.move({5.0F, 0.0F, 0.0F});
+    Camera cam({0, 0, 0}, {0, 0, -1}, 1.0f, 1.0f, 0.1f, 100.0f);
+    cam.move({5.0f, 0.0f, 0.0f});
     // clang-format off
     Matrix4x4 const expected({
-        1.0F, 0.0F, 0.0F, 0.0F,
-        0.0F, 1.0F, 0.0F, 0.0F,
-        0.0F, 0.0F, 1.0F, 0.0F,
-        -5.0F, 0.0F, 0.0F, 1.0F
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        -5.0f, 0.0f, 0.0f, 1.0f
     });
     // clang-format on
 
@@ -52,13 +52,13 @@ TEST(CameraTests, ViewMatrix_Rotation_90Degrees) {
     // Z (Forward) = (1, 0, 0)
     // X (Right)   = Up x Z = (0, 0, -1)
     // Y (New Up)  = Z x X  = (0, 1, 0)
-    const Camera cam({0, 0, 0}, {-1, 0, 0}, 1.0F, 1.0F, 0.1F, 100.0F);
+    const Camera cam({0, 0, 0}, {-1, 0, 0}, 1.0f, 1.0f, 0.1f, 100.0f);
     // clang-format off
     Matrix4x4 const expected({
-        0.0F, 0.0F, 1.0F, 0.0F,
-        0.0F, 1.0F,  0.0F, 0.0F,
-        -1.0F, 0.0F,  0.0F, 0.0F,
-        0.0F, 0.0F,  0.0F, 1.0F
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f,  0.0f, 0.0f,
+        -1.0f, 0.0f,  0.0f, 0.0f,
+        0.0f, 0.0f,  0.0f, 1.0f
     });
     // clang-format on
 
@@ -66,10 +66,10 @@ TEST(CameraTests, ViewMatrix_Rotation_90Degrees) {
 }
 
 TEST(CameraTests, ProjectionMatrix_Calculated) {
-    const float fov = 3.1415926535F / 2.0F;
-    const float aspect = 2.0F;
-    const float n = 1.0F;
-    const float f = 3.0F;
+    const float fov = 3.1415926535f / 2.0f;
+    const float aspect = 2.0f;
+    const float n = 1.0f;
+    const float f = 3.0f;
 
     const Camera cam({0, 0, 0}, {0, 0, 1}, fov, aspect, n, f);
 
@@ -81,10 +81,10 @@ TEST(CameraTests, ProjectionMatrix_Calculated) {
     // [3,1] = -1
     // clang-format off
     Matrix4x4 const expected({
-        1.0F, 0.0F, 0.0F, 0.0F,
-        0.0F, 0.5F, 0.0F, 0.0F,
-        0.0F, 0.0F, -2.0F, -1.0F,
-        0.0F, 0.0F, -3.0F, 0.0F
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f, 0.0f,
+        0.0f, 0.0f, -2.0f, -1.0f,
+        0.0f, 0.0f, -3.0f, 0.0f
     });
     // clang-format on
 
@@ -92,15 +92,15 @@ TEST(CameraTests, ProjectionMatrix_Calculated) {
 }
 
 TEST(CameraTests, Setters_UpdateMatrices) {
-    Camera cam({0, 0, 0}, {0, 0, -1}, 1.0F, 1.0F, 0.1F, 100.0F);
+    Camera cam({0, 0, 0}, {0, 0, -1}, 1.0f, 1.0f, 0.1f, 100.0f);
 
     cam.move({0, 10, 0});
     // clang-format off
     Matrix4x4 const expected({
-        1.0F, 0.0F, 0.0F, 0.0F,
-        0.0F, 1.0F, 0.0F, 0.0F,
-        0.0F, 0.0F, 1.0F, 0.0F,
-        0.0F, -10.0F, 0.0F, 1.0F
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, -10.0f, 0.0f, 1.0f
     });
     // clang-format on
 

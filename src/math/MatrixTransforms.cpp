@@ -110,7 +110,7 @@ namespace di_renderer::math {
      * @return - projection matrix (P) ну или перспектива
      */
     Matrix4x4 MatrixTransforms::perspective(float fov_radians, float aspect_ratio, float near_plane, float far_plane) {
-        const float tan_of_half_fov = std::tan(fov_radians * 0.5F);
+        const float tan_of_half_fov = std::tan(fov_radians * 0.5f);
         // clang-format off
         Matrix4x4 res({
             1 / tan_of_half_fov, 0, 0, 0,

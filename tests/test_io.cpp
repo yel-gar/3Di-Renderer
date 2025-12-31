@@ -59,29 +59,29 @@ namespace di_renderer::io {
 
                 // 8 vertices of a cube
                 mesh.vertices = {
-                    {0.0F, 0.0F, 0.0F}, // 0
-                    {1.0F, 0.0F, 0.0F}, // 1
-                    {1.0F, 1.0F, 0.0F}, // 2
-                    {0.0F, 1.0F, 0.0F}, // 3
-                    {0.0F, 0.0F, 1.0F}, // 4
-                    {1.0F, 0.0F, 1.0F}, // 5
-                    {1.0F, 1.0F, 1.0F}, // 6
-                    {0.0F, 1.0F, 1.0F}  // 7
+                    {0.0f, 0.0f, 0.0f}, // 0
+                    {1.0f, 0.0f, 0.0f}, // 1
+                    {1.0f, 1.0f, 0.0f}, // 2
+                    {0.0f, 1.0f, 0.0f}, // 3
+                    {0.0f, 0.0f, 1.0f}, // 4
+                    {1.0f, 0.0f, 1.0f}, // 5
+                    {1.0f, 1.0f, 1.0f}, // 6
+                    {0.0f, 1.0f, 1.0f}  // 7
                 };
 
                 // 14 texture coordinates (for cube unwrap)
-                mesh.texture_vertices = {{0.0F, 0.0F},  {0.25F, 0.0F},  {0.5F, 0.0F},  {0.75F, 0.0F},  {1.0F, 0.0F},
-                                         {0.0F, 0.25F}, {0.25F, 0.25F}, {0.5F, 0.25F}, {0.75F, 0.25F}, {1.0F, 0.25F},
-                                         {0.0F, 0.5F},  {0.25F, 0.5F},  {0.5F, 0.5F},  {0.75F, 0.5F},  {1.0F, 0.5F}};
+                mesh.texture_vertices = {{0.0f, 0.0f},  {0.25f, 0.0f},  {0.5f, 0.0f},  {0.75f, 0.0f},  {1.0f, 0.0f},
+                                         {0.0f, 0.25f}, {0.25f, 0.25f}, {0.5f, 0.25f}, {0.75f, 0.25f}, {1.0f, 0.25f},
+                                         {0.0f, 0.5f},  {0.25f, 0.5f},  {0.5f, 0.5f},  {0.75f, 0.5f},  {1.0f, 0.5f}};
 
                 // 6 face normals (one for each cube face)
                 mesh.normals = {
-                    {0.0F, 0.0F, -1.0F}, // front
-                    {0.0F, 0.0F, 1.0F},  // back
-                    {0.0F, -1.0F, 0.0F}, // bottom
-                    {0.0F, 1.0F, 0.0F},  // top
-                    {-1.0F, 0.0F, 0.0F}, // left
-                    {1.0F, 0.0F, 0.0F}   // right
+                    {0.0f, 0.0f, -1.0f}, // front
+                    {0.0f, 0.0f, 1.0f},  // back
+                    {0.0f, -1.0f, 0.0f}, // bottom
+                    {0.0f, 1.0f, 0.0f},  // top
+                    {-1.0f, 0.0f, 0.0f}, // left
+                    {1.0f, 0.0f, 0.0f}   // right
                 };
 
                 // 12 faces (2 triangles per cube face)
@@ -105,9 +105,9 @@ namespace di_renderer::io {
 
             static core::Mesh create_mesh_with_partial_face_data() {
                 core::Mesh mesh;
-                mesh.vertices = {{1.0F, 0.0F, 0.0F}, {0.0F, 1.0F, 0.0F}, {0.0F, 0.0F, 1.0F}};
-                mesh.texture_vertices = {{0.0F, 0.0F}, {1.0F, 0.0F}, {0.5F, 1.0F}};
-                mesh.normals = {{0.0F, 0.0F, 1.0F}};
+                mesh.vertices = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
+                mesh.texture_vertices = {{0.0f, 0.0f}, {1.0f, 0.0f}, {0.5f, 1.0f}};
+                mesh.normals = {{0.0f, 0.0f, 1.0f}};
 
                 // Mixed face data: v only, v/vt, v//vn, v/vt/vn
                 mesh.faces = {
@@ -164,7 +164,7 @@ namespace di_renderer::io {
             const std::string filename = get_test_file_path("vertices.obj");
 
             core::Mesh mesh;
-            mesh.vertices = {{1.0F, 2.0F, 3.0F}, {4.5F, 6.7F, 8.9F}, {-1.0F, -2.0F, -3.0F}};
+            mesh.vertices = {{1.0f, 2.0f, 3.0f}, {4.5f, 6.7f, 8.9f}, {-1.0f, -2.0f, -3.0f}};
 
             ObjWriter::write_file(filename, mesh);
 
@@ -181,7 +181,7 @@ namespace di_renderer::io {
             const std::string filename = get_test_file_path("texcoords.obj");
 
             core::Mesh mesh;
-            mesh.texture_vertices = {{0.0F, 1.0F}, {0.5F, 0.5F}, {1.0F, 0.0F}};
+            mesh.texture_vertices = {{0.0f, 1.0f}, {0.5f, 0.5f}, {1.0f, 0.0f}};
 
             ObjWriter::write_file(filename, mesh);
 
@@ -197,7 +197,7 @@ namespace di_renderer::io {
             const std::string filename = get_test_file_path("normals.obj");
 
             core::Mesh mesh;
-            mesh.normals = {{0.0F, 0.0F, 1.0F}, {1.0F, 0.0F, 0.0F}, {0.0F, 1.0F, 0.0F}};
+            mesh.normals = {{0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
 
             ObjWriter::write_file(filename, mesh);
 
@@ -230,8 +230,8 @@ namespace di_renderer::io {
             const std::string filename = get_test_file_path("faces_no_tex.obj");
 
             core::Mesh mesh;
-            mesh.vertices = {{1.0F, 2.0F, 3.0F}};
-            mesh.normals = {{0.0F, 0.0F, 1.0F}}; // Add a normal
+            mesh.vertices = {{1.0f, 2.0f, 3.0f}};
+            mesh.normals = {{0.0f, 0.0f, 1.0f}}; // Add a normal
 
             // Face with missing texture coordinate (-1) but WITH normal (0)
             mesh.faces = {{{0, -1, 0}, // No texture coordinate, but has normal
@@ -252,7 +252,7 @@ namespace di_renderer::io {
             const std::string filename = get_test_file_path("faces_no_tex_no_normal.obj");
 
             core::Mesh mesh;
-            mesh.vertices = {{1.0F, 2.0F, 3.0F}};
+            mesh.vertices = {{1.0f, 2.0f, 3.0f}};
 
             // Face with no texture coordinate AND no normal (both -1)
             mesh.faces = {{{0, -1, -1}, // No texture, no normal
@@ -494,24 +494,24 @@ TEST(ObjReaderTests, BasicObjParsing) {
 
     // Check vertices
     ASSERT_EQ(vertices.size(), 2);
-    EXPECT_FLOAT_EQ(vertices[0].x, 1.0F);
-    EXPECT_FLOAT_EQ(vertices[0].y, 2.0F);
-    EXPECT_FLOAT_EQ(vertices[0].z, 3.0F);
+    EXPECT_FLOAT_EQ(vertices[0].x, 1.0f);
+    EXPECT_FLOAT_EQ(vertices[0].y, 2.0f);
+    EXPECT_FLOAT_EQ(vertices[0].z, 3.0f);
 
-    EXPECT_FLOAT_EQ(vertices[1].x, 4.0F);
-    EXPECT_FLOAT_EQ(vertices[1].y, 5.0F);
-    EXPECT_FLOAT_EQ(vertices[1].z, 6.0F);
+    EXPECT_FLOAT_EQ(vertices[1].x, 4.0f);
+    EXPECT_FLOAT_EQ(vertices[1].y, 5.0f);
+    EXPECT_FLOAT_EQ(vertices[1].z, 6.0f);
 
     // Check texture vertices
     ASSERT_EQ(texture_vertices.size(), 1);
-    EXPECT_FLOAT_EQ(texture_vertices[0].u, 0.1F);
-    EXPECT_FLOAT_EQ(texture_vertices[0].v, 0.2F);
+    EXPECT_FLOAT_EQ(texture_vertices[0].u, 0.1f);
+    EXPECT_FLOAT_EQ(texture_vertices[0].v, 0.2f);
 
     // Check normals
     ASSERT_EQ(normals.size(), 1);
-    EXPECT_FLOAT_EQ(normals[0].x, 0.0F);
-    EXPECT_FLOAT_EQ(normals[0].y, 1.0F);
-    EXPECT_FLOAT_EQ(normals[0].z, 0.0F);
+    EXPECT_FLOAT_EQ(normals[0].x, 0.0f);
+    EXPECT_FLOAT_EQ(normals[0].y, 1.0f);
+    EXPECT_FLOAT_EQ(normals[0].z, 0.0f);
 
     // Check faces
     ASSERT_EQ(faces.size(), 1);

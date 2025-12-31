@@ -4,7 +4,7 @@
 
 namespace di_renderer::math {
 
-    Vector4::Vector4() : x(0.0F), y(0.0F), z(0.0F), w(0.0F) {}
+    Vector4::Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
 
     Vector4::Vector4(const float x, const float y, const float z, const float w) : x(x), y(y), z(z), w(w) {}
 
