@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace di_renderer::core {
@@ -23,8 +24,9 @@ namespace di_renderer::core {
 
         Mesh() = default;
 
-        Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
-             std::vector<math::Vector3> normals, const std::vector<std::vector<FaceVerticeData>>& faces) noexcept;
+        Mesh(const std::vector<math::Vector3>& vertices, const std::vector<math::UVCoord>& texture_vertices,
+             const std::vector<math::Vector3>& normals,
+             const std::vector<std::vector<FaceVerticeData>>& faces) noexcept;
 
         ~Mesh();
 
@@ -46,7 +48,7 @@ namespace di_renderer::core {
             return faces.size();
         }
 
-        void load_texture(const std::string& filename);
+        void load_texture(std::string_view filename);
         const std::string& get_texture_filename() const noexcept;
 
         void compute_vertex_normals();
