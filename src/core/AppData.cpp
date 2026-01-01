@@ -1,14 +1,10 @@
 #include "AppData.hpp"
 
+#include <iostream>
 #include <stdexcept>
 
 using di_renderer::core::AppData;
 using di_renderer::core::Mesh;
-
-AppData& AppData::instance() noexcept {
-    static AppData instance;
-    return instance;
-}
 
 void AppData::clean() noexcept {
     m_meshes.clear();
@@ -36,7 +32,12 @@ Mesh& AppData::get_current_mesh() {
     if (m_meshes.empty()) {
         throw std::out_of_range("There's no active mesh");
     }
-    return m_meshes[m_current_mesh_index];
+    if (m_current_mesh_index >= m_meshes.size()) {
+        std::cout << "Unexpected behaviour: mesh index (" << m_current_mesh_index << ") was out of bounds ("
+                  << m_meshes.size() << ")\n";
+        m_current_mesh_index = m_meshes.size() - 1;
+    }
+    return m_meshes[m_current_mesh_index]; // NOLINT(*-pro-bounds-avoid-unchecked-container-access) because it's checked
 }
 
 void AppData::add_mesh(Mesh&& mesh) noexcept {
@@ -76,4 +77,7 @@ void AppData::select_mesh(const size_t index) {
         throw std::out_of_range("Mesh index out of range");
     }
     m_current_mesh_index = index;
+}
+const std::vector<Mesh>& AppData::get_meshes() noexcept {
+    return m_meshes;
 }

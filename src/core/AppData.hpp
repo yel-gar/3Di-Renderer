@@ -11,8 +11,6 @@ namespace di_renderer::core {
       public:
         AppData() = default;
 
-        static AppData& instance() noexcept;
-
         void clean() noexcept;
 
         bool is_render_mode_enabled(RenderMode mode) const noexcept;
@@ -24,6 +22,7 @@ namespace di_renderer::core {
         void add_mesh(Mesh&& mesh) noexcept;
         void remove_mesh(size_t index);
         void select_mesh(size_t index);
+        const std::vector<Mesh>& get_meshes() noexcept;
 
       private:
         size_t m_current_mesh_index = 0;
