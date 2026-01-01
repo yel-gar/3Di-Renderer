@@ -78,6 +78,6 @@ void AppData::select_mesh(const size_t index) {
     }
     m_current_mesh_index = index;
 }
-const std::vector<Mesh>& AppData::get_meshes() noexcept {
+const std::vector<Mesh>& AppData::get_meshes() const noexcept {
     return m_meshes;
 }
