@@ -33,7 +33,7 @@ Mesh& AppData::get_current_mesh() {
         throw std::out_of_range("There's no active mesh");
     }
     if (m_current_mesh_index >= m_meshes.size()) {
-        std::cout << "Unexpected behaviour: mesh index (" << m_current_mesh_index << ") was out of bounds ("
+        std::cerr << "Unexpected behaviour: mesh index (" << m_current_mesh_index << ") was out of bounds ("
                   << m_meshes.size() << ")\n";
         m_current_mesh_index = m_meshes.size() - 1;
     }
