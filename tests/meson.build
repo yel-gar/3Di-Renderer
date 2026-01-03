@@ -46,7 +46,7 @@ if get_option('tests')
                 'test_core.cpp',
                 include_directories: incdir,
                 dependencies: [gtest_dep],
-                link_with: [core_lib, math_lib],
+                link_with: [core_lib, math_lib, render_lib],
             ),
         )
     endif

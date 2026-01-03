@@ -24,7 +24,7 @@ namespace di_renderer::core {
         void select_mesh(size_t index);
         const std::vector<Mesh>& get_meshes() const noexcept;
 
-        const render::Camera& get_current_camera() noexcept;
+        render::Camera& get_current_camera() noexcept;
         void set_current_camera(unsigned int id) noexcept;
         void delete_current_camera() noexcept;
 

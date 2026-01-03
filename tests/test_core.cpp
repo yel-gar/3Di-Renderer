@@ -100,6 +100,72 @@ TEST(CoreTests, AdvancedMeshRemove) {
     EXPECT_EQ(instance.get_current_mesh().vertex_count(), 4);
 }
 
+TEST(CoreTests, GetCreatesCameraIfMissing) {
+    AppData app;
+
+    // default index assumed to be 0
+    const di_renderer::render::Camera& cam = app.get_current_camera();
+
+    // Calling again should return the same object
+    const di_renderer::render::Camera& cam2 = app.get_current_camera();
+
+    EXPECT_EQ(&cam, &cam2);
+}
+
+TEST(CoreTests, SetChangesReturnedCamera) {
+    AppData app;
+
+    app.set_current_camera(1);
+    const di_renderer::render::Camera& cam1 = app.get_current_camera();
+
+    app.set_current_camera(2);
+    const di_renderer::render::Camera& cam2 = app.get_current_camera();
+
+    EXPECT_NE(&cam1, &cam2);
+}
+
+TEST(CoreTests, DeleteRemovesCamera) {
+    AppData app;
+
+    app.set_current_camera(1);
+    di_renderer::render::Camera& cam = app.get_current_camera();
+    cam.set_position({200, 200, 200});
+
+    app.delete_current_camera();
+
+    // Re-fetching should create a NEW camera
+    const di_renderer::render::Camera& new_cam = app.get_current_camera();
+
+    EXPECT_NE(new_cam.get_position().x, 200);
+}
+
+TEST(CoreTests, DeleteWhenMissingDoesNothing) {
+    AppData app;
+
+    app.set_current_camera(42);
+
+    // No camera exists yet
+    EXPECT_NO_THROW(app.delete_current_camera());
+}
+
+TEST(CoreTests, DeleteDoesNotAffectOtherCameras) {
+    AppData app;
+
+    app.set_current_camera(1);
+    app.get_current_camera(); // just to create
+
+    app.set_current_camera(2);
+    const di_renderer::render::Camera& cam2 = app.get_current_camera();
+
+    app.set_current_camera(1);
+    app.delete_current_camera();
+
+    app.set_current_camera(2);
+    const di_renderer::render::Camera& cam2_again = app.get_current_camera();
+
+    EXPECT_EQ(&cam2, &cam2_again);
+}
+
 TEST(MeshTriangulationTest, TriangleFaceRemainsUnchanged) {
     const std::vector<di_renderer::math::Vector3> vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
     const std::vector<di_renderer::math::UVCoord> tex_coords = {{0, 0}, {1, 0}, {0, 1}};
