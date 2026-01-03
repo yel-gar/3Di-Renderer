@@ -8,7 +8,9 @@ using di_renderer::core::Mesh;
 
 void AppData::clean() noexcept {
     m_meshes.clear();
+    m_cameras.clear();
     m_current_mesh_index = 0;
+    m_current_camera_index = 0;
     m_render_mode.reset();
 }
 
@@ -38,6 +40,20 @@ Mesh& AppData::get_current_mesh() {
         m_current_mesh_index = m_meshes.size() - 1;
     }
     return m_meshes[m_current_mesh_index]; // NOLINT(*-pro-bounds-avoid-unchecked-container-access) because it's checked
+}
+
+di_renderer::math::Camera& AppData::get_current_camera() noexcept {
+    auto [it, inserted] = m_cameras.try_emplace(m_current_camera_index);
+    return it->second;
+}
+
+void AppData::set_current_camera(const unsigned int id) noexcept {
+    m_current_camera_index = id;
+}
+
+void AppData::delete_current_camera() noexcept {
+    m_cameras.erase(m_current_camera_index);
+    // the index will be updated automatically later by the UI handler
 }
 
 void AppData::add_mesh(Mesh&& mesh) noexcept {

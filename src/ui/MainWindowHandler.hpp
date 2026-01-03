@@ -1,4 +1,5 @@
 #pragma once
+#include "CameraSelectionHandler.hpp"
 #include "core/RenderMode.hpp"
 #include "render/OpenGLArea.hpp"
 
@@ -17,7 +18,11 @@ namespace di_renderer::ui {
             {"button_toggle_polygons", core::RenderMode::POLYGON},
             {"button_toggle_texture", core::RenderMode::TEXTURE},
             {"button_toggle_lighting", core::RenderMode::LIGHTING}};
+        inline static const std::array<std::string, 9> TRANSFORM_IDS = {
+            "translation_x", "translation_y", "translation_z", "rotation_x", "rotation_y",
+            "rotation_z",    "scale_x",       "scale_y",       "scale_z"};
 
+        CameraSelectionHandler m_camera_selection_handler;
         Glib::RefPtr<Gtk::Builder> m_builder;
         Gtk::Window* m_window{nullptr};
         Gtk::FileChooserButton* m_texture_selector{nullptr};
@@ -25,11 +30,13 @@ namespace di_renderer::ui {
 
         void load_ui();
         void connect_buttons();
+        void connect_entries();
         void init_error_handling() const;
         void init_gl_area();
         void on_open_button_click() const;
         void on_save_button_click() const;
         void on_texture_selection() const;
         void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
+        void on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id);
     };
 } // namespace di_renderer::ui

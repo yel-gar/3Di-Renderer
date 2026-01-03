@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FaceVerticeData.hpp"
+#include "math/Transform.hpp"
 #include "math/UVCoord.hpp"
 #include "math/Vector3.hpp"
 
@@ -44,7 +45,11 @@ namespace di_renderer::core {
 
         void compute_vertex_normals();
 
+        math::Transform& get_transform() noexcept;
+
       private:
+        math::Transform m_transform;
+
         void triangulate_faces(const std::vector<std::vector<FaceVerticeData>>& input_faces) noexcept;
     };
 
