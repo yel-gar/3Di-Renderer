@@ -1,5 +1,7 @@
 #pragma once
+
 #include <cstdint>
+#include <math/Vector3.hpp>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
