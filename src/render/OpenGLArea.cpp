@@ -13,11 +13,16 @@ OpenGLArea::OpenGLArea() {
     set_has_depth_buffer(true);
     set_required_version(3, 3);
 
+    // mouse events
     add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
+
+    // keyboard events
+    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 }
 
 bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
     if (event->button == 1) { // Left mouse button
+        grab_focus();
         m_dragging = true;
         m_last_x = event->x;
         m_last_y = event->y;
@@ -32,6 +37,47 @@ bool OpenGLArea::on_button_release_event(GdkEventButton* event) {
         return true;
     }
     return false;
+}
+
+bool OpenGLArea::on_key_press_event(GdkEventKey* event) {
+    m_pressed_keys.insert(event->keyval);
+    parse_keyboard_movement();
+    return true;
+}
+
+bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
+    m_pressed_keys.erase(event->keyval);
+    parse_keyboard_movement();
+    return true;
+}
+
+void OpenGLArea::parse_keyboard_movement() {
+    math::Vector3 vec;
+
+    // i don't know how which axis goes to which vector component so please figure it out
+    if (key_pressed(GDK_KEY_w))
+        vec.z += 1.f;
+    if (key_pressed(GDK_KEY_s))
+        vec.z -= 1.f;
+    if (key_pressed(GDK_KEY_a))
+        vec.x -= 1.f;
+    if (key_pressed(GDK_KEY_d))
+        vec.x += 1.f;
+    if (key_pressed(GDK_KEY_q))
+        vec.y -= 1.f;
+    if (key_pressed(GDK_KEY_e))
+        vec.y += 1.f;
+
+    // zero
+    if (vec.length() <= std::numeric_limits<float>::epsilon()) {
+        return;
+    }
+
+    m_app_data.get_current_camera().move(vec.normalized());
+}
+
+bool OpenGLArea::key_pressed(unsigned int key) {
+    return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
 bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
@@ -60,6 +106,9 @@ void OpenGLArea::on_realize() {
     }
 
     init_gl_resources();
+
+    set_can_focus(true);
+    grab_focus();
 }
 
 void OpenGLArea::on_unrealize() {

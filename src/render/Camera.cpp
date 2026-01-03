@@ -59,6 +59,8 @@ namespace di_renderer::render {
     }
 
     void Camera::move(const Vector3& direction) {
+        // TODO: remove this debug statement
+        std::cout << "Translating camera: " << direction.x << ", " << direction.y << ", " << direction.z << '\n';
         m_position += direction;
         m_target += direction;
     }
