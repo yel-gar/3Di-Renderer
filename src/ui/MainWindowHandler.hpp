@@ -1,4 +1,5 @@
 #pragma once
+#include "CameraSelectionHandler.hpp"
 #include "core/RenderMode.hpp"
 #include "render/OpenGLArea.hpp"
 
@@ -21,6 +22,7 @@ namespace di_renderer::ui {
             "translation_x", "translation_y", "translation_z", "rotation_x", "rotation_y",
             "rotation_z",    "scale_x",       "scale_y",       "scale_z"};
 
+        CameraSelectionHandler m_camera_selection_handler;
         Glib::RefPtr<Gtk::Builder> m_builder;
         Gtk::Window* m_window{nullptr};
         Gtk::FileChooserButton* m_texture_selector{nullptr};

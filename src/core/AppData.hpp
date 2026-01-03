@@ -1,10 +1,10 @@
 #pragma once
 #include "Mesh.hpp"
 #include "RenderMode.hpp"
+#include "render/Camera.hpp"
 
 #include <bitset>
-#include <cstdint>
-#include <memory>
+#include <unordered_map>
 
 namespace di_renderer::core {
     class AppData final {
@@ -24,9 +24,15 @@ namespace di_renderer::core {
         void select_mesh(size_t index);
         const std::vector<Mesh>& get_meshes() const noexcept;
 
+        const render::Camera& get_current_camera() noexcept;
+        void set_current_camera(unsigned int id) noexcept;
+        void delete_current_camera() noexcept;
+
       private:
         size_t m_current_mesh_index = 0;
+        unsigned int m_current_camera_index = 0;
         std::vector<Mesh> m_meshes;
+        std::unordered_map<unsigned int, render::Camera> m_cameras;
 
         std::bitset<3> m_render_mode;
     };

@@ -1,7 +1,7 @@
 # Declare subdirectories first
-subdir('core')
 subdir('math')
 subdir('render')
+subdir('core')
 subdir('io')
 subdir('ui')
 

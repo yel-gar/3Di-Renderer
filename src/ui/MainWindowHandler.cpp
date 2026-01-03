@@ -31,6 +31,7 @@ void MainWindowHandler::load_ui() {
     connect_buttons();
     connect_entries();
     init_gl_area();
+    m_camera_selection_handler.init(m_builder, m_gl_area->get_app_data());
 }
 
 void MainWindowHandler::connect_buttons() {
