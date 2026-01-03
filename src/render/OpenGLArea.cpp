@@ -1,6 +1,8 @@
 // NOLINTBEGIN please enable linting later
 #include "OpenGLArea.hpp"
 
+#include "core/AppData.hpp"
+
 #include <iostream>
 
 // this code was written by chatgpt but yaroslav should manage this idk what this does
@@ -29,6 +31,10 @@ void OpenGLArea::on_unrealize() {
     free_gl_resources();
 
     GLArea::on_unrealize();
+}
+
+di_renderer::core::AppData& OpenGLArea::get_app_data() noexcept {
+    return m_app_data;
 }
 
 bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& context) {

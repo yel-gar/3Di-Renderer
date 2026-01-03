@@ -1,5 +1,6 @@
 #pragma once
 #include "core/RenderMode.hpp"
+#include "render/OpenGLArea.hpp"
 
 #include <gtkmm.h>
 
@@ -20,14 +21,15 @@ namespace di_renderer::ui {
         Glib::RefPtr<Gtk::Builder> m_builder;
         Gtk::Window* m_window{nullptr};
         Gtk::FileChooserButton* m_texture_selector{nullptr};
+        render::OpenGLArea* m_gl_area{nullptr};
 
         void load_ui();
         void connect_buttons();
         void init_error_handling() const;
-        void init_gl_area() const;
+        void init_gl_area();
         void on_open_button_click() const;
         void on_save_button_click() const;
         void on_texture_selection() const;
-        static void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
+        void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
     };
 } // namespace di_renderer::ui
