@@ -63,10 +63,11 @@ namespace di_renderer::math {
         m_target += direction;
     }
 
-    void Camera::parse_mouse_movement(
-        double dx, double dy) { // NOLINT(readability-convert-member-functions-to-static) won't be static in the future
+    // NOLINTBEGIN (readability-convert-member-functions-to-static) won't be static in the future
+    void Camera::parse_mouse_movement(double dx, double dy) {
         std::cout << "Moving camera: " << dx << ", " << dy << '\n';
     }
+    // NOLINTEND
 
     Matrix4x4 Camera::get_view_matrix() const {
         return MatrixTransforms::look_at(m_position, m_target, m_up);
