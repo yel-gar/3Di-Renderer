@@ -2,14 +2,14 @@
 
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 #include <string_view>
 
 namespace di_renderer::core {
 
-    Mesh::Mesh(const std::vector<math::Vector3>& vertices, const std::vector<math::UVCoord>& texture_vertices,
-               const std::vector<math::Vector3>& normals,
-               const std::vector<std::vector<FaceVerticeData>>& faces) noexcept
-        : vertices(vertices), texture_vertices(texture_vertices), normals(normals) {
+    Mesh::Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
+               std::vector<math::Vector3> normals, const std::vector<std::vector<FaceVerticeData>>& faces) noexcept
+        : vertices(std::move(vertices)), texture_vertices(std::move(texture_vertices)), normals(std::move(normals)) {
         triangulate_faces(faces);
         if (this->normals.empty()) {
             compute_vertex_normals();
@@ -29,12 +29,7 @@ namespace di_renderer::core {
                 faces.push_back(face);
             } else if (face.size() > 3) {
                 for (size_t i = 1; i < face.size() - 1; ++i) {
-                    std::vector<FaceVerticeData> triangle;
-                    triangle.reserve(3);
-                    triangle.push_back(face[0]);
-                    triangle.push_back(face[i]);
-                    triangle.push_back(face[i + 1]);
-                    faces.push_back(std::move(triangle));
+                    faces.push_back({face[0], face[i], face[i + 1]});
                 }
             }
         }
@@ -42,6 +37,7 @@ namespace di_renderer::core {
 
     void Mesh::load_texture(std::string_view filename) {
         texture_filename = filename;
+        throw std::runtime_error("Not implemented yet!");
     }
 
     const std::string& Mesh::get_texture_filename() const noexcept {

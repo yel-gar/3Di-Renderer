@@ -23,10 +23,8 @@ namespace di_renderer::core {
         std::string texture_filename;
 
         Mesh() = default;
-
-        Mesh(const std::vector<math::Vector3>& vertices, const std::vector<math::UVCoord>& texture_vertices,
-             const std::vector<math::Vector3>& normals,
-             const std::vector<std::vector<FaceVerticeData>>& faces) noexcept;
+        Mesh(std::vector<math::Vector3> vertices, std::vector<math::UVCoord> texture_vertices,
+             std::vector<math::Vector3> normals, const std::vector<std::vector<FaceVerticeData>>& faces) noexcept;
 
         std::size_t vertex_count() const noexcept {
             return vertices.size();
