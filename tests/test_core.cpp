@@ -12,15 +12,8 @@ using di_renderer::core::RenderMode;
 
 constexpr float EPS = std::numeric_limits<float>::epsilon();
 
-TEST(CoreTests, InstanceAllocation) {
-    const auto& instance = AppData::instance();
-    const auto& instance2 = AppData::instance();
-    EXPECT_EQ(&instance, &instance2);
-}
-
 TEST(CoreTests, RenderModeSetting) {
-    auto& instance = AppData::instance();
-    instance.clean();
+    AppData instance;
 
     instance.enable_render_mode(RenderMode::TEXTURE);
     EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::TEXTURE));
@@ -39,8 +32,7 @@ TEST(CoreTests, RenderModeSetting) {
 }
 
 TEST(CoreTests, MeshData) {
-    auto& instance = AppData::instance();
-    instance.clean();
+    AppData instance;
 
     Mesh mesh0;
     Mesh mesh1{{{}}, {}, {}, {}};
@@ -63,8 +55,7 @@ TEST(CoreTests, MeshData) {
 }
 
 TEST(CoreTests, AdvancedMeshRemove) {
-    auto& instance = AppData::instance();
-    instance.clean();
+    AppData instance;
 
     // mesh ladder???
     const Mesh mesh0;

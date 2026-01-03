@@ -48,7 +48,7 @@ void MainWindowHandler::connect_buttons() {
         m_builder->get_widget(button_id, toggle_button);
         assert(toggle_button != nullptr);
         toggle_button->signal_toggled().connect(
-            [toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
+            [this, toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
     }
 
     // texture selector
@@ -83,14 +83,14 @@ void MainWindowHandler::init_error_handling() const {
     Glib::add_exception_handler(handler);
 }
 
-void MainWindowHandler::init_gl_area() const {
-    auto* const gl_area = Gtk::make_managed<OpenGLArea>();
+void MainWindowHandler::init_gl_area() {
+    m_gl_area = Gtk::make_managed<OpenGLArea>();
 
     Gtk::Widget* placeholder_box = nullptr;
     m_builder->get_widget("gl_placeholder", placeholder_box);
 
     if (auto* const box = dynamic_cast<Gtk::Box*>(placeholder_box)) {
-        box->pack_start(*gl_area);
+        box->pack_start(*m_gl_area);
     } else {
         std::cerr << "Error: Box is not a Gtk::Box" << '\n';
     }
@@ -105,12 +105,12 @@ void MainWindowHandler::on_open_button_click() const {
     filter->add_pattern("*.obj");
     dialog->set_filter(filter);
 
-    dialog->signal_response().connect([dialog](const int response_id) {
+    dialog->signal_response().connect([this, dialog](const int response_id) {
         if (response_id == Gtk::RESPONSE_ACCEPT) {
             const auto filename = dialog->get_filename();
             const auto [vertices, texture_vertices, normals, faces] = io::ObjReader::read_file(filename);
             core::Mesh mesh{vertices, texture_vertices, normals, faces};
-            core::AppData::instance().add_mesh(std::move(mesh));
+            m_gl_area->get_app_data().add_mesh(std::move(mesh));
         }
     });
 
@@ -126,10 +126,10 @@ void MainWindowHandler::on_save_button_click() const {
     filter->add_pattern("*.obj");
     dialog->set_filter(filter);
 
-    dialog->signal_response().connect([dialog](const int response_id) {
+    dialog->signal_response().connect([this, dialog](const int response_id) {
         if (response_id == Gtk::RESPONSE_ACCEPT) {
             const auto& filename = dialog->get_filename();
-            const auto& mesh = core::AppData::instance().get_current_mesh();
+            const auto& mesh = m_gl_area->get_app_data().get_current_mesh();
             io::ObjWriter::write_file(filename, mesh);
         }
     });
@@ -138,10 +138,10 @@ void MainWindowHandler::on_save_button_click() const {
 }
 
 void MainWindowHandler::on_texture_selection() const {
-    auto& mesh = core::AppData::instance().get_current_mesh();
+    auto& mesh = m_gl_area->get_app_data().get_current_mesh();
     mesh.load_texture(m_texture_selector->get_filename());
 }
 
 void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {
-    core::AppData::instance().set_render_mode(mode, btn.get_active());
+    m_gl_area->get_app_data().set_render_mode(mode, btn.get_active());
 }
