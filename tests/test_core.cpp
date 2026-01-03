@@ -1,5 +1,6 @@
 #include "core/AppData.hpp"
 #include "core/FaceVerticeData.hpp"
+#include "math/Camera.hpp"
 #include "math/UVCoord.hpp"
 #include "math/Vector3.hpp"
 
@@ -104,10 +105,10 @@ TEST(CoreTests, GetCreatesCameraIfMissing) {
     AppData app;
 
     // default index assumed to be 0
-    const di_renderer::render::Camera& cam = app.get_current_camera();
+    const di_renderer::math::Camera& cam = app.get_current_camera();
 
     // Calling again should return the same object
-    const di_renderer::render::Camera& cam2 = app.get_current_camera();
+    const di_renderer::math::Camera& cam2 = app.get_current_camera();
 
     EXPECT_EQ(&cam, &cam2);
 }
@@ -116,10 +117,10 @@ TEST(CoreTests, SetChangesReturnedCamera) {
     AppData app;
 
     app.set_current_camera(1);
-    const di_renderer::render::Camera& cam1 = app.get_current_camera();
+    const di_renderer::math::Camera& cam1 = app.get_current_camera();
 
     app.set_current_camera(2);
-    const di_renderer::render::Camera& cam2 = app.get_current_camera();
+    const di_renderer::math::Camera& cam2 = app.get_current_camera();
 
     EXPECT_NE(&cam1, &cam2);
 }
@@ -128,13 +129,13 @@ TEST(CoreTests, DeleteRemovesCamera) {
     AppData app;
 
     app.set_current_camera(1);
-    di_renderer::render::Camera& cam = app.get_current_camera();
+    di_renderer::math::Camera& cam = app.get_current_camera();
     cam.set_position({200, 200, 200});
 
     app.delete_current_camera();
 
     // Re-fetching should create a NEW camera
-    const di_renderer::render::Camera& new_cam = app.get_current_camera();
+    const di_renderer::math::Camera& new_cam = app.get_current_camera();
 
     EXPECT_NE(new_cam.get_position().x, 200);
 }
@@ -155,13 +156,13 @@ TEST(CoreTests, DeleteDoesNotAffectOtherCameras) {
     app.get_current_camera(); // just to create
 
     app.set_current_camera(2);
-    const di_renderer::render::Camera& cam2 = app.get_current_camera();
+    const di_renderer::math::Camera& cam2 = app.get_current_camera();
 
     app.set_current_camera(1);
     app.delete_current_camera();
 
     app.set_current_camera(2);
-    const di_renderer::render::Camera& cam2_again = app.get_current_camera();
+    const di_renderer::math::Camera& cam2_again = app.get_current_camera();
 
     EXPECT_EQ(&cam2, &cam2_again);
 }

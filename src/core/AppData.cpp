@@ -42,7 +42,7 @@ Mesh& AppData::get_current_mesh() {
     return m_meshes[m_current_mesh_index]; // NOLINT(*-pro-bounds-avoid-unchecked-container-access) because it's checked
 }
 
-di_renderer::render::Camera& AppData::get_current_camera() noexcept {
+di_renderer::math::Camera& AppData::get_current_camera() noexcept {
     auto [it, inserted] = m_cameras.try_emplace(m_current_camera_index);
     return it->second;
 }

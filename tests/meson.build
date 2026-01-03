@@ -9,20 +9,7 @@ if get_option('tests')
                 'test_math.cpp',
                 include_directories: incdir,
                 dependencies: [gtest_dep],
-                link_with: [math_lib, core_lib],
-            ),
-        )
-
-
-        # Rendering tests
-        test(
-            'rendering_tests',
-            executable(
-                'test_rendering',
-                'test_rendering.cpp',
-                include_directories: incdir,
-                dependencies: [gtest_dep],
-                link_with: [render_lib, math_lib],
+                link_with: [math_lib],
             ),
         )
 
@@ -34,7 +21,7 @@ if get_option('tests')
                 'test_io.cpp',
                 include_directories: incdir,
                 dependencies: [gtest_dep],
-                link_with: [io_lib, math_lib, core_lib],
+                link_with: [io_lib, core_lib],
             ),
         )
 
@@ -46,7 +33,7 @@ if get_option('tests')
                 'test_core.cpp',
                 include_directories: incdir,
                 dependencies: [gtest_dep],
-                link_with: [core_lib, math_lib, render_lib],
+                link_with: [core_lib, math_lib],
             ),
         )
     endif

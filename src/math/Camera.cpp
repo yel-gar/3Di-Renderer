@@ -5,9 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-using namespace di_renderer::math;
-
-namespace di_renderer::render {
+namespace di_renderer::math {
     Camera::Camera()
         : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(M_PI), m_aspect_ratio(1), m_near_plane(1),
           m_far_plane(10) {}
@@ -77,4 +75,4 @@ namespace di_renderer::render {
         return MatrixTransforms::perspective(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
     }
 
-} // namespace di_renderer::render
+} // namespace di_renderer::math
