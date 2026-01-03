@@ -60,11 +60,11 @@ namespace di_renderer::core {
             const int v1_idx = face[1].vi;
             const int v2_idx = face[2].vi;
 
-            if (v0_idx < 0 || v1_idx < 0 || v2_idx < 0 || v0_idx >= static_cast<int>(vertices.size()) ||
-                v1_idx >= static_cast<int>(vertices.size()) || v2_idx >= static_cast<int>(vertices.size())) {
+            const std::size_t vs = vertices.size();
+            if (v0_idx < 0 || v1_idx < 0 || v2_idx < 0 || static_cast<std::size_t>(v0_idx) >= vs ||
+                static_cast<std::size_t>(v1_idx) >= vs || static_cast<std::size_t>(v2_idx) >= vs) {
                 continue;
             }
-
             const math::Vector3& v0 = vertices[v0_idx];
             const math::Vector3& v1 = vertices[v1_idx];
             const math::Vector3& v2 = vertices[v2_idx];
