@@ -110,10 +110,10 @@ TEST(MeshTriangulationTest, TriangleFaceRemainsUnchanged) {
     Mesh mesh(vertices, tex_coords, normals, faces);
 
     EXPECT_EQ(mesh.face_count(), 1);
-    auto triangle = mesh.triangulated_faces[0];
-    EXPECT_EQ(triangle[0], 0);
-    EXPECT_EQ(triangle[1], 1);
-    EXPECT_EQ(triangle[2], 2);
+    auto triangle = mesh.faces[0];
+    EXPECT_EQ(triangle[0].vi, 0);
+    EXPECT_EQ(triangle[1].vi, 1);
+    EXPECT_EQ(triangle[2].vi, 2);
 }
 
 TEST(MeshTriangulationTest, QuadFaceTriangulatesToTwoTriangles) {
@@ -128,15 +128,15 @@ TEST(MeshTriangulationTest, QuadFaceTriangulatesToTwoTriangles) {
 
     EXPECT_EQ(mesh.face_count(), 2);
 
-    auto triangle1 = mesh.triangulated_faces[0];
-    EXPECT_EQ(triangle1[0], 0);
-    EXPECT_EQ(triangle1[1], 1);
-    EXPECT_EQ(triangle1[2], 2);
+    auto triangle1 = mesh.faces[0];
+    EXPECT_EQ(triangle1[0].vi, 0);
+    EXPECT_EQ(triangle1[1].vi, 1);
+    EXPECT_EQ(triangle1[2].vi, 2);
 
-    auto triangle2 = mesh.triangulated_faces[1];
-    EXPECT_EQ(triangle2[0], 0);
-    EXPECT_EQ(triangle2[1], 2);
-    EXPECT_EQ(triangle2[2], 3);
+    auto triangle2 = mesh.faces[1];
+    EXPECT_EQ(triangle2[0].vi, 0);
+    EXPECT_EQ(triangle2[1].vi, 2);
+    EXPECT_EQ(triangle2[2].vi, 3);
 }
 
 TEST(MeshTriangulationTest, PentagonFaceTriangulatesToThreeTriangles) {
@@ -151,20 +151,20 @@ TEST(MeshTriangulationTest, PentagonFaceTriangulatesToThreeTriangles) {
 
     EXPECT_EQ(mesh.face_count(), 3);
 
-    auto triangle1 = mesh.triangulated_faces[0];
-    EXPECT_EQ(triangle1[0], 0);
-    EXPECT_EQ(triangle1[1], 1);
-    EXPECT_EQ(triangle1[2], 2);
+    auto triangle1 = mesh.faces[0];
+    EXPECT_EQ(triangle1[0].vi, 0);
+    EXPECT_EQ(triangle1[1].vi, 1);
+    EXPECT_EQ(triangle1[2].vi, 2);
 
-    auto triangle2 = mesh.triangulated_faces[1];
-    EXPECT_EQ(triangle2[0], 0);
-    EXPECT_EQ(triangle2[1], 2);
-    EXPECT_EQ(triangle2[2], 3);
+    auto triangle2 = mesh.faces[1];
+    EXPECT_EQ(triangle2[0].vi, 0);
+    EXPECT_EQ(triangle2[1].vi, 2);
+    EXPECT_EQ(triangle2[2].vi, 3);
 
-    auto triangle3 = mesh.triangulated_faces[2];
-    EXPECT_EQ(triangle3[0], 0);
-    EXPECT_EQ(triangle3[1], 3);
-    EXPECT_EQ(triangle3[2], 4);
+    auto triangle3 = mesh.faces[2];
+    EXPECT_EQ(triangle3[0].vi, 0);
+    EXPECT_EQ(triangle3[1].vi, 3);
+    EXPECT_EQ(triangle3[2].vi, 4);
 }
 
 TEST(MeshTriangulationTest, SingleFaceWithLessThanThreeVerticesIgnored) {
