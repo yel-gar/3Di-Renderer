@@ -63,7 +63,8 @@ namespace di_renderer::math {
         m_target += direction;
     }
 
-    void Camera::parse_mouse_movement(double dx, double dy) {
+    void Camera::parse_mouse_movement(
+        double dx, double dy) { // NOLINT(readability-convert-member-functions-to-static) won't be static in the future
         std::cout << "Moving camera: " << dx << ", " << dy << '\n';
     }
 

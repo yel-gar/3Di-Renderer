@@ -30,7 +30,9 @@ repos:
         language: system
         args: [
           "-p=buildDir/",
-          "-warnings-as-errors='*'"
+          "-warnings-as-errors='*'",
+          "-j",
+          "10"
         ]
         pass_filenames: false
 

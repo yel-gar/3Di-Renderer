@@ -178,7 +178,7 @@ void MainWindowHandler::on_transform_entry_activate(Gtk::Entry& entry, const std
     const std::string text = entry.get_text();
     const auto transform_type = get_transform_type(entry_id);
 
-    float value;
+    float value = 0.0f;
     try {
         value = std::stof(text);
     } catch (const std::exception& e) {

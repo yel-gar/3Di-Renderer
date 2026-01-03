@@ -21,7 +21,7 @@ void di_renderer::ui::CameraSelectionHandler::init(const Glib::RefPtr<Gtk::Build
     // connect signal for selection
     m_view->get_selection()->signal_changed().connect([this] { on_selection(); });
 
-    Gtk::Button* btn;
+    Gtk::Button* btn = nullptr;
     builder->get_widget("camera_add", btn);
     btn->signal_clicked().connect([this] { on_add_button_click(); });
     builder->get_widget("camera_delete", btn);
@@ -51,8 +51,9 @@ void di_renderer::ui::CameraSelectionHandler::on_delete_button_click() {
 
     // chatgpt code im lazy
     const auto sel = m_view->get_selection()->get_selected();
-    if (!sel)
+    if (!sel) {
         return;
+    }
 
     // Prefer next row
     auto next = sel;
@@ -66,14 +67,15 @@ void di_renderer::ui::CameraSelectionHandler::on_delete_button_click() {
         }
     }
 
-    if (next)
+    if (next) {
         m_view->get_selection()->select(next);
+    }
 
     m_store->erase(sel);
 }
 
 void di_renderer::ui::CameraSelectionHandler::on_selection() {
-    unsigned int selected_id;
+    unsigned int selected_id = 0;
     const auto sel = m_view->get_selection()->get_selected();
     if (!sel) {
         std::cerr << "Warning: there's no selection but on_selection was called in camera tree selector\n";
