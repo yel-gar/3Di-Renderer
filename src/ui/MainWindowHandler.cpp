@@ -188,7 +188,7 @@ void MainWindowHandler::on_transform_entry_activate(Gtk::Entry& entry, const std
 
     // special case for scale invalid input
     if (transform_type.type == TransformType::SCALE && value <= std::numeric_limits<float>::epsilon()) {
-        entry.set_text(std::to_string(get_vector_component(transform.get_rotation(), transform_type.component)));
+        entry.set_text(std::to_string(get_vector_component(transform.get_scale(), transform_type.component)));
         return;
     }
 

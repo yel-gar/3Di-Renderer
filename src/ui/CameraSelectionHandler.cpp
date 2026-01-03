@@ -74,6 +74,10 @@ void di_renderer::ui::CameraSelectionHandler::on_delete_button_click() {
 
 void di_renderer::ui::CameraSelectionHandler::on_selection() {
     unsigned int selected_id;
-    m_view->get_selection()->get_selected()->get_value(0, selected_id);
+    const auto sel = m_view->get_selection()->get_selected();
+    if (!sel) {
+        std::cerr << "Warning: there's no selection but on_selection was called in camera tree selector\n";
+    }
+    sel->get_value(0, selected_id);
     m_app_data->set_current_camera(selected_id);
 }

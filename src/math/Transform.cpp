@@ -10,7 +10,6 @@ namespace di_renderer::math {
     Transform::Transform() : m_translation(0.0f, 0.0f, 0.0f), m_rotation(0.0f, 0.0f, 0.0f), m_scale(1.0f, 1.0f, 1.0f) {}
 
     void Transform::set_position(const math::Vector3& position) {
-        std::cout << position.x << " " << position.y << " " << position.z << '\n';
         m_translation = position;
     }
 
