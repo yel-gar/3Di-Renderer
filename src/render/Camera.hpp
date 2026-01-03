@@ -25,6 +25,8 @@ namespace di_renderer::render {
         void move_target(const math::Vector3& target);
         void move(const math::Vector3& direction);
 
+        void parse_mouse_movement(double dx, double dy);
+
         math::Matrix4x4 get_view_matrix() const;
         math::Matrix4x4 get_projection_matrix() const;
 

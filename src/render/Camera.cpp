@@ -3,6 +3,7 @@
 #include "math/MatrixTransforms.hpp"
 
 #include <cmath>
+#include <iostream>
 
 using namespace di_renderer::math;
 
@@ -60,6 +61,10 @@ namespace di_renderer::render {
     void Camera::move(const Vector3& direction) {
         m_position += direction;
         m_target += direction;
+    }
+
+    void Camera::parse_mouse_movement(double dx, double dy) {
+        std::cout << "Moving camera: " << dx << ", " << dy << '\n';
     }
 
     Matrix4x4 Camera::get_view_matrix() const {

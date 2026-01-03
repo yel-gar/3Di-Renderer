@@ -12,6 +12,42 @@ using di_renderer::render::OpenGLArea;
 OpenGLArea::OpenGLArea() {
     set_has_depth_buffer(true);
     set_required_version(3, 3);
+
+    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
+}
+
+bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
+    if (event->button == 1) { // Left mouse button
+        m_dragging = true;
+        m_last_x = event->x;
+        m_last_y = event->y;
+        return true;
+    }
+    return false;
+}
+
+bool OpenGLArea::on_button_release_event(GdkEventButton* event) {
+    if (event->button == 1) {
+        m_dragging = false;
+        return true;
+    }
+    return false;
+}
+
+bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
+    if (!m_dragging) {
+        return false;
+    }
+
+    double dx = event->x - m_last_x;
+    double dy = event->y - m_last_y;
+
+    m_last_x = event->x;
+    m_last_y = event->y;
+
+    m_app_data.get_current_camera().parse_mouse_movement(dx, dy);
+
+    return true;
 }
 
 void OpenGLArea::on_realize() {
