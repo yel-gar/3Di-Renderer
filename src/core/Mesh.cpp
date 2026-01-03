@@ -114,4 +114,8 @@ namespace di_renderer::core {
         }
     }
 
+    math::Transform& Mesh::get_transform() noexcept {
+        return m_transform;
+    }
+
 } // namespace di_renderer::core

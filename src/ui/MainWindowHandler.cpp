@@ -1,5 +1,6 @@
 #include "MainWindowHandler.hpp"
 
+#include "TransformTypeHelper.hpp"
 #include "core/AppData.hpp"
 #include "core/Mesh.hpp"
 #include "io/ObjReader.hpp"
@@ -28,6 +29,7 @@ void MainWindowHandler::show(Gtk::Application& app) const {
 
 void MainWindowHandler::load_ui() {
     connect_buttons();
+    connect_entries();
     init_gl_area();
 }
 
@@ -54,6 +56,16 @@ void MainWindowHandler::connect_buttons() {
     // texture selector
     m_builder->get_widget("texture_file_selector", m_texture_selector);
     m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
+}
+
+void MainWindowHandler::connect_entries() {
+    Gtk::Entry* entry = nullptr;
+
+    for (const auto& entry_id : TRANSFORM_IDS) {
+        m_builder->get_widget(entry_id, entry);
+        assert(entry != nullptr);
+        entry->signal_activate().connect([this, entry, id = entry_id] { on_transform_entry_activate(*entry, id); });
+    }
 }
 
 void MainWindowHandler::init_error_handling() const {
@@ -111,6 +123,12 @@ void MainWindowHandler::on_open_button_click() const {
             const auto [vertices, texture_vertices, normals, faces] = io::ObjReader::read_file(filename);
             core::Mesh mesh{vertices, texture_vertices, normals, faces};
             m_gl_area->get_app_data().add_mesh(std::move(mesh));
+
+            Gtk::Entry* entry = nullptr;
+            for (const auto& entry_id : TRANSFORM_IDS) {
+                m_builder->get_widget(entry_id, entry);
+                entry->set_text(entry_id.substr(0, entry_id.find('_')) == "scale" ? "1" : "0");
+            }
         }
     });
 
@@ -144,4 +162,45 @@ void MainWindowHandler::on_texture_selection() const {
 
 void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {
     m_gl_area->get_app_data().set_render_mode(mode, btn.get_active());
+}
+
+void MainWindowHandler::on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id) {
+    core::Mesh* mesh_ptr = nullptr;
+    try {
+        mesh_ptr = &m_gl_area->get_app_data().get_current_mesh();
+    } catch (const std::exception&) {
+        std::cout << "No active mesh, ignoring entry value set";
+        return;
+    }
+
+    auto& transform = mesh_ptr->get_transform(); // safe dereference
+    const std::string text = entry.get_text();
+    const auto transform_type = get_transform_type(entry_id);
+
+    float value;
+    try {
+        value = std::stof(text);
+    } catch (const std::exception& e) {
+        std::cout << "Bad numeric value: " << e.what() << '\n';
+        return;
+    }
+
+    // special case for scale invalid input
+    if (transform_type.type == TransformType::SCALE && value <= std::numeric_limits<float>::epsilon()) {
+        entry.set_text(std::to_string(get_vector_component(transform.get_rotation(), transform_type.component)));
+        return;
+    }
+
+    // ugly code incoming
+    switch (transform_type.type) {
+    case TransformType::TRANSLATE:
+        transform.set_position(get_new_vector(transform.get_position(), transform_type.component, value));
+        break;
+    case TransformType::ROTATE:
+        transform.set_rotation(get_new_vector(transform.get_rotation(), transform_type.component, value));
+        break;
+    case TransformType::SCALE:
+        transform.set_scale(get_new_vector(transform.get_scale(), transform_type.component, value));
+        break;
+    }
 }
