@@ -31,29 +31,35 @@
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">7</property>
+                <property name="margin-end">7</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkTreeView" id="camera_tree_view">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="model">camera_list_store</property>
-                    <property name="headers-visible">False</property>
-                    <property name="enable-search">False</property>
-                    <property name="show-expanders">False</property>
-                    <property name="enable-grid-lines">horizontal</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
-                    </child>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="shadow-type">in</property>
+                    <property name="min-content-height">240</property>
                     <child>
-                      <object class="GtkTreeViewColumn" id="camera_id_column">
-                        <property name="title" translatable="yes">camera_id</property>
+                      <object class="GtkTreeView" id="camera_tree_view">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">camera_list_store</property>
+                        <property name="headers-visible">False</property>
+                        <property name="enable-search">False</property>
+                        <property name="show-expanders">False</property>
+                        <property name="enable-grid-lines">horizontal</property>
                         <child>
-                          <object class="GtkCellRendererText">
-                            <property name="editable">False</property>
+                          <object class="GtkTreeViewColumn" id="camera_id_column">
+                            <property name="title" translatable="yes">camera_id</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
                           </object>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
                         </child>
                       </object>
                     </child>
@@ -68,6 +74,7 @@
                   <object class="GtkButtonBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <property name="layout-style">start</property>
                     <child>
                       <object class="GtkButton" id="camera_delete">
@@ -100,6 +107,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
+                    <property name="padding">5</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
