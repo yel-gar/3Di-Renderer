@@ -6,6 +6,7 @@ math_lib = static_library(
     'Matrix4x4.cpp',
     'MatrixTransforms.cpp',
     'Transform.cpp',
+    'Camera.cpp',
     include_directories: incdir,
     dependencies: [glm_dep],
 )

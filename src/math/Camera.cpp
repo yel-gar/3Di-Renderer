@@ -3,10 +3,9 @@
 #include "math/MatrixTransforms.hpp"
 
 #include <cmath>
+#include <iostream>
 
-using namespace di_renderer::math;
-
-namespace di_renderer::render {
+namespace di_renderer::math {
     Camera::Camera()
         : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(M_PI), m_aspect_ratio(1), m_near_plane(1),
           m_far_plane(10) {}
@@ -58,9 +57,17 @@ namespace di_renderer::render {
     }
 
     void Camera::move(const Vector3& direction) {
+        // TODO: remove this debug statement
+        std::cout << "Translating camera: " << direction.x << ", " << direction.y << ", " << direction.z << '\n';
         m_position += direction;
         m_target += direction;
     }
+
+    // NOLINTBEGIN (readability-convert-member-functions-to-static) won't be static in the future
+    void Camera::parse_mouse_movement(double dx, double dy) {
+        std::cout << "Moving camera: " << dx << ", " << dy << '\n';
+    }
+    // NOLINTEND
 
     Matrix4x4 Camera::get_view_matrix() const {
         return MatrixTransforms::look_at(m_position, m_target, m_up);
@@ -70,4 +77,4 @@ namespace di_renderer::render {
         return MatrixTransforms::perspective(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
     }
 
-} // namespace di_renderer::render
+} // namespace di_renderer::math
