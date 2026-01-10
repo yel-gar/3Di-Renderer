@@ -1,24 +1,29 @@
-// NOLINTBEGIN
 #pragma once
-#include <epoxy/gl.h>
-#include <gtkmm.h>
+
+#include "Triangle.hpp"
+
+#include <gtkmm/glarea.h>
 
 namespace di_renderer::render {
-    class OpenGLArea final : public Gtk::GLArea {
+
+    class OpenGLArea : public Gtk::GLArea {
       public:
         OpenGLArea();
+        ~OpenGLArea() override;
 
       protected:
+        bool on_render(const Glib::RefPtr<Gdk::GLContext>& context) override;
         void on_realize() override;
         void on_unrealize() override;
-        bool on_render(const Glib::RefPtr<Gdk::GLContext>& context) override;
+        void on_resize(int width, int height) override;
 
       private:
-        void init_gl_resources();
-        void free_gl_resources();
-
-        GLuint vao = 0;
-        GLuint vbo = 0;
+        GLuint shader_program_ = 0;
+        void init_resources();
+        void cleanup_resources();
+        void set_default_uniforms();
+        void draw_test_triangle();
+        void check_gl_errors(const char* operation) const;
     };
+
 } // namespace di_renderer::render
-// NOLINTEND
