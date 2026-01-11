@@ -1,12 +1,14 @@
 #include "OpenGLArea.hpp"
 
+#include "Triangle.hpp"
+#include "core/AppData.hpp"
+
 #include <chrono>
 #include <cmath>
 #include <epoxy/gl.h>
 #include <glibmm/dispatcher.h>
-#include <glibmm/main.h>
-#include <gtkmm/main.h>
 #include <stdexcept>
+#include <vector>
 
 namespace di_renderer {
     namespace render {
@@ -15,6 +17,7 @@ namespace di_renderer {
             set_required_version(3, 3);
             set_has_depth_buffer(true);
             set_auto_render(false);
+
             render_dispatcher_.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
         }
 
@@ -117,7 +120,7 @@ namespace di_renderer {
             glFrontFace(GL_CCW);
 
             set_default_uniforms();
-            draw_test_cube();
+            draw_current_mesh();
 
             return true;
         }
@@ -240,37 +243,90 @@ namespace di_renderer {
                 glUniform3f(light_color_loc, 1.0f, 1.0f, 1.0f);
         }
 
-        void OpenGLArea::draw_test_cube() {
+        void OpenGLArea::draw_current_mesh() {
             if (!shader_program_ || !gl_initialized_.load()) {
                 return;
             }
 
-            const di_renderer::graphics::Vertex cube_vertices[8] = {
-                {{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},   // 0
-                {{0.5f, -0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},    // 1
-                {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},     // 2
-                {{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},    // 3
-                {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.5f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}}, // 4
-                {{0.5f, -0.5f, -0.5f}, {0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},  // 5
-                {{0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},   // 6
-                {{-0.5f, 0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}   // 7
-            };
+            try {
+                const auto& mesh = core::AppData::instance().get_current_mesh();
 
-            // Fixed indices with proper winding order for backface culling
-            const uint32_t cube_indices[36] = {// Front face (z+)
-                                               0, 1, 2, 2, 3, 0,
-                                               // Back face (z-)
-                                               7, 6, 5, 5, 4, 7,
-                                               // Right face (x+)
-                                               1, 5, 6, 6, 2, 1,
-                                               // Left face (x-)
-                                               3, 7, 4, 4, 0, 3,
-                                               // Top face (y+)
-                                               3, 2, 6, 6, 7, 3,
-                                               // Bottom face (y-)
-                                               0, 4, 5, 5, 1, 0};
+                std::vector<di_renderer::graphics::Vertex> vertices;
+                vertices.reserve(mesh.vertices.size());
 
-            di_renderer::graphics::draw_indexed_mesh(cube_vertices, 8, cube_indices, 36, shader_program_);
+                std::vector<unsigned int> indices;
+                for (const auto& face : mesh.faces) {
+                    if (face.size() >= 3) {
+                        indices.push_back(face[0].vi);
+                        indices.push_back(face[1].vi);
+                        indices.push_back(face[2].vi);
+
+                        for (size_t i = 3; i < face.size(); ++i) {
+                            indices.push_back(face[0].vi);
+                            indices.push_back(face[i - 1].vi);
+                            indices.push_back(face[i].vi);
+                        }
+                    }
+                }
+
+                for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+                    di_renderer::graphics::Vertex vertex;
+
+                    vertex.position = {{mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z}};
+
+                    if (i < mesh.normals.size()) {
+                        vertex.normal = {{mesh.normals[i].x, mesh.normals[i].y, mesh.normals[i].z}};
+                    } else {
+                        vertex.normal = {{0.0f, 1.0f, 0.0f}};
+                    }
+
+                    if (i < mesh.texture_vertices.size()) {
+                        vertex.uv = {{mesh.texture_vertices[i].u, mesh.texture_vertices[i].v}};
+                    } else {
+                        vertex.uv = {{0.0f, 0.0f}};
+                    }
+
+                    vertex.color = {{(std::sin(mesh.vertices[i].x * 2.0f) + 1.0f) * 0.5f,
+                                     (std::sin(mesh.vertices[i].y * 2.0f) + 1.0f) * 0.5f,
+                                     (std::sin(mesh.vertices[i].z * 2.0f) + 1.0f) * 0.5f}};
+
+                    vertices.push_back(vertex);
+                }
+
+                if (!indices.empty()) {
+                    di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(),
+                                                             indices.size(), shader_program_);
+                }
+            } catch (const std::out_of_range&) {
+                const di_renderer::graphics::Vertex cube_vertices[8] = {
+                    {{{-0.5f, -0.5f, 0.5f}}, {{1.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f, 1.0f}}, {{0.0f, 0.0f}}}, // 0 - Red
+                    {{{0.5f, -0.5f, 0.5f}}, {{0.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 1.0f}}, {{1.0f, 0.0f}}},  // 1 - Green
+                    {{{0.5f, 0.5f, 0.5f}}, {{0.0f, 0.0f, 1.0f}}, {{0.0f, 0.0f, 1.0f}}, {{1.0f, 1.0f}}},   // 2 - Blue
+                    {{{-0.5f, 0.5f, 0.5f}}, {{1.0f, 1.0f, 0.0f}}, {{0.0f, 0.0f, 1.0f}}, {{0.0f, 1.0f}}},  // 3 - Yellow
+                    {{{-0.5f, -0.5f, -0.5f}},
+                     {{1.0f, 0.5f, 0.0f}},
+                     {{0.0f, 0.0f, -1.0f}},
+                     {{0.0f, 0.0f}}},                                                                      // 4 - Orange
+                    {{{0.5f, -0.5f, -0.5f}}, {{0.5f, 0.0f, 1.0f}}, {{0.0f, 0.0f, -1.0f}}, {{1.0f, 0.0f}}}, // 5 - Purple
+                    {{{0.5f, 0.5f, -0.5f}}, {{0.5f, 1.0f, 0.5f}}, {{0.0f, 0.0f, -1.0f}}, {{1.0f, 1.0f}}},  // 6 - Pink
+                    {{{-0.5f, 0.5f, -0.5f}}, {{0.0f, 0.5f, 0.5f}}, {{0.0f, 0.0f, -1.0f}}, {{0.0f, 1.0f}}}  // 7 - Cyan
+                };
+
+                const unsigned int cube_indices[36] = {// Front face
+                                                       0, 1, 2, 2, 3, 0,
+                                                       // Back face
+                                                       7, 6, 5, 5, 4, 7,
+                                                       // Top face
+                                                       3, 2, 6, 6, 7, 3,
+                                                       // Bottom face
+                                                       0, 4, 5, 5, 1, 0,
+                                                       // Right face
+                                                       1, 5, 6, 6, 2, 1,
+                                                       // Left face
+                                                       3, 7, 4, 4, 0, 3};
+
+                di_renderer::graphics::draw_indexed_mesh(cube_vertices, 8, cube_indices, 36, shader_program_);
+            }
         }
     } // namespace render
 } // namespace di_renderer

@@ -133,27 +133,21 @@ void main() {
 
             glBindVertexArray(g_vao);
 
-            // Vertex buffer
             glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
             glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
-            // Index buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
-            // Position attribute (location 0)
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) 0);
 
-            // Color attribute (location 1)
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
 
-            // Normal attribute (location 2)
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
 
-            // UV attribute (location 3)
             glEnableVertexAttribArray(3);
             glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv));
 
@@ -185,11 +179,9 @@ void main() {
 
             glBindVertexArray(g_vao);
 
-            // Update vertex buffer
             glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(Vertex), vertices, GL_DYNAMIC_DRAW);
 
-            // Update index buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
