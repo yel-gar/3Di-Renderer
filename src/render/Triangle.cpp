@@ -121,17 +121,25 @@ void main() {
 
         static GLuint g_vao = 0;
         static GLuint g_vbo = 0;
-        static constexpr std::size_t TRI_VERTEX_COUNT = 3;
+        static GLuint g_ebo = 0;
 
-        void init_triangle_batch() {
+        void init_mesh_batch() {
             if (g_vao != 0)
                 return;
 
             glGenVertexArrays(1, &g_vao);
             glGenBuffers(1, &g_vbo);
+            glGenBuffers(1, &g_ebo);
+
             glBindVertexArray(g_vao);
+
+            // Vertex buffer
             glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
-            glBufferData(GL_ARRAY_BUFFER, TRI_VERTEX_COUNT * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+
+            // Index buffer
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
             // Position attribute (location 0)
             glEnableVertexAttribArray(0);
@@ -153,7 +161,11 @@ void main() {
             glBindVertexArray(0);
         }
 
-        void destroy_triangle_batch() {
+        void destroy_mesh_batch() {
+            if (g_ebo) {
+                glDeleteBuffers(1, &g_ebo);
+                g_ebo = 0;
+            }
             if (g_vbo) {
                 glDeleteBuffers(1, &g_vbo);
                 g_vbo = 0;
@@ -164,36 +176,26 @@ void main() {
             }
         }
 
-        void draw_single_triangle(const Vertex* vertices, GLuint shader_program) {
-            if (!vertices)
+        void draw_indexed_mesh(const Vertex* vertices, size_t vertex_count, const unsigned int* indices,
+                               size_t index_count, GLuint shader_program) {
+            if (!vertices || !indices || vertex_count == 0 || index_count == 0)
                 return;
-            if (g_vao == 0 || g_vbo == 0)
-                init_triangle_batch();
+            if (g_vao == 0 || g_vbo == 0 || g_ebo == 0)
+                init_mesh_batch();
 
+            glBindVertexArray(g_vao);
+
+            // Update vertex buffer
             glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, TRI_VERTEX_COUNT * sizeof(Vertex), vertices);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(Vertex), vertices, GL_DYNAMIC_DRAW);
+
+            // Update index buffer
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
             glUseProgram(shader_program);
-            glBindVertexArray(g_vao);
-            glDrawArrays(GL_TRIANGLES, 0, (GLsizei) TRI_VERTEX_COUNT);
-            glBindVertexArray(0);
-            glUseProgram(0);
-        }
+            glDrawElements(GL_TRIANGLES, (GLsizei) index_count, GL_UNSIGNED_INT, nullptr);
 
-        void draw_triangle_batch(const Vertex* vertices, size_t count, GLuint shader_program) {
-            if (!vertices || count == 0)
-                return;
-            if (g_vao == 0 || g_vbo == 0)
-                init_triangle_batch();
-
-            glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
-            glBufferData(GL_ARRAY_BUFFER, count * sizeof(Vertex), vertices, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-            glUseProgram(shader_program);
-            glBindVertexArray(g_vao);
-            glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
             glBindVertexArray(0);
             glUseProgram(0);
         }

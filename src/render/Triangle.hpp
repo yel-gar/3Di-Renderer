@@ -17,11 +17,11 @@ namespace di_renderer {
         GLuint create_shader_program();
         void destroy_shader_program(GLuint program);
 
-        void init_triangle_batch();
-        void destroy_triangle_batch();
+        void init_mesh_batch();
+        void destroy_mesh_batch();
 
-        void draw_single_triangle(const Vertex* vertices, GLuint shader_program);
-        void draw_triangle_batch(const Vertex* vertices, size_t count, GLuint shader_program);
+        void draw_indexed_mesh(const Vertex* vertices, size_t vertex_count, const unsigned int* indices,
+                               size_t index_count, GLuint shader_program);
 
     } // namespace graphics
 } // namespace di_renderer
