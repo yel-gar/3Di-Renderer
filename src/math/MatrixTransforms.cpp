@@ -85,20 +85,27 @@ namespace di_renderer::math {
      * @return - view matrix (V)
      */
     Matrix4x4 MatrixTransforms::look_at(const Vector3& eye, const Vector3& target, const Vector3& up) {
-        const Vector3 z = (eye - target).normalized();
-        const Vector3 x = (up.cross(z)).normalized();
-        const Vector3 y = (z.cross(x)).normalized();
+        const Vector3 forward = (target - eye).normalized(); // Direction FROM eye TO target
+        const Vector3 right = forward.cross(up).normalized();
+        const Vector3 new_up = right.cross(forward).normalized();
 
         // clang-format off
-        // сразу перемноженная матрица P * T
-        Matrix4x4 res({
-            x.x, y.x, z.x, 0,
-            x.y, y.y, z.y, 0,
-            x.z, y.z, z.z, 0,
-            -eye.dot(x), -eye.dot(y), -eye.dot(z), 1
-        });
+    Matrix4x4 rotation({
+        right.x, right.y, right.z, 0,
+        new_up.x, new_up.y, new_up.z, 0,
+        -forward.x, -forward.y, -forward.z, 0,  // Negative forward for right-handed system
+        0, 0, 0, 1
+    });
+    
+    Matrix4x4 translation({
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        -eye.x, -eye.y, -eye.z, 1
+    });
+    
+    return rotation * translation;
         // clang-format on
-        return res;
     }
 
     /**
@@ -111,13 +118,15 @@ namespace di_renderer::math {
      */
     Matrix4x4 MatrixTransforms::perspective(float fov_radians, float aspect_ratio, float near_plane, float far_plane) {
         const float tan_of_half_fov = std::tan(fov_radians * 0.5f);
+        const float f = 1.0f / tan_of_half_fov;
+
         // clang-format off
-        Matrix4x4 res({
-            1 / tan_of_half_fov, 0, 0, 0,
-            0, 1 / (aspect_ratio * tan_of_half_fov), 0, 0,
-            0, 0, -(far_plane + near_plane) / (far_plane - near_plane), -1,
-            0, 0, -2 * far_plane * near_plane / (far_plane - near_plane), 0
-        });
+    Matrix4x4 res({
+        f / aspect_ratio, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, -(far_plane + near_plane) / (far_plane - near_plane), -1,
+        0, 0, -2 * far_plane * near_plane / (far_plane - near_plane), 0
+    });
         // clang-format on
         return res;
     }

@@ -49,15 +49,14 @@ TEST(CameraTests, ViewMatrix_TranslationX_Strafing) {
 }
 
 TEST(CameraTests, ViewMatrix_Rotation_90Degrees) {
-    // Z (Forward) = (1, 0, 0)
-    // X (Right)   = Up x Z = (0, 0, -1)
-    // Y (New Up)  = Z x X  = (0, 1, 0)
+    // Correct calculation for 90-degree rotation
+    // Camera at origin looking at (-1, 0, 0) with up vector (0, 1, 0)
     const Camera cam({0, 0, 0}, {-1, 0, 0}, 1.0f, 1.0f, 0.1f, 100.0f);
     // clang-format off
     Matrix4x4 const expected({
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f,  0.0f, 0.0f,
-        -1.0f, 0.0f,  0.0f, 0.0f,
+        0.0f, 0.0f, -1.0f, 0.0f,   
+        0.0f, 1.0f,  0.0f, 0.0f,  
+        1.0f, 0.0f,  0.0f, 0.0f,
         0.0f, 0.0f,  0.0f, 1.0f
     });
     // clang-format on
@@ -71,21 +70,10 @@ TEST(CameraTests, ProjectionMatrix_Calculated) {
     const float n = 1.0f;
     const float f = 3.0f;
 
-    const Camera cam({0, 0, 0}, {0, 0, 1}, fov, aspect, n, f);
+    const Camera cam({0, 0, 0}, {0, 0, -1}, fov, aspect, n, f);
 
-    // tan(45) = 1.
-    // [0,0] = 1/tan = 1
-    // [1,1] = 1/(2*1) = 0.5
-    // [2,2] = -(3+1)/(3-1) = -2
-    // [2,3] = -(2*3*1/2) = -3
-    // [3,1] = -1
-    // clang-format off
-    Matrix4x4 const expected({
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f, 0.0f,
-        0.0f, 0.0f, -2.0f, -1.0f,
-        0.0f, 0.0f, -3.0f, 0.0f
-    });
+    const Matrix4x4 expected(
+        {0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -2.0f, -1.0f, 0.0f, 0.0f, -3.0f, 0.0f});
     // clang-format on
 
     EXPECT_EQ(cam.get_projection_matrix(), expected);

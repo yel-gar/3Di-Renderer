@@ -1,64 +1,56 @@
-#include "MeshRenderer.hpp"
+#pragma once
 
-#include "Triangle.hpp"
+#include "math/Vector3.hpp"
+#include "render/Camera.hpp"
 
-#include <cmath>
-#include <vector>
+#include <atomic>
+#include <epoxy/gl.h>
+#include <glibmm/dispatcher.h>
+#include <gtkmm/glarea.h>
+#include <sigc++/connection.h>
+#include <unordered_set>
 
-namespace di_renderer::graphics {
+namespace di_renderer {
+    namespace render {
 
-    void draw_mesh(const di_renderer::core::Mesh& mesh, GLuint shader_program) {
-        if (mesh.vertices.empty()) {
-            return;
-        }
+        class OpenGLArea : public Gtk::GLArea {
+          public:
+            OpenGLArea();
+            ~OpenGLArea() override;
 
-        std::vector<Vertex> vertices;
-        vertices.reserve(mesh.vertices.size());
+          protected:
+            void on_realize() override final;
+            void on_unrealize() override final;
+            void on_resize(int width, int height) override final;
+            void on_map() override final;
+            void on_unmap() override final;
+            bool on_render(const Glib::RefPtr<Gdk::GLContext>& context) override final;
+            bool on_key_press_event(GdkEventKey* key_event) override;
+            bool on_key_release_event(GdkEventKey* key_event) override;
 
-        std::vector<unsigned int> indices;
-        indices.reserve(mesh.faces.size() * 3); // Reserve space for triangle indices
+          private:
+            void on_dispatch_render();
+            void start_animation();
+            bool on_animation_timeout();
+            void stop_animation();
+            void cleanup_resources();
+            void set_default_uniforms();
+            void draw_current_mesh();
+            void update_camera_position(float delta_time);
 
-        for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-            Vertex vertex;
-            vertex.position = {{mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z}};
+            Glib::Dispatcher render_dispatcher_;
+            sigc::connection render_connection_;
 
-            if (i < mesh.normals.size()) {
-                vertex.normal = {{mesh.normals[i].x, mesh.normals[i].y, mesh.normals[i].z}};
-            } else {
-                vertex.normal = {{0.0f, 1.0f, 0.0f}};
-            }
+            std::atomic<bool> gl_initialized_{false};
+            std::atomic<bool> should_render_{false};
 
-            if (i < mesh.texture_vertices.size()) {
-                vertex.uv = {{mesh.texture_vertices[i].u, mesh.texture_vertices[i].v}};
-            } else {
-                vertex.uv = {{0.0f, 0.0f}};
-            }
+            GLuint shader_program_ = 0;
+            float last_frame_time_ = 0.0f;
+            Camera camera_;
 
-            vertex.color = {{0.7f, 0.7f, 0.7f}};
+            std::unordered_set<guint> pressed_keys_;
+            float movement_speed_ = 2.5f;
+        };
 
-            vertices.push_back(vertex);
-        }
-
-        for (const auto& face : mesh.faces) {
-            if (face.size() < 3)
-                continue;
-
-            if (face.size() == 3) {
-                indices.push_back(face[0].vi);
-                indices.push_back(face[1].vi);
-                indices.push_back(face[2].vi);
-            } else {
-                for (size_t i = 1; i < face.size() - 1; ++i) {
-                    indices.push_back(face[0].vi);
-                    indices.push_back(face[i].vi);
-                    indices.push_back(face[i + 1].vi);
-                }
-            }
-        }
-
-        if (!indices.empty()) {
-            draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(), shader_program);
-        }
-    }
-
-} // namespace di_renderer::graphics
+    } // namespace render
+} // namespace di_renderer
