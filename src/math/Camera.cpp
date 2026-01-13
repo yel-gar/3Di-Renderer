@@ -71,6 +71,31 @@ namespace di_renderer::math {
 
     void Camera::zoom(double offset) {}
 
+    void Camera::update_eulers_from_vectors() {
+        Vector3 front = get_front();
+        m_pitch = std::asin(front.y) * (180.0f / M_PIf);
+        m_yaw = std::atan2(front.z, front.x) * (180.0f / M_PIf);
+    }
+
+    void Camera::update_vectors_from_euler(bool is_orbiting) {
+        Vector3 front;
+        float rad_yaw = m_yaw * (M_PIf / 180.0f);
+        float rad_pitch = m_pitch * (M_PIf / 180.0f);
+
+        front.x = std::cos(rad_yaw) * std::cos(rad_pitch);
+        front.y = std::sin(rad_pitch);
+        front.z = std::sin(rad_yaw) * std::cos(rad_pitch);
+
+        if (is_orbiting) {
+            Vector3 diff = m_position - m_target;
+            float radius = std::sqrt((diff.x * diff.x) + (diff.y * diff.y) + (diff.z * diff.z));
+
+            m_position = m_target - (front * radius);
+        } else {
+            float view_distance = 1.0f;
+            m_target = m_position + (front * view_distance);
+        }
+    }
     Matrix4x4 Camera::get_view_matrix() const {
         return MatrixTransforms::look_at(m_position, m_target, m_up);
     }

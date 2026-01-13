@@ -1,5 +1,6 @@
 #include "Vector4.hpp"
 
+#include <charconv>
 #include <cmath>
 
 namespace di_renderer::math {
@@ -30,6 +31,10 @@ namespace di_renderer::math {
 
     Vector4 Vector4::operator-(const Vector4& other) const {
         return {x - other.x, y - other.y, z - other.z, w - other.w};
+    }
+
+    Vector4 Vector4::operator*(float value) const {
+        return {x * value, y * value, z * value, w * value};
     }
 
     Vector4& Vector4::operator+=(const Vector4& other) {
