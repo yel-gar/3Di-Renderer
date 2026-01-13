@@ -44,11 +44,11 @@ namespace di_renderer::math {
         Vector3 m_target;
         Vector3 m_up{0.0f, 1.0f, 0.0f};
 
-        float m_yaw;
-        float m_pitch;
+        float m_yaw{};
+        float m_pitch{};
 
         // Hardcoded settings (needs to be debugged)
-        float m_sensetivity = 0.1f;
+        float m_sensitivity = 0.1f;
         float m_zoom_speed = 0.5f;
 
         float m_fov;

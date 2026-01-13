@@ -76,52 +76,52 @@ namespace di_renderer::math {
     }
 
     void Camera::rotate_view(float dx, float dy) {
-        m_yaw -= dx * m_sensetivity;
-        m_pitch += dy * m_sensetivity;
+        m_yaw -= dx * m_sensitivity;
+        m_pitch += dy * m_sensitivity;
         m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
         update_vectors_from_euler(false);
     }
 
     void Camera::orbit_around_target(float dx, float dy) {
-        m_yaw -= dx * m_sensetivity;
-        m_pitch += dy * m_sensetivity;
+        m_yaw -= dx * m_sensitivity;
+        m_pitch += dy * m_sensitivity;
         m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
         update_vectors_from_euler(true);
     }
 
     void Camera::zoom(float offset) {
-        float zoom_amount = offset * m_zoom_speed;
-        Vector3 move_vector = get_front() * zoom_amount;
-        Vector3 vec_to_target = m_target - m_position;
-        float dist = std::sqrt((vec_to_target.x * vec_to_target.x) + (vec_to_target.y * vec_to_target.y) +
-                               (vec_to_target.z * vec_to_target.z));
+        const float zoom_amount = offset * m_zoom_speed;
+        const Vector3 move_vector = get_front() * zoom_amount;
+        const Vector3 vec_to_target = m_target - m_position;
+        const float dist = std::sqrt((vec_to_target.x * vec_to_target.x) + (vec_to_target.y * vec_to_target.y) +
+                                     (vec_to_target.z * vec_to_target.z));
         if (zoom_amount < dist - 0.1f) {
             m_position += move_vector;
         }
     }
 
     void Camera::update_euler_from_vectors() {
-        Vector3 front = get_front();
+        const Vector3 front = get_front();
         m_pitch = std::asin(front.y) * (180.0f / M_PIf);
         m_yaw = std::atan2(front.z, front.x) * (180.0f / M_PIf);
     }
 
     void Camera::update_vectors_from_euler(bool is_orbiting) {
         Vector3 front;
-        float rad_yaw = m_yaw * (M_PIf / 180.0f);
-        float rad_pitch = m_pitch * (M_PIf / 180.0f);
+        const float rad_yaw = m_yaw * (M_PIf / 180.0f);
+        const float rad_pitch = m_pitch * (M_PIf / 180.0f);
 
         front.x = std::cos(rad_yaw) * std::cos(rad_pitch);
         front.y = std::sin(rad_pitch);
         front.z = std::sin(rad_yaw) * std::cos(rad_pitch);
 
         if (is_orbiting) {
-            Vector3 diff = m_position - m_target;
-            float radius = std::sqrt((diff.x * diff.x) + (diff.y * diff.y) + (diff.z * diff.z));
+            const Vector3 diff = m_position - m_target;
+            const float radius = std::sqrt((diff.x * diff.x) + (diff.y * diff.y) + (diff.z * diff.z));
 
             m_position = m_target - (front * radius);
         } else {
-            float view_distance = 1.0f;
+            const float view_distance = 1.0f;
             m_target = m_position + (front * view_distance);
         }
     }
