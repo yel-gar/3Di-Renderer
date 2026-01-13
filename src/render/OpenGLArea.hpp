@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/Vector3.hpp"
 #include "render/Camera.hpp"
 
 #include <atomic>
@@ -15,6 +14,10 @@ namespace di_renderer::render {
     class OpenGLArea : public Gtk::GLArea {
       public:
         OpenGLArea();
+        OpenGLArea(const OpenGLArea&) = delete;
+        OpenGLArea(OpenGLArea&&) = delete;
+        OpenGLArea& operator=(const OpenGLArea&) = delete;
+        OpenGLArea& operator=(OpenGLArea&&) = delete;
         ~OpenGLArea() override;
 
         void ensure_keyboard_focus();
@@ -23,11 +26,11 @@ namespace di_renderer::render {
         // Lifecycle events
         void on_show() override;
         void on_hide() override;
-        void on_realize() override final;
-        void on_unrealize() override final;
-        void on_resize(int width, int height) override final;
-        void on_map() override final;
-        void on_unmap() override final;
+        void on_realize() final;
+        void on_unrealize() final;
+        void on_resize(int width, int height) final;
+        void on_map() final;
+        void on_unmap() final;
 
         // Input events
         bool on_key_press_event(GdkEventKey* key_event) override;
@@ -39,7 +42,7 @@ namespace di_renderer::render {
         bool on_focus_out_event(GdkEventFocus* focus_event) override;
 
         // Rendering
-        bool on_render(const Glib::RefPtr<Gdk::GLContext>& context) override final;
+        bool on_render(const Glib::RefPtr<Gdk::GLContext>& context) final;
 
       private:
         // Camera management
@@ -61,20 +64,20 @@ namespace di_renderer::render {
         void cleanup_resources();
 
         // GL state
-        Glib::Dispatcher render_dispatcher_;
-        sigc::connection render_connection_;
-        std::atomic<bool> gl_initialized_{false};
-        std::atomic<bool> should_render_{false};
-        GLuint shader_program_ = 0;
-        float last_frame_time_ = 0.0f;
+        Glib::Dispatcher m_render_dispatcher;
+        sigc::connection m_render_connection;
+        std::atomic<bool> m_gl_initialized{false};
+        std::atomic<bool> m_should_render{false};
+        GLuint m_shader_program = 0;
+        float m_last_frame_time = 0.0f;
 
         // Camera
-        Camera camera_;
-        float movement_speed_ = 2.5f;
+        Camera m_camera;
+        float m_movement_speed = 2.5f;
 
         // Input state
-        bool has_focus_ = false;
-        std::unordered_set<guint> pressed_keys_;
+        bool m_has_focus = false;
+        std::unordered_set<guint> m_pressed_keys;
 
         // Mouse drag state
         bool m_dragging = false;

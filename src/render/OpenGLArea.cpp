@@ -2,7 +2,6 @@
 
 #include "Triangle.hpp"
 #include "core/AppData.hpp"
-#include "math/MatrixTransforms.hpp"
 #include "render/Camera.hpp"
 
 #include <algorithm>
@@ -21,8 +20,8 @@ namespace di_renderer::render {
     // =============================================================================
 
     OpenGLArea::OpenGLArea()
-        : camera_(math::Vector3(0.0f, 0.0f, 3.0f), math::Vector3(0.0f, 0.0f, 0.0f),
-                  45.0f * static_cast<float>(M_PI) / 180.0f, 1.0f, 0.1f, 1000.0f) {
+        : m_camera(math::Vector3(0.0f, 0.0f, 3.0f), math::Vector3(0.0f, 0.0f, 0.0f),
+                   45.0f * static_cast<float>(M_PI) / 180.0f, 1.0f, 0.1f, 1000.0f) {
         set_required_version(3, 3);
         set_has_depth_buffer(true);
         set_auto_render(false);
@@ -31,8 +30,8 @@ namespace di_renderer::render {
         add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
                    Gdk::POINTER_MOTION_MASK | Gdk::FOCUS_CHANGE_MASK);
 
-        std::cout << "OpenGLArea created" << std::endl;
-        render_dispatcher_.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
+        std::cout << "OpenGLArea created" << '\n';
+        m_render_dispatcher.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
     }
 
     OpenGLArea::~OpenGLArea() {
@@ -45,23 +44,23 @@ namespace di_renderer::render {
     // =============================================================================
 
     void OpenGLArea::ensure_keyboard_focus() {
-        std::cout << "Ensuring keyboard focus..." << std::endl;
+        std::cout << "Ensuring keyboard focus..." << '\n';
         set_can_focus(true);
         grab_focus();
-        has_focus_ = true;
-        std::cout << "Focus grabbed successfully" << std::endl;
+        m_has_focus = true;
+        std::cout << "Focus grabbed successfully" << '\n';
     }
 
     bool OpenGLArea::on_focus_in_event(GdkEventFocus* focus_event) {
-        has_focus_ = true;
-        std::cout << "FOCUS IN EVENT - OpenGLArea now has keyboard focus" << std::endl;
+        m_has_focus = true;
+        std::cout << "FOCUS IN EVENT - OpenGLArea now has keyboard focus" << '\n';
         queue_draw();
         return Gtk::GLArea::on_focus_in_event(focus_event);
     }
 
     bool OpenGLArea::on_focus_out_event(GdkEventFocus* focus_event) {
-        has_focus_ = false;
-        std::cout << "FOCUS OUT EVENT - OpenGLArea lost keyboard focus" << std::endl;
+        m_has_focus = false;
+        std::cout << "FOCUS OUT EVENT - OpenGLArea lost keyboard focus" << '\n';
         return Gtk::GLArea::on_focus_out_event(focus_event);
     }
 
@@ -71,13 +70,13 @@ namespace di_renderer::render {
 
     void OpenGLArea::on_show() {
         Gtk::GLArea::on_show();
-        std::cout << "OpenGLArea shown" << std::endl;
+        std::cout << "OpenGLArea shown" << '\n';
         ensure_keyboard_focus();
     }
 
     void OpenGLArea::on_hide() {
         Gtk::GLArea::on_hide();
-        std::cout << "OpenGLArea hidden" << std::endl;
+        std::cout << "OpenGLArea hidden" << '\n';
     }
 
     void OpenGLArea::on_realize() {
@@ -86,37 +85,38 @@ namespace di_renderer::render {
         try {
             make_current();
         } catch (const Glib::Error& e) {
-            std::cerr << "Error making GL context current: " << e.what() << std::endl;
+            std::cerr << "Error making GL context current: " << e.what() << '\n';
             return;
         }
 
-        shader_program_ = di_renderer::graphics::create_shader_program();
+        m_shader_program = di_renderer::graphics::create_shader_program();
 
-        if (shader_program_ == 0) {
-            std::cerr << "Failed to create shader program" << std::endl;
+        if (m_shader_program == 0) {
+            std::cerr << "Failed to create shader program" << '\n';
             return;
         }
 
         di_renderer::graphics::init_mesh_batch();
-        gl_initialized_.store(true);
+        m_gl_initialized.store(true);
 
-        std::cout << "GL context realized" << std::endl;
+        std::cout << "GL context realized" << '\n';
         update_camera_for_mesh();
         ensure_keyboard_focus();
     }
 
     void OpenGLArea::on_unrealize() {
-        gl_initialized_.store(false);
+        m_gl_initialized.store(false);
         cleanup_resources();
         Gtk::GLArea::on_unrealize();
-        std::cout << "GL context unrealized" << std::endl;
+        std::cout << "GL context unrealized" << '\n';
     }
 
     void OpenGLArea::on_resize(int width, int height) {
         Gtk::GLArea::on_resize(width, height);
 
-        if (!gl_initialized_.load() || width <= 0 || height <= 0)
+        if (!m_gl_initialized.load() || width <= 0 || height <= 0) {
             return;
+        }
 
         try {
             make_current();
@@ -127,29 +127,29 @@ namespace di_renderer::render {
         glViewport(0, 0, width, height);
 
         float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-        camera_.set_aspect_ratio(aspect_ratio);
+        m_camera.set_aspect_ratio(aspect_ratio);
 
-        std::cout << "Resized to " << width << "x" << height << " | aspect ratio: " << aspect_ratio << std::endl;
+        std::cout << "Resized to " << width << "x" << height << " | aspect ratio: " << aspect_ratio << '\n';
     }
 
     void OpenGLArea::on_map() {
         Gtk::GLArea::on_map();
-        should_render_.store(true);
+        m_should_render.store(true);
 
-        if (gl_initialized_.load()) {
+        if (m_gl_initialized.load()) {
             start_animation();
             update_camera_for_mesh();
         }
 
-        std::cout << "OpenGLArea mapped" << std::endl;
+        std::cout << "OpenGLArea mapped" << '\n';
         ensure_keyboard_focus();
     }
 
     void OpenGLArea::on_unmap() {
-        should_render_.store(false);
+        m_should_render.store(false);
         stop_animation();
         Gtk::GLArea::on_unmap();
-        std::cout << "OpenGLArea unmapped" << std::endl;
+        std::cout << "OpenGLArea unmapped" << '\n';
     }
 
     // =============================================================================
@@ -157,8 +157,9 @@ namespace di_renderer::render {
     // =============================================================================
 
     void OpenGLArea::update_camera_for_mesh() {
-        if (!gl_initialized_.load())
+        if (!m_gl_initialized.load()) {
             return;
+        }
 
         try {
             const auto& mesh = core::AppData::instance().get_current_mesh();
@@ -190,34 +191,34 @@ namespace di_renderer::render {
                 float fov_rad = 45.0f * static_cast<float>(M_PI) / 180.0f;
                 float distance = std::max(5.0f, model_radius / std::tan(fov_rad / 2.0f));
 
-                camera_.set_position(math::Vector3(center.x, center.y, center.z - distance));
-                camera_.set_target(center);
+                m_camera.set_position(math::Vector3(center.x, center.y, center.z - distance));
+                m_camera.set_target(center);
 
                 float near_plane = std::max(0.1f, model_radius * 0.01f);
                 float far_plane = std::max(100.0f, model_radius * 100.0f);
-                camera_.set_planes(near_plane, far_plane);
+                m_camera.set_planes(near_plane, far_plane);
 
-                movement_speed_ = std::max(0.5f, model_radius * 0.3f);
+                m_movement_speed = std::max(0.5f, model_radius * 0.3f);
 
                 std::cout << "Mesh loaded: center=(" << center.x << "," << center.y << "," << center.z << "), size=("
                           << size.x << "," << size.y << "," << size.z << "), max_dim=" << max_dimension
                           << ", distance=" << distance << ", near/far=(" << near_plane << "/" << far_plane << ")"
-                          << ", speed=" << movement_speed_ << std::endl;
+                          << ", speed=" << m_movement_speed << '\n';
             }
         } catch (const std::out_of_range&) {
-            camera_.set_position(math::Vector3(0.0f, 0.0f, -3.0f));
-            camera_.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
-            camera_.set_planes(0.1f, 1000.0f);
-            movement_speed_ = 1.0f;
-            std::cout << "Using default camera position for test cube" << std::endl;
+            m_camera.set_position(math::Vector3(0.0f, 0.0f, -3.0f));
+            m_camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
+            m_camera.set_planes(0.1f, 1000.0f);
+            m_movement_speed = 1.0f;
+            std::cout << "Using default camera position for test cube" << '\n';
         }
 
         int width = get_width();
         int height = get_height();
         if (width > 0 && height > 0) {
             float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-            camera_.set_aspect_ratio(aspect_ratio);
-            std::cout << "Aspect ratio set to: " << aspect_ratio << std::endl;
+            m_camera.set_aspect_ratio(aspect_ratio);
+            std::cout << "Aspect ratio set to: " << aspect_ratio << '\n';
         }
     }
 
@@ -226,18 +227,18 @@ namespace di_renderer::render {
     // =============================================================================
 
     bool OpenGLArea::on_button_press_event(GdkEventButton* button_event) {
-        std::cout << "Mouse button pressed at (" << button_event->x << ", " << button_event->y << ")" << std::endl;
+        std::cout << "Mouse button pressed at (" << button_event->x << ", " << button_event->y << ")" << '\n';
 
         if (button_event->button == 1) {
             m_dragging = true;
             m_last_x = button_event->x;
             m_last_y = button_event->y;
 
-            if (!has_focus_) {
+            if (!m_has_focus) {
                 ensure_keyboard_focus();
             }
 
-            std::cout << "Mouse drag started" << std::endl;
+            std::cout << "Mouse drag started" << '\n';
             return true;
         }
 
@@ -247,14 +248,14 @@ namespace di_renderer::render {
     bool OpenGLArea::on_button_release_event(GdkEventButton* button_event) {
         if (button_event->button == 1) {
             m_dragging = false;
-            std::cout << "Mouse drag ended" << std::endl;
+            std::cout << "Mouse drag ended" << '\n';
             return true;
         }
         return Gtk::GLArea::on_button_release_event(button_event);
     }
 
     bool OpenGLArea::on_motion_notify_event(GdkEventMotion* motion_event) {
-        if (!m_dragging || !has_focus_) {
+        if (!m_dragging || !m_has_focus) {
             return false;
         }
 
@@ -267,13 +268,14 @@ namespace di_renderer::render {
         float yaw = dx * sensitivity;
         float pitch = dy * sensitivity;
 
-        math::Vector3 position = camera_.get_position();
-        math::Vector3 target = camera_.get_target();
+        math::Vector3 position = m_camera.get_position();
+        math::Vector3 target = m_camera.get_target();
         math::Vector3 direction = position - target;
 
         float distance = direction.length();
-        if (distance < 0.1f)
+        if (distance < 0.1f) {
             distance = 3.0f;
+        }
 
         float yaw_angle = std::atan2(direction.x, direction.z);
         float pitch_angle = std::asin(direction.y / distance);
@@ -287,10 +289,10 @@ namespace di_renderer::render {
         float y = distance * std::sin(pitch_angle);
         float z = distance * std::cos(yaw_angle) * std::cos(pitch_angle);
 
-        camera_.set_position(math::Vector3(target.x + x, target.y + y, target.z + z));
+        m_camera.set_position(math::Vector3(target.x + x, target.y + y, target.z + z));
 
         std::cout << "Mouse drag: dx=" << dx << ", dy=" << dy << " | Camera orbit: yaw=" << yaw_angle
-                  << ", pitch=" << pitch_angle << std::endl;
+                  << ", pitch=" << pitch_angle << '\n';
 
         queue_draw();
         return true;
@@ -298,34 +300,34 @@ namespace di_renderer::render {
 
     bool OpenGLArea::on_key_press_event(GdkEventKey* key_event) {
         std::cout << "KEY PRESSED: " << key_event->keyval << " (\"" << static_cast<char>(key_event->keyval) << "\")"
-                  << " | has_focus_: " << has_focus_ << std::endl;
+                  << " | has_focus_: " << m_has_focus << '\n';
 
-        pressed_keys_.insert(key_event->keyval);
+        m_pressed_keys.insert(key_event->keyval);
         parse_keyboard_movement();
         queue_draw();
 
-        math::Vector3 pos = camera_.get_position();
-        std::cout << "Camera position: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
+        math::Vector3 pos = m_camera.get_position();
+        std::cout << "Camera position: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << '\n';
 
         return true;
     }
 
     bool OpenGLArea::on_key_release_event(GdkEventKey* key_event) {
-        std::cout << "KEY RELEASED: " << key_event->keyval << " | has_focus_: " << has_focus_ << std::endl;
-        pressed_keys_.erase(key_event->keyval);
+        std::cout << "KEY RELEASED: " << key_event->keyval << " | has_focus_: " << m_has_focus << '\n';
+        m_pressed_keys.erase(key_event->keyval);
         parse_keyboard_movement();
         return true;
     }
 
     void OpenGLArea::parse_keyboard_movement() {
-        if (!has_focus_ || !gl_initialized_.load()) {
+        if (!m_has_focus || !m_gl_initialized.load()) {
             return;
         }
 
         math::Vector3 movement(0.0f, 0.0f, 0.0f);
         bool moved = false;
 
-        math::Vector3 camera_forward = camera_.get_target() - camera_.get_position();
+        math::Vector3 camera_forward = m_camera.get_target() - m_camera.get_position();
         camera_forward.y = 0.0f;
         if (camera_forward.length() > 0.001f) {
             float len = camera_forward.length();
@@ -353,28 +355,28 @@ namespace di_renderer::render {
             movement.y += camera_forward.y;
             movement.z += camera_forward.z;
             moved = true;
-            std::cout << "Moving forward" << std::endl;
+            std::cout << "Moving forward" << '\n';
         }
         if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
             movement.x -= camera_forward.x;
             movement.y -= camera_forward.y;
             movement.z -= camera_forward.z;
             moved = true;
-            std::cout << "Moving backward" << std::endl;
+            std::cout << "Moving backward" << '\n';
         }
         if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
             movement.x -= camera_right.x;
             movement.y -= camera_right.y;
             movement.z -= camera_right.z;
             moved = true;
-            std::cout << "Moving left" << std::endl;
+            std::cout << "Moving left" << '\n';
         }
         if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D)) {
             movement.x += camera_right.x;
             movement.y += camera_right.y;
             movement.z += camera_right.z;
             moved = true;
-            std::cout << "Moving right" << std::endl;
+            std::cout << "Moving right" << '\n';
         }
 
         if (key_pressed(GDK_KEY_space)) {
@@ -382,14 +384,14 @@ namespace di_renderer::render {
             movement.y += camera_up.y;
             movement.z += camera_up.z;
             moved = true;
-            std::cout << "Moving up" << std::endl;
+            std::cout << "Moving up" << '\n';
         }
         if (key_pressed(GDK_KEY_Shift_L) || key_pressed(GDK_KEY_Shift_R)) {
             movement.x -= camera_up.x;
             movement.y -= camera_up.y;
             movement.z -= camera_up.z;
             moved = true;
-            std::cout << "Moving down" << std::endl;
+            std::cout << "Moving down" << '\n';
         }
 
         if (!moved || movement.length() < 0.001f) {
@@ -398,18 +400,18 @@ namespace di_renderer::render {
 
         float movement_len = movement.length();
         movement = math::Vector3(movement.x / movement_len, movement.y / movement_len, movement.z / movement_len);
-        float speed = movement_speed_ * 0.016f;
+        float speed = m_movement_speed * 0.016f;
 
         math::Vector3 displacement(movement.x * speed, movement.y * speed, movement.z * speed);
-        camera_.move_position(displacement);
+        m_camera.move_position(displacement);
 
         std::cout << "Camera moved by: (" << displacement.x << ", " << displacement.y << ", " << displacement.z << ")"
-                  << " | New position: (" << camera_.get_position().x << ", " << camera_.get_position().y << ", "
-                  << camera_.get_position().z << ")" << std::endl;
+                  << " | New position: (" << m_camera.get_position().x << ", " << m_camera.get_position().y << ", "
+                  << m_camera.get_position().z << ")" << '\n';
     }
 
     bool OpenGLArea::key_pressed(unsigned int key) {
-        return pressed_keys_.find(key) != pressed_keys_.end();
+        return m_pressed_keys.find(key) != m_pressed_keys.end();
     }
 
     // =============================================================================
@@ -417,37 +419,39 @@ namespace di_renderer::render {
     // =============================================================================
 
     void OpenGLArea::on_dispatch_render() {
-        if (should_render_.load() && get_realized() && get_mapped()) {
+        if (m_should_render.load() && get_realized() && get_mapped()) {
             queue_render();
         }
     }
 
     void OpenGLArea::start_animation() {
-        if (render_connection_.connected())
+        if (m_render_connection.connected()) {
             return;
+        }
 
-        render_connection_ =
+        m_render_connection =
             Glib::signal_timeout().connect(sigc::mem_fun(*this, &OpenGLArea::on_animation_timeout), 16);
     }
 
     bool OpenGLArea::on_animation_timeout() {
-        if (!should_render_.load() || !gl_initialized_.load()) {
+        if (!m_should_render.load() || !m_gl_initialized.load()) {
             return false;
         }
 
-        render_dispatcher_.emit();
-        return should_render_.load();
+        m_render_dispatcher.emit();
+        return m_should_render.load();
     }
 
     void OpenGLArea::stop_animation() {
-        if (render_connection_.connected()) {
-            render_connection_.disconnect();
+        if (m_render_connection.connected()) {
+            m_render_connection.disconnect();
         }
     }
 
     void OpenGLArea::cleanup_resources() {
-        if (!gl_initialized_.load())
+        if (!m_gl_initialized.load()) {
             return;
+        }
 
         try {
             make_current();
@@ -455,30 +459,30 @@ namespace di_renderer::render {
             return;
         }
 
-        if (shader_program_) {
+        if (m_shader_program != 0u) {
             di_renderer::graphics::destroy_mesh_batch();
-            di_renderer::graphics::destroy_shader_program(shader_program_);
-            shader_program_ = 0;
+            di_renderer::graphics::destroy_shader_program(m_shader_program);
+            m_shader_program = 0;
         }
     }
 
-    bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
-        if (!gl_initialized_.load() || !should_render_.load() || shader_program_ == 0) {
+    bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
+        if (!m_gl_initialized.load() || !m_should_render.load() || m_shader_program == 0) {
             return false;
         }
 
         try {
             make_current();
         } catch (const Glib::Error& e) {
-            std::cerr << "Error making GL context current during render: " << e.what() << std::endl;
+            std::cerr << "Error making GL context current during render: " << e.what() << '\n';
             return false;
         }
 
         static auto start_time = std::chrono::steady_clock::now();
         auto current_time = std::chrono::steady_clock::now();
         float current_frame_time = std::chrono::duration<float>(current_time - start_time).count();
-        float elapsed = current_frame_time - last_frame_time_;
-        last_frame_time_ = current_frame_time;
+        float elapsed = current_frame_time - m_last_frame_time;
+        m_last_frame_time = current_frame_time;
 
         if (elapsed < 1.0f / 60.0f) {
             return true;
@@ -503,51 +507,59 @@ namespace di_renderer::render {
     }
 
     void OpenGLArea::set_default_uniforms() {
-        if (!shader_program_ || !gl_initialized_.load()) {
+        if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
             return;
         }
 
-        glUseProgram(shader_program_);
+        glUseProgram(m_shader_program);
 
         GLfloat model_matrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
                                     0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
-        math::Matrix4x4 view_matrix = camera_.get_view_matrix();
-        math::Matrix4x4 proj_matrix = camera_.get_projection_matrix();
+        math::Matrix4x4 view_matrix = m_camera.get_view_matrix();
+        math::Matrix4x4 proj_matrix = m_camera.get_projection_matrix();
 
-        GLint model_loc = glGetUniformLocation(shader_program_, "uModel");
-        GLint view_loc = glGetUniformLocation(shader_program_, "uView");
-        GLint proj_loc = glGetUniformLocation(shader_program_, "uProjection");
-        GLint camera_pos_loc = glGetUniformLocation(shader_program_, "uCameraPos");
-        GLint light_pos_loc = glGetUniformLocation(shader_program_, "uLightPos");
-        GLint use_texture_loc = glGetUniformLocation(shader_program_, "uUseTexture");
-        GLint texture_loc = glGetUniformLocation(shader_program_, "uTexture");
-        GLint light_color_loc = glGetUniformLocation(shader_program_, "uLightColor");
+        GLint model_loc = glGetUniformLocation(m_shader_program, "uModel");
+        GLint view_loc = glGetUniformLocation(m_shader_program, "uView");
+        GLint proj_loc = glGetUniformLocation(m_shader_program, "uProjection");
+        GLint camera_pos_loc = glGetUniformLocation(m_shader_program, "uCameraPos");
+        GLint light_pos_loc = glGetUniformLocation(m_shader_program, "uLightPos");
+        GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
+        GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
+        GLint light_color_loc = glGetUniformLocation(m_shader_program, "uLightColor");
 
-        if (model_loc != -1)
+        if (model_loc != -1) {
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix);
-        if (view_loc != -1)
+        }
+        if (view_loc != -1) {
             glUniformMatrix4fv(view_loc, 1, GL_FALSE, view_matrix.data());
-        if (proj_loc != -1)
+        }
+        if (proj_loc != -1) {
             glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj_matrix.data());
+        }
 
-        math::Vector3 camera_pos = camera_.get_position();
-        if (camera_pos_loc != -1)
+        math::Vector3 camera_pos = m_camera.get_position();
+        if (camera_pos_loc != -1) {
             glUniform3f(camera_pos_loc, camera_pos.x, camera_pos.y, camera_pos.z);
-        if (light_pos_loc != -1)
+        }
+        if (light_pos_loc != -1) {
             glUniform3f(light_pos_loc, 2.0f, 2.0f, 2.0f);
+        }
 
-        if (use_texture_loc != -1)
+        if (use_texture_loc != -1) {
             glUniform1i(use_texture_loc, 0);
-        if (texture_loc != -1)
+        }
+        if (texture_loc != -1) {
             glUniform1i(texture_loc, 0);
+        }
 
-        if (light_color_loc != -1)
+        if (light_color_loc != -1) {
             glUniform3f(light_color_loc, 1.0f, 1.0f, 1.0f);
+        }
     }
 
     void OpenGLArea::draw_current_mesh() {
-        if (!shader_program_ || !gl_initialized_.load()) {
+        if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
             return;
         }
 
@@ -573,7 +585,7 @@ namespace di_renderer::render {
             }
 
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-                di_renderer::graphics::Vertex vertex;
+                di_renderer::graphics::Vertex vertex{};
 
                 vertex.position[0] = mesh.vertices[i].x;
                 vertex.position[1] = mesh.vertices[i].y;
@@ -606,7 +618,7 @@ namespace di_renderer::render {
 
             if (!indices.empty()) {
                 di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(),
-                                                         indices.size(), shader_program_);
+                                                         indices.size(), m_shader_program);
             }
         } catch (const std::out_of_range&) {
             const di_renderer::graphics::Vertex cube_vertices[8] = {
@@ -631,7 +643,7 @@ namespace di_renderer::render {
 
                                                    3, 7, 4, 4, 0, 3};
 
-            di_renderer::graphics::draw_indexed_mesh(cube_vertices, 8, cube_indices, 36, shader_program_);
+            di_renderer::graphics::draw_indexed_mesh(cube_vertices, 8, cube_indices, 36, m_shader_program);
         }
     }
 
