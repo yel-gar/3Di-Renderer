@@ -254,7 +254,6 @@ namespace di_renderer::render {
         }
         return Gtk::GLArea::on_button_release_event(button_event);
     }
-
     bool OpenGLArea::on_motion_notify_event(GdkEventMotion* motion_event) {
         if (!m_dragging || !m_has_focus) {
             return false;
@@ -265,45 +264,43 @@ namespace di_renderer::render {
         m_last_x = motion_event->x;
         m_last_y = motion_event->y;
 
-        float sensitivity = 0.25f;
+        float sensitivity = 0.1f; // Lower sensitivity for smoother control
 
-        // Calculate camera direction
+        // Calculate rotation amounts
+        float yaw_change = dx * sensitivity;
+        float pitch_change = dy * sensitivity;
+
+        // Get current camera vectors
         math::Vector3 position = m_camera.get_position();
         math::Vector3 target = m_camera.get_target();
         math::Vector3 direction = target - position;
 
-        // Create rotation matrix for horizontal rotation (around Y-axis)
-        float yaw_angle = dx * sensitivity * static_cast<float>(M_PI) / 180.0f;
-        math::Vector3 horizontal_dir(direction.x, 0.0f, direction.z);
-        if (horizontal_dir.length() > 0.001f) {
-            horizontal_dir = horizontal_dir.normalized();
-        }
+        // Calculate current yaw and pitch
+        float current_yaw = atan2(direction.x, direction.z);
+        float current_pitch = asin(direction.y / direction.length());
 
-        // Apply horizontal rotation
-        float cos_yaw = cos(yaw_angle);
-        float sin_yaw = sin(yaw_angle);
-        float new_x = horizontal_dir.x * cos_yaw - horizontal_dir.z * sin_yaw;
-        float new_z = horizontal_dir.x * sin_yaw + horizontal_dir.z * cos_yaw;
+        // Apply rotation changes
+        current_yaw += yaw_change * static_cast<float>(M_PI) / 180.0f;
+        current_pitch -= pitch_change * static_cast<float>(M_PI) / 180.0f;
 
-        // Apply vertical rotation (around X-axis) with clamping
-        float pitch_angle = dy * sensitivity * static_cast<float>(M_PI) / 180.0f;
-        float current_pitch = atan2(direction.y, sqrt(direction.x * direction.x + direction.z * direction.z));
-        float new_pitch = current_pitch - pitch_angle;
-        new_pitch = std::clamp(new_pitch, -1.5f, 1.5f); // ~85 degrees clamp
+        // Clamp pitch to prevent flipping
+        current_pitch = std::clamp(current_pitch, -89.0f * static_cast<float>(M_PI) / 180.0f,
+                                   89.0f * static_cast<float>(M_PI) / 180.0f);
 
-        float horizontal_len = sqrt(new_x * new_x + new_z * new_z);
-        target.x = position.x + horizontal_len * cos(new_pitch) * (new_x / horizontal_len);
-        target.z = position.z + horizontal_len * cos(new_pitch) * (new_z / horizontal_len);
-        target.y = position.y + horizontal_len * sin(new_pitch);
+        // Calculate new direction vector
+        float distance = direction.length();
+        math::Vector3 new_direction;
+        new_direction.x = cos(current_yaw) * cos(current_pitch) * distance;
+        new_direction.y = sin(current_pitch) * distance;
+        new_direction.z = sin(current_yaw) * cos(current_pitch) * distance;
 
-        m_camera.set_target(target);
+        // Update target position
+        m_camera.set_target(position + new_direction);
 
-        std::cout << "Mouse drag: dx=" << dx << ", dy=" << dy << " | Camera rotated" << '\n';
-
+        std::cout << "Camera rotated: yaw=" << current_yaw << ", pitch=" << current_pitch << '\n';
         queue_draw();
         return true;
     }
-
     bool OpenGLArea::on_key_press_event(GdkEventKey* key_event) {
         std::cout << "KEY PRESSED: " << key_event->keyval << " (\"" << static_cast<char>(key_event->keyval) << "\")"
                   << " | has_focus_: " << m_has_focus << '\n';
@@ -322,92 +319,75 @@ namespace di_renderer::render {
         m_pressed_keys.erase(static_cast<guint>(key_event->keyval));
         return true;
     }
-
     void OpenGLArea::parse_keyboard_movement() {
         if (!m_has_focus || !m_gl_initialized.load()) {
             return;
         }
 
-        bool moved = false;
-        math::Vector3 move_direction(0.0f, 0.0f, 0.0f);
+        // Get camera's current orientation
+        math::Vector3 front = m_camera.get_target() - m_camera.get_position();
+        front.y = 0.0f; // Flatten to horizontal plane for movement
 
+        if (front.length() < 0.001f) {
+            front = math::Vector3(0.0f, 0.0f, -1.0f); // Default forward direction
+        }
+
+        front = front.normalized();
+
+        // Calculate right vector (perpendicular to front and world up)
+        math::Vector3 world_up(0.0f, 1.0f, 0.0f);
+        math::Vector3 right = front.cross(world_up);
+        if (right.length() > 0.001f) {
+            right = right.normalized();
+        } else {
+            right = math::Vector3(1.0f, 0.0f, 0.0f); // Default right direction
+        }
+
+        math::Vector3 movement(0.0f, 0.0f, 0.0f);
+        bool moved = false;
+
+        // WASD movement relative to camera direction
         if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
-            move_direction.z -= 1.0f;
+            movement = movement - front; // Move forward (negative front direction)
             moved = true;
-            std::cout << "Moving forward" << '\n';
+            std::cout << "Moving forward (relative to camera)" << '\n';
         }
         if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
-            move_direction.z += 1.0f;
+            movement = movement + front; // Move backward
             moved = true;
-            std::cout << "Moving backward" << '\n';
+            std::cout << "Moving backward (relative to camera)" << '\n';
         }
         if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
-            move_direction.x -= 1.0f;
+            movement = movement - right; // Move left
             moved = true;
-            std::cout << "Moving left" << '\n';
+            std::cout << "Moving left (relative to camera)" << '\n';
         }
         if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D)) {
-            move_direction.x += 1.0f;
+            movement = movement + right; // Move right
             moved = true;
-            std::cout << "Moving right" << '\n';
+            std::cout << "Moving right (relative to camera)" << '\n';
         }
+
+        // Vertical movement (world space, not camera-relative)
         if (key_pressed(GDK_KEY_space)) {
-            move_direction.y += 1.0f;
+            movement.y += 1.0f;
             moved = true;
             std::cout << "Moving up" << '\n';
         }
         if (key_pressed(GDK_KEY_Shift_L) || key_pressed(GDK_KEY_Shift_R)) {
-            move_direction.y -= 1.0f;
+            movement.y -= 1.0f;
             moved = true;
             std::cout << "Moving down" << '\n';
         }
 
-        if (!moved) {
+        if (!moved || movement.length() < 0.001f) {
             return;
         }
 
-        // Normalize direction
-        float dir_length = move_direction.length();
-        if (dir_length > 0.001f) {
-            move_direction.x /= dir_length;
-            move_direction.y /= dir_length;
-            move_direction.z /= dir_length;
-        }
+        // Normalize and scale movement
+        movement = movement.normalized();
 
-        // Get camera orientation
-        math::Vector3 position = m_camera.get_position();
-        math::Vector3 target = m_camera.get_target();
-        math::Vector3 direction = target - position;
-
-        if (direction.length() < 0.001f) {
-            direction = math::Vector3(0.0f, 0.0f, 1.0f);
-        }
-
-        // Create camera right vector (perpendicular to direction and world up)
-        math::Vector3 world_up(0.0f, 1.0f, 0.0f);
-        math::Vector3 right = direction.cross(world_up);
-        if (right.length() < 0.001f) {
-            // If direction is parallel to world up, use a fallback right vector
-            right = math::Vector3(1.0f, 0.0f, 0.0f);
-        } else {
-            right = right.normalized();
-        }
-
-        // Recalculate up vector to be perpendicular to both direction and right
-        math::Vector3 up = right.cross(direction);
-        if (up.length() > 0.001f) {
-            up = up.normalized();
-        } else {
-            up = world_up;
-        }
-
-        // Create movement vector based on camera orientation
-        math::Vector3 movement_vector(
-            move_direction.x * right.x + move_direction.y * up.x + move_direction.z * direction.x,
-            move_direction.x * right.y + move_direction.y * up.y + move_direction.z * direction.y,
-            move_direction.x * right.z + move_direction.y * up.z + move_direction.z * direction.z);
-
-        // Use frame time for smooth movement
+        // Use proper frame timing
         static auto last_time = std::chrono::high_resolution_clock::now();
         auto current_time = std::chrono::high_resolution_clock::now();
         float delta_time = std::chrono::duration<float>(current_time - last_time).count();
@@ -417,18 +397,15 @@ namespace di_renderer::render {
         delta_time = std::min(delta_time, 0.1f);
 
         float speed = m_movement_speed * delta_time;
+        math::Vector3 displacement = movement * speed; // You'll need to add operator* to Vector3
 
-        math::Vector3 displacement(movement_vector.x * speed, movement_vector.y * speed, movement_vector.z * speed);
-
-        // Move both position and target to maintain camera orientation
+        // Apply movement to camera position
         m_camera.move_position(displacement);
-        m_camera.set_target(m_camera.get_target() + displacement);
 
         std::cout << "Camera moved by: (" << displacement.x << ", " << displacement.y << ", " << displacement.z << ")"
                   << " | New position: (" << m_camera.get_position().x << ", " << m_camera.get_position().y << ", "
                   << m_camera.get_position().z << ")" << '\n';
     }
-
     bool OpenGLArea::key_pressed(unsigned int key) {
         return m_pressed_keys.find(static_cast<guint>(key)) != m_pressed_keys.end();
     }
