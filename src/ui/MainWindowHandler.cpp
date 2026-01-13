@@ -38,10 +38,10 @@ void MainWindowHandler::update_entries() const {
         return;
     }
 
-    Gtk::Entry* entry = nullptr;
     auto& mesh = app_data.get_current_mesh();
-    for (const auto& entry_id : TRANSFORM_IDS) {
-        m_builder->get_widget(entry_id, entry);
+    for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
+        const auto& entry_id = TRANSFORM_IDS[i];
+        auto* entry = m_transform_entries[i];
         entry->set_text(std::to_string(from_transform_and_name_to_value(mesh.get_transform(), entry_id)));
     }
 
@@ -104,10 +104,12 @@ void MainWindowHandler::connect_buttons() {
 void MainWindowHandler::connect_entries() {
     Gtk::Entry* entry = nullptr;
 
-    for (const auto& entry_id : TRANSFORM_IDS) {
+    for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
+        const auto& entry_id = TRANSFORM_IDS[i];
         m_builder->get_widget(entry_id, entry);
         assert(entry != nullptr);
         entry->signal_activate().connect([this, entry, id = entry_id] { on_transform_entry_activate(*entry, id); });
+        m_transform_entries[i] = entry;
     }
 }
 

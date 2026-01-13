@@ -112,7 +112,7 @@ bool AppData::left_button_sensitive() const noexcept {
 }
 
 bool AppData::right_button_sensitive() const noexcept {
-    return m_current_mesh_index < m_meshes.size() - 1;
+    return m_current_mesh_index + 1 < m_meshes.size();
 }
 
 size_t AppData::get_current_mesh_index() const noexcept {
@@ -120,11 +120,11 @@ size_t AppData::get_current_mesh_index() const noexcept {
 }
 
 bool AppData::move_right() {
-    if (m_current_mesh_index >= m_meshes.size() - 1) {
+    if (m_current_mesh_index + 1 >= m_meshes.size()) {
         throw std::out_of_range("Mesh index out of range while attempting to move right");
     }
     select_mesh(m_current_mesh_index + 1);
-    return m_current_mesh_index == m_meshes.size() - 1;
+    return m_current_mesh_index + 1 == m_meshes.size();
 }
 
 bool AppData::move_left() {
