@@ -47,6 +47,7 @@ namespace di_renderer::render {
       private:
         // Camera management
         void update_camera_for_mesh();
+        void reset_camera_for_new_model();
 
         // Input handling
         void parse_keyboard_movement();
