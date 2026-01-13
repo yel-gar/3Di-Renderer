@@ -191,8 +191,8 @@ namespace di_renderer::render {
                 float fov_rad = 45.0f * static_cast<float>(M_PI) / 180.0f;
                 float distance = std::max(5.0f, model_radius / std::tan(fov_rad / 2.0f));
 
-                m_camera.set_position(math::Vector3(center.x, center.y, center.z - distance));
-                m_camera.set_target(center);
+                m_camera.set_position(math::Vector3(center.x, center.y, center.z + distance));
+                m_camera.set_target(math::Vector3(center.x, center.y, center.z));
 
                 float near_plane = std::max(0.1f, model_radius * 0.01f);
                 float far_plane = std::max(100.0f, model_radius * 100.0f);
@@ -210,7 +210,7 @@ namespace di_renderer::render {
             m_camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
             m_camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
             m_camera.set_planes(0.1f, 1000.0f);
-            m_movement_speed = 1.0f;
+            m_movement_speed = 2.5f;
             std::cout << "Using default camera position due to mesh error" << '\n';
         }
 
@@ -265,35 +265,40 @@ namespace di_renderer::render {
         m_last_x = motion_event->x;
         m_last_y = motion_event->y;
 
-        float sensitivity = 0.2f;
-        float yaw = dx * sensitivity;
-        float pitch = dy * sensitivity;
+        float sensitivity = 0.25f;
 
+        // Calculate camera direction
         math::Vector3 position = m_camera.get_position();
         math::Vector3 target = m_camera.get_target();
-        math::Vector3 direction = position - target;
+        math::Vector3 direction = target - position;
 
-        float distance = direction.length();
-        if (distance < 0.1f) {
-            distance = 3.0f;
+        // Create rotation matrix for horizontal rotation (around Y-axis)
+        float yaw_angle = dx * sensitivity * static_cast<float>(M_PI) / 180.0f;
+        math::Vector3 horizontal_dir(direction.x, 0.0f, direction.z);
+        if (horizontal_dir.length() > 0.001f) {
+            horizontal_dir = horizontal_dir.normalized();
         }
 
-        float yaw_angle = std::atan2(direction.x, direction.z);
-        float pitch_angle = std::asin(direction.y / distance);
+        // Apply horizontal rotation
+        float cos_yaw = cos(yaw_angle);
+        float sin_yaw = sin(yaw_angle);
+        float new_x = horizontal_dir.x * cos_yaw - horizontal_dir.z * sin_yaw;
+        float new_z = horizontal_dir.x * sin_yaw + horizontal_dir.z * cos_yaw;
 
-        yaw_angle += yaw * static_cast<float>(M_PI) / 180.0f;
-        pitch_angle += pitch * static_cast<float>(M_PI) / 180.0f;
+        // Apply vertical rotation (around X-axis) with clamping
+        float pitch_angle = dy * sensitivity * static_cast<float>(M_PI) / 180.0f;
+        float current_pitch = atan2(direction.y, sqrt(direction.x * direction.x + direction.z * direction.z));
+        float new_pitch = current_pitch - pitch_angle;
+        new_pitch = std::clamp(new_pitch, -1.5f, 1.5f); // ~85 degrees clamp
 
-        pitch_angle = std::clamp(pitch_angle, -1.5f, 1.5f);
+        float horizontal_len = sqrt(new_x * new_x + new_z * new_z);
+        target.x = position.x + horizontal_len * cos(new_pitch) * (new_x / horizontal_len);
+        target.z = position.z + horizontal_len * cos(new_pitch) * (new_z / horizontal_len);
+        target.y = position.y + horizontal_len * sin(new_pitch);
 
-        float x = distance * std::sin(yaw_angle) * std::cos(pitch_angle);
-        float y = distance * std::sin(pitch_angle);
-        float z = distance * std::cos(yaw_angle) * std::cos(pitch_angle);
+        m_camera.set_target(target);
 
-        m_camera.set_position(math::Vector3(target.x + x, target.y + y, target.z + z));
-
-        std::cout << "Mouse drag: dx=" << dx << ", dy=" << dy << " | Camera orbit: yaw=" << yaw_angle
-                  << ", pitch=" << pitch_angle << '\n';
+        std::cout << "Mouse drag: dx=" << dx << ", dy=" << dy << " | Camera rotated" << '\n';
 
         queue_draw();
         return true;
@@ -303,8 +308,7 @@ namespace di_renderer::render {
         std::cout << "KEY PRESSED: " << key_event->keyval << " (\"" << static_cast<char>(key_event->keyval) << "\")"
                   << " | has_focus_: " << m_has_focus << '\n';
 
-        m_pressed_keys.insert(key_event->keyval);
-        parse_keyboard_movement();
+        m_pressed_keys.insert(static_cast<guint>(key_event->keyval));
         queue_draw();
 
         math::Vector3 pos = m_camera.get_position();
@@ -315,8 +319,7 @@ namespace di_renderer::render {
 
     bool OpenGLArea::on_key_release_event(GdkEventKey* key_event) {
         std::cout << "KEY RELEASED: " << key_event->keyval << " | has_focus_: " << m_has_focus << '\n';
-        m_pressed_keys.erase(key_event->keyval);
-        parse_keyboard_movement();
+        m_pressed_keys.erase(static_cast<guint>(key_event->keyval));
         return true;
     }
 
@@ -325,86 +328,101 @@ namespace di_renderer::render {
             return;
         }
 
-        math::Vector3 movement(0.0f, 0.0f, 0.0f);
         bool moved = false;
-
-        math::Vector3 camera_forward = m_camera.get_target() - m_camera.get_position();
-        camera_forward.y = 0.0f;
-        if (camera_forward.length() > 0.001f) {
-            float len = camera_forward.length();
-            camera_forward = math::Vector3(camera_forward.x / len, camera_forward.y / len, camera_forward.z / len);
-        } else {
-            camera_forward = math::Vector3(0.0f, 0.0f, 1.0f);
-        }
-
-        math::Vector3 camera_right = math::Vector3(camera_forward.z, // right.x = forward.z
-                                                   0.0f,             // right.y = 0
-                                                   -camera_forward.x // right.z = -forward.x
-        );
-        float right_len = camera_right.length();
-        if (right_len > 0.001f) {
-            camera_right =
-                math::Vector3(camera_right.x / right_len, camera_right.y / right_len, camera_right.z / right_len);
-        } else {
-            camera_right = math::Vector3(1.0f, 0.0f, 0.0f);
-        }
-
-        math::Vector3 camera_up(0.0f, 1.0f, 0.0f);
+        math::Vector3 move_direction(0.0f, 0.0f, 0.0f);
 
         if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
-            movement.x += camera_forward.x;
-            movement.y += camera_forward.y;
-            movement.z += camera_forward.z;
+            move_direction.z -= 1.0f;
             moved = true;
             std::cout << "Moving forward" << '\n';
         }
         if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
-            movement.x -= camera_forward.x;
-            movement.y -= camera_forward.y;
-            movement.z -= camera_forward.z;
+            move_direction.z += 1.0f;
             moved = true;
             std::cout << "Moving backward" << '\n';
         }
         if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
-            movement.x -= camera_right.x;
-            movement.y -= camera_right.y;
-            movement.z -= camera_right.z;
+            move_direction.x -= 1.0f;
             moved = true;
             std::cout << "Moving left" << '\n';
         }
         if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D)) {
-            movement.x += camera_right.x;
-            movement.y += camera_right.y;
-            movement.z += camera_right.z;
+            move_direction.x += 1.0f;
             moved = true;
             std::cout << "Moving right" << '\n';
         }
-
         if (key_pressed(GDK_KEY_space)) {
-            movement.x += camera_up.x;
-            movement.y += camera_up.y;
-            movement.z += camera_up.z;
+            move_direction.y += 1.0f;
             moved = true;
             std::cout << "Moving up" << '\n';
         }
         if (key_pressed(GDK_KEY_Shift_L) || key_pressed(GDK_KEY_Shift_R)) {
-            movement.x -= camera_up.x;
-            movement.y -= camera_up.y;
-            movement.z -= camera_up.z;
+            move_direction.y -= 1.0f;
             moved = true;
             std::cout << "Moving down" << '\n';
         }
 
-        if (!moved || movement.length() < 0.001f) {
+        if (!moved) {
             return;
         }
 
-        float movement_len = movement.length();
-        movement = math::Vector3(movement.x / movement_len, movement.y / movement_len, movement.z / movement_len);
-        float speed = m_movement_speed * 0.016f;
+        // Normalize direction
+        float dir_length = move_direction.length();
+        if (dir_length > 0.001f) {
+            move_direction.x /= dir_length;
+            move_direction.y /= dir_length;
+            move_direction.z /= dir_length;
+        }
 
-        math::Vector3 displacement(movement.x * speed, movement.y * speed, movement.z * speed);
+        // Get camera orientation
+        math::Vector3 position = m_camera.get_position();
+        math::Vector3 target = m_camera.get_target();
+        math::Vector3 direction = target - position;
+
+        if (direction.length() < 0.001f) {
+            direction = math::Vector3(0.0f, 0.0f, 1.0f);
+        }
+
+        // Create camera right vector (perpendicular to direction and world up)
+        math::Vector3 world_up(0.0f, 1.0f, 0.0f);
+        math::Vector3 right = direction.cross(world_up);
+        if (right.length() < 0.001f) {
+            // If direction is parallel to world up, use a fallback right vector
+            right = math::Vector3(1.0f, 0.0f, 0.0f);
+        } else {
+            right = right.normalized();
+        }
+
+        // Recalculate up vector to be perpendicular to both direction and right
+        math::Vector3 up = right.cross(direction);
+        if (up.length() > 0.001f) {
+            up = up.normalized();
+        } else {
+            up = world_up;
+        }
+
+        // Create movement vector based on camera orientation
+        math::Vector3 movement_vector(
+            move_direction.x * right.x + move_direction.y * up.x + move_direction.z * direction.x,
+            move_direction.x * right.y + move_direction.y * up.y + move_direction.z * direction.y,
+            move_direction.x * right.z + move_direction.y * up.z + move_direction.z * direction.z);
+
+        // Use frame time for smooth movement
+        static auto last_time = std::chrono::high_resolution_clock::now();
+        auto current_time = std::chrono::high_resolution_clock::now();
+        float delta_time = std::chrono::duration<float>(current_time - last_time).count();
+        last_time = current_time;
+
+        // Cap delta time to prevent huge jumps
+        delta_time = std::min(delta_time, 0.1f);
+
+        float speed = m_movement_speed * delta_time;
+
+        math::Vector3 displacement(movement_vector.x * speed, movement_vector.y * speed, movement_vector.z * speed);
+
+        // Move both position and target to maintain camera orientation
         m_camera.move_position(displacement);
+        m_camera.set_target(m_camera.get_target() + displacement);
 
         std::cout << "Camera moved by: (" << displacement.x << ", " << displacement.y << ", " << displacement.z << ")"
                   << " | New position: (" << m_camera.get_position().x << ", " << m_camera.get_position().y << ", "
@@ -412,7 +430,7 @@ namespace di_renderer::render {
     }
 
     bool OpenGLArea::key_pressed(unsigned int key) {
-        return m_pressed_keys.find(key) != m_pressed_keys.end();
+        return m_pressed_keys.find(static_cast<guint>(key)) != m_pressed_keys.end();
     }
 
     // =============================================================================
@@ -485,6 +503,7 @@ namespace di_renderer::render {
         float elapsed = current_frame_time - m_last_frame_time;
         m_last_frame_time = current_frame_time;
 
+        // Only move at a reasonable rate (cap at 60fps equivalent)
         if (elapsed < 1.0f / 60.0f) {
             return true;
         }
@@ -592,16 +611,15 @@ namespace di_renderer::render {
 
         auto& app_data = core::AppData::instance();
 
-        // Check if there's actually a mesh to draw - no exception thrown
         if (!app_data.has_current_mesh()) {
-            return; // No mesh loaded - this is completely normal
+            return;
         }
 
         try {
             const auto& mesh = app_data.get_current_mesh();
 
             if (mesh.vertices.empty()) {
-                return; // Empty mesh - nothing to draw
+                return;
             }
 
             std::vector<di_renderer::graphics::Vertex> vertices;
@@ -623,7 +641,7 @@ namespace di_renderer::render {
             }
 
             if (indices.empty()) {
-                return; // No valid indices to draw
+                return;
             }
 
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
@@ -653,7 +671,7 @@ namespace di_renderer::render {
 
                 vertex.color[0] = (std::sin(mesh.vertices[i].x * 2.0f) + 1.0f) * 0.5f;
                 vertex.color[1] = (std::sin(mesh.vertices[i].y * 2.0f) + 1.0f) * 0.5f;
-                vertex.color[2] = (std::sin(mesh.vertices[i].z * 2.0f) + 1.0f) * 0.5f;
+                vertex.color[2] = (std::sin(mesh.vertices[i].z * 2.0f + 2.0f) + 1.0f) * 0.5f;
 
                 vertices.push_back(vertex);
             }
@@ -664,7 +682,6 @@ namespace di_renderer::render {
             }
         } catch (const std::exception& e) {
             std::cerr << "Error drawing mesh: " << e.what() << '\n';
-            // Only log actual exceptions, not normal "no mesh" state
         }
     }
 } // namespace di_renderer::render
