@@ -27,17 +27,17 @@ namespace di_renderer::math {
         void move_target(const Vector3& target);
         void move(const Vector3& direction);
 
-        void rotate_view(double dx, double dy);
+        void rotate_view(float dx, float dy);
 
-        void orbit_around_target(double dx, double dy);
+        void orbit_around_target(float dx, float dy);
 
-        void zoom(double offset);
+        void zoom(float offset);
 
         Matrix4x4 get_view_matrix() const;
         Matrix4x4 get_projection_matrix() const;
 
       private:
-        void update_eulers_from_vectors();
+        void update_euler_from_vectors();
         void update_vectors_from_euler(bool is_orbiting);
 
         Vector3 m_position;

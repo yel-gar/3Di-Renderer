@@ -2,25 +2,33 @@
 
 #include "math/MatrixTransforms.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
 namespace di_renderer::math {
     Camera::Camera()
         : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(M_PI), m_aspect_ratio(1), m_near_plane(1),
-          m_far_plane(10) {}
+          m_far_plane(10) {
+        update_euler_from_vectors();
+    }
 
     Camera::Camera(const Vector3& position, const Vector3& target, float fov, float aspect_ratio, float near_plane,
                    float far_plane)
         : m_position(position), m_target(target), m_up(0.0f, 1.0f, 0.0f), m_fov(fov), m_aspect_ratio(aspect_ratio),
-          m_near_plane(near_plane), m_far_plane(far_plane) {}
+          m_near_plane(near_plane), m_far_plane(far_plane) {
+
+        update_euler_from_vectors();
+    }
 
     void Camera::set_position(const Vector3& position) {
         m_position = position;
+        update_euler_from_vectors();
     }
 
     void Camera::set_target(const Vector3& target) {
         m_target = target;
+        update_euler_from_vectors();
     }
 
     void Camera::set_up_vector(const Vector3& up) {
@@ -54,10 +62,12 @@ namespace di_renderer::math {
 
     void Camera::move_position(const Vector3& position) {
         m_position += position;
+        update_euler_from_vectors();
     }
 
     void Camera::move_target(const Vector3& target) {
         m_target += target;
+        update_euler_from_vectors();
     }
 
     void Camera::move(const Vector3& direction) {
@@ -65,13 +75,32 @@ namespace di_renderer::math {
         m_target += direction;
     }
 
-    void Camera::rotate_view(double dx, double dy) {}
+    void Camera::rotate_view(float dx, float dy) {
+        m_yaw -= dx * m_sensetivity;
+        m_pitch += dy * m_sensetivity;
+        m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
+        update_vectors_from_euler(false);
+    }
 
-    void Camera::orbit_around_target(double dx, double dy) {}
+    void Camera::orbit_around_target(float dx, float dy) {
+        m_yaw -= dx * m_sensetivity;
+        m_pitch += dy * m_sensetivity;
+        m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
+        update_vectors_from_euler(true);
+    }
 
-    void Camera::zoom(double offset) {}
+    void Camera::zoom(float offset) {
+        float zoom_amount = offset * m_zoom_speed;
+        Vector3 move_vector = get_front() * zoom_amount;
+        Vector3 vec_to_target = m_target - m_position;
+        float dist = std::sqrt((vec_to_target.x * vec_to_target.x) + (vec_to_target.y * vec_to_target.y) +
+                               (vec_to_target.z * vec_to_target.z));
+        if (zoom_amount < dist - 0.1f) {
+            m_position += move_vector;
+        }
+    }
 
-    void Camera::update_eulers_from_vectors() {
+    void Camera::update_euler_from_vectors() {
         Vector3 front = get_front();
         m_pitch = std::asin(front.y) * (180.0f / M_PIf);
         m_yaw = std::atan2(front.z, front.x) * (180.0f / M_PIf);
