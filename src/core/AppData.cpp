@@ -94,6 +94,43 @@ void AppData::select_mesh(const size_t index) {
     }
     m_current_mesh_index = index;
 }
+
+void AppData::remove_current_mesh() {
+    remove_mesh(m_current_mesh_index);
+}
+
 const std::vector<Mesh>& AppData::get_meshes() const noexcept {
     return m_meshes;
+}
+
+bool AppData::is_meshes_empty() const noexcept {
+    return m_meshes.empty();
+}
+
+bool AppData::left_button_sensitive() const noexcept {
+    return m_current_mesh_index > 0;
+}
+
+bool AppData::right_button_sensitive() const noexcept {
+    return m_current_mesh_index + 1 < m_meshes.size();
+}
+
+size_t AppData::get_current_mesh_index() const noexcept {
+    return m_current_mesh_index;
+}
+
+bool AppData::move_right() {
+    if (m_current_mesh_index + 1 >= m_meshes.size()) {
+        throw std::out_of_range("Mesh index out of range while attempting to move right");
+    }
+    select_mesh(m_current_mesh_index + 1);
+    return m_current_mesh_index + 1 == m_meshes.size();
+}
+
+bool AppData::move_left() {
+    if (m_current_mesh_index <= 0) {
+        throw std::out_of_range("Mesh index out of range while attempting to move left");
+    }
+    select_mesh(m_current_mesh_index - 1);
+    return m_current_mesh_index == 0;
 }
