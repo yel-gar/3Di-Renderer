@@ -34,7 +34,7 @@ namespace di_renderer::ui {
         Gtk::Button* m_next_model_button{nullptr};
         Gtk::Button* m_close_button{nullptr};
 
-        std::array<Gtk::Entry*, 9> m_transform_entries;
+        std::array<Gtk::Entry*, 9> m_transform_entries{};
 
         void load_ui();
         void connect_buttons();
