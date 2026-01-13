@@ -32,6 +32,7 @@ void MainWindowHandler::update_entries() const {
     if (app_data.is_meshes_empty()) {
         m_model_index_label->set_text("NaN");
         m_texture_selector->set_filename("(None)");
+        m_texture_selector->set_sensitive(false);
         m_prev_model_button->set_sensitive(false);
         m_next_model_button->set_sensitive(false);
         m_close_button->set_sensitive(false);
@@ -47,6 +48,7 @@ void MainWindowHandler::update_entries() const {
 
     m_model_index_label->set_text(std::to_string(app_data.get_current_mesh_index()));
     m_texture_selector->set_filename(mesh.get_texture_filename());
+    m_texture_selector->set_sensitive(true);
     m_prev_model_button->set_sensitive(app_data.left_button_sensitive());
     m_next_model_button->set_sensitive(app_data.right_button_sensitive());
     m_close_button->set_sensitive(!app_data.is_meshes_empty());

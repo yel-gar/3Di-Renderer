@@ -320,6 +320,7 @@
             <child>
               <object class="GtkFileChooserButton" id="texture_file_selector">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">False</property>
                 <property name="filter">texture_type_filter</property>
                 <property name="title" translatable="yes">Texture</property>
