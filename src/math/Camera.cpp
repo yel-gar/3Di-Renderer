@@ -48,6 +48,10 @@ namespace di_renderer::math {
         return m_target;
     }
 
+    Vector3 Camera::get_front() const {
+        return (m_target - m_position).normalized();
+    }
+
     void Camera::move_position(const Vector3& position) {
         m_position += position;
     }
@@ -57,17 +61,15 @@ namespace di_renderer::math {
     }
 
     void Camera::move(const Vector3& direction) {
-        // TODO: remove this debug statement
-        std::cout << "Translating camera: " << direction.x << ", " << direction.y << ", " << direction.z << '\n';
         m_position += direction;
         m_target += direction;
     }
 
-    // NOLINTBEGIN (readability-convert-member-functions-to-static) won't be static in the future
-    void Camera::parse_mouse_movement(double dx, double dy) {
-        std::cout << "Moving camera: " << dx << ", " << dy << '\n';
-    }
-    // NOLINTEND
+    void Camera::rotate_view(double dx, double dy) {}
+
+    void Camera::orbit_around_target(double dx, double dy) {}
+
+    void Camera::zoom(double offset) {}
 
     Matrix4x4 Camera::get_view_matrix() const {
         return MatrixTransforms::look_at(m_position, m_target, m_up);
