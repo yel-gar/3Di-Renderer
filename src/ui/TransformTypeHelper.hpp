@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iomanip>
 #include <math/Vector3.hpp>
 #include <stdexcept>
 #include <string>
@@ -76,5 +77,12 @@ namespace di_renderer::ui {
         }
 
         throw std::invalid_argument("TransformType not found"); // shouldn't happen
+    }
+
+    // bring this function to some util module if it will be used anywhere besides UI
+    inline std::string float_format(const float val) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(3) << val;
+        return oss.str();
     }
 } // namespace di_renderer::ui

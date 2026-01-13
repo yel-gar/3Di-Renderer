@@ -43,7 +43,8 @@ void MainWindowHandler::update_entries() const {
     for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
         const auto& entry_id = TRANSFORM_IDS[i]; // NOLINT
         auto* entry = m_transform_entries[i];    // NOLINT
-        entry->set_text(std::to_string(from_transform_and_name_to_value(mesh.get_transform(), entry_id)));
+        const auto value = from_transform_and_name_to_value(mesh.get_transform(), entry_id);
+        entry->set_text(float_format(value));
     }
 
     m_model_index_label->set_text(std::to_string(app_data.get_current_mesh_index()));
