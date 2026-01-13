@@ -63,4 +63,18 @@ namespace di_renderer::ui {
 
         throw std::invalid_argument("VectorComponent not found"); // shouldn't happen
     }
+
+    inline float from_transform_and_name_to_value(const math::Transform& transform, const std::string& name) {
+        const auto [tt, comp] = get_transform_type(name);
+        switch (tt) {
+        case TransformType::TRANSLATE:
+            return get_vector_component(transform.get_position(), comp);
+        case TransformType::ROTATE:
+            return get_vector_component(transform.get_rotation(), comp);
+        case TransformType::SCALE:
+            return get_vector_component(transform.get_scale(), comp);
+        }
+
+        throw std::invalid_argument("TransformType not found"); // shouldn't happen
+    }
 } // namespace di_renderer::ui
