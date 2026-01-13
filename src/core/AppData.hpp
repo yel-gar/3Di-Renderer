@@ -3,8 +3,6 @@
 #include "RenderMode.hpp"
 
 #include <bitset>
-#include <cstdint>
-#include <memory>
 
 namespace di_renderer::core {
     class AppData final {
@@ -24,6 +22,7 @@ namespace di_renderer::core {
         void add_mesh(Mesh&& mesh) noexcept;
         void remove_mesh(size_t index);
         void select_mesh(size_t index);
+        bool has_current_mesh() const noexcept;
 
       private:
         size_t m_current_mesh_index = 0;

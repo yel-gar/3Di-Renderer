@@ -590,8 +590,19 @@ namespace di_renderer::render {
             return;
         }
 
+        auto& app_data = core::AppData::instance();
+
+        // Check if there's actually a mesh to draw - no exception thrown
+        if (!app_data.has_current_mesh()) {
+            return; // No mesh loaded - this is completely normal
+        }
+
         try {
-            const auto& mesh = core::AppData::instance().get_current_mesh();
+            const auto& mesh = app_data.get_current_mesh();
+
+            if (mesh.vertices.empty()) {
+                return; // Empty mesh - nothing to draw
+            }
 
             std::vector<di_renderer::graphics::Vertex> vertices;
             vertices.reserve(mesh.vertices.size());
@@ -609,6 +620,10 @@ namespace di_renderer::render {
                         indices.push_back(face[i].vi);
                     }
                 }
+            }
+
+            if (indices.empty()) {
+                return; // No valid indices to draw
             }
 
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
@@ -643,13 +658,13 @@ namespace di_renderer::render {
                 vertices.push_back(vertex);
             }
 
-            if (!indices.empty()) {
+            if (!vertices.empty()) {
                 di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(),
                                                          indices.size(), m_shader_program);
             }
         } catch (const std::exception& e) {
             std::cerr << "Error drawing mesh: " << e.what() << '\n';
+            // Only log actual exceptions, not normal "no mesh" state
         }
     }
-
 } // namespace di_renderer::render

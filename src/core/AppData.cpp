@@ -32,8 +32,12 @@ void AppData::set_render_mode(RenderMode mode, const bool value) noexcept {
     m_render_mode.set(static_cast<size_t>(mode), value);
 }
 
+bool AppData::has_current_mesh() const noexcept {
+    return !m_meshes.empty() && m_current_mesh_index < m_meshes.size() && m_current_mesh_index >= 0;
+}
+
 Mesh& AppData::get_current_mesh() {
-    if (m_meshes.empty()) {
+    if (!has_current_mesh()) {
         throw std::out_of_range("There's no active mesh");
     }
     return m_meshes[m_current_mesh_index];
@@ -51,24 +55,13 @@ void AppData::remove_mesh(const size_t index) {
 
     m_meshes.erase(m_meshes.begin() + static_cast<std::ptrdiff_t>(index));
 
-    // case: there were 1 or 2 meshes
     if (m_meshes.size() <= 1) {
         m_current_mesh_index = 0;
-    }
-    // case: selected mesh was the last and got removed
-    else if (m_current_mesh_index >= m_meshes.size()) {
+    } else if (m_current_mesh_index >= m_meshes.size()) {
         m_current_mesh_index = m_meshes.size() - 1;
-    }
-    // case: mesh before selected was removed, so we must move current index to the left
-    else if (index < m_current_mesh_index) {
+    } else if (index < m_current_mesh_index) {
         m_current_mesh_index--;
     }
-
-    // case: selected mesh is deleted but is not the last
-    // automatically select next mesh due to vector shift
-
-    // case: deleted mesh is after selected one
-    // selected mesh stays as it is
 }
 
 void AppData::select_mesh(const size_t index) {
