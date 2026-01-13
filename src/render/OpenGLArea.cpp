@@ -91,8 +91,7 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
     m_last_x = event->x;
     m_last_y = event->y;
 
-    m_app_data.get_current_camera().parse_mouse_movement(dx, dy);
-
+    // TODO: rewrite mouse handling.
     return true;
 }
 

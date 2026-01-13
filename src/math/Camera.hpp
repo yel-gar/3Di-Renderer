@@ -21,19 +21,35 @@ namespace di_renderer::math {
         const Vector3& get_position() const;
         const Vector3& get_target() const;
 
+        Vector3 get_front() const;
+
         void move_position(const Vector3& position);
         void move_target(const Vector3& target);
         void move(const Vector3& direction);
 
-        void parse_mouse_movement(double dx, double dy);
+        void rotate_view(float dx, float dy);
+
+        void orbit_around_target(float dx, float dy);
+
+        void zoom(float offset);
 
         Matrix4x4 get_view_matrix() const;
         Matrix4x4 get_projection_matrix() const;
 
       private:
+        void update_euler_from_vectors();
+        void update_vectors_from_euler(bool is_orbiting);
+
         Vector3 m_position;
         Vector3 m_target;
         Vector3 m_up{0.0f, 1.0f, 0.0f};
+
+        float m_yaw{};
+        float m_pitch{};
+
+        // TODO: Hardcoded settings (needs to be debugged)
+        float m_sensitivity = 0.1f;
+        float m_zoom_speed = 0.5f;
 
         float m_fov;
         float m_aspect_ratio;
