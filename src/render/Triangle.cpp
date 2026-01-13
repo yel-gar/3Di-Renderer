@@ -21,10 +21,11 @@ out vec3 vPosition;
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
+uniform mat3 uNormalMatrix;
 
 void main() {
     vColor = aColor;
-    vNormal = mat3(transpose(inverse(uModel))) * aNormal;
+    vNormal = uNormalMatrix * aNormal;
     vUV = aUV;
     vPosition = vec3(uModel * vec4(aPos, 1.0));
     
@@ -43,22 +44,35 @@ out vec4 FragColor;
 
 uniform bool uUseTexture = false;
 uniform sampler2D uTexture;
-uniform vec3 uLightPos = vec3(0.0, 0.0, 2.0);
+uniform vec3 uLightPos = vec3(2.0, 2.0, 2.0);
 uniform vec3 uCameraPos = vec3(0.0, 0.0, 0.0);
 uniform vec3 uLightColor = vec3(1.0, 1.0, 1.0);
+uniform vec3 uAmbientColor = vec3(0.2, 0.2, 0.3);
+uniform float uAmbientStrength = 0.5;
+uniform float uDiffuseStrength = 0.7;
 
 void main() {
     vec3 normalizedNormal = normalize(vNormal);
     vec3 lightDir = normalize(uLightPos - vPosition);
-    float diff = max(dot(normalizedNormal, lightDir), 0.0);
-    vec3 diffuse = diff * uLightColor;
     
+    // Diffuse lighting with controlled intensity
+    float diff = max(dot(normalizedNormal, lightDir), 0.0);
+    vec3 diffuse = uDiffuseStrength * diff * uLightColor;
+    
+    // Stronger ambient lighting
+    vec3 ambient = uAmbientStrength * uAmbientColor;
+    
+    // Softer specular highlights
     vec3 viewDir = normalize(uCameraPos - vPosition);
     vec3 reflectDir = reflect(-lightDir, normalizedNormal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-    vec3 specular = spec * uLightColor;
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16.0);
+    vec3 specular = 0.3 * spec * uLightColor;
     
-    vec3 lighting = (diffuse + specular) * vColor;
+    // Combine lighting with better balance
+    vec3 lighting = (ambient + diffuse + specular) * vColor;
+    
+    // Gamma correction
+    lighting = pow(lighting, vec3(1.0/2.2));
     
     if (uUseTexture) {
         vec4 texColor = texture(uTexture, vUV);

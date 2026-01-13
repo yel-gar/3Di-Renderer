@@ -205,12 +205,13 @@ namespace di_renderer::render {
                           << ", distance=" << distance << ", near/far=(" << near_plane << "/" << far_plane << ")"
                           << ", speed=" << m_movement_speed << '\n';
             }
-        } catch (const std::out_of_range&) {
-            m_camera.set_position(math::Vector3(0.0f, 0.0f, -3.0f));
+        } catch (const std::exception& e) {
+            std::cerr << "Error loading mesh: " << e.what() << '\n';
+            m_camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
             m_camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
             m_camera.set_planes(0.1f, 1000.0f);
             m_movement_speed = 1.0f;
-            std::cout << "Using default camera position for test cube" << '\n';
+            std::cout << "Using default camera position due to mesh error" << '\n';
         }
 
         int width = get_width();
@@ -494,14 +495,19 @@ namespace di_renderer::render {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+        glDepthFunc(GL_LEQUAL);
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
 
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(1.0f, 1.0f);
+
         set_default_uniforms();
         draw_current_mesh();
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
 
         return true;
     }
@@ -527,6 +533,10 @@ namespace di_renderer::render {
         GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
         GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
         GLint light_color_loc = glGetUniformLocation(m_shader_program, "uLightColor");
+        GLint ambient_color_loc = glGetUniformLocation(m_shader_program, "uAmbientColor");
+        GLint ambient_strength_loc = glGetUniformLocation(m_shader_program, "uAmbientStrength");
+        GLint diffuse_strength_loc = glGetUniformLocation(m_shader_program, "uDiffuseStrength");
+        GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
 
         if (model_loc != -1) {
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix);
@@ -542,8 +552,20 @@ namespace di_renderer::render {
         if (camera_pos_loc != -1) {
             glUniform3f(camera_pos_loc, camera_pos.x, camera_pos.y, camera_pos.z);
         }
+
+        math::Vector3 light_pos = camera_pos + math::Vector3(2.0f, 2.0f, 2.0f);
         if (light_pos_loc != -1) {
-            glUniform3f(light_pos_loc, 2.0f, 2.0f, 2.0f);
+            glUniform3f(light_pos_loc, light_pos.x, light_pos.y, light_pos.z);
+        }
+
+        if (ambient_color_loc != -1) {
+            glUniform3f(ambient_color_loc, 0.2f, 0.2f, 0.3f);
+        }
+        if (ambient_strength_loc != -1) {
+            glUniform1f(ambient_strength_loc, 0.5f);
+        }
+        if (diffuse_strength_loc != -1) {
+            glUniform1f(diffuse_strength_loc, 0.7f);
         }
 
         if (use_texture_loc != -1) {
@@ -555,6 +577,11 @@ namespace di_renderer::render {
 
         if (light_color_loc != -1) {
             glUniform3f(light_color_loc, 1.0f, 1.0f, 1.0f);
+        }
+
+        if (normal_matrix_loc != -1) {
+            GLfloat normal_matrix[9] = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+            glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, normal_matrix);
         }
     }
 
@@ -620,30 +647,8 @@ namespace di_renderer::render {
                 di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(),
                                                          indices.size(), m_shader_program);
             }
-        } catch (const std::out_of_range&) {
-            const di_renderer::graphics::Vertex cube_vertices[8] = {
-                {{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
-                {{0.5f, -0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-                {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-                {{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.5f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},
-                {{0.5f, -0.5f, -0.5f}, {0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},
-                {{0.5f, 0.5f, -0.5f}, {0.5f, 1.0f, 0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},
-                {{-0.5f, 0.5f, -0.5f}, {0.0f, 0.5f, 0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}};
-
-            const unsigned int cube_indices[36] = {0, 1, 2, 2, 3, 0,
-
-                                                   7, 6, 5, 5, 4, 7,
-
-                                                   3, 2, 6, 6, 7, 3,
-
-                                                   0, 4, 5, 5, 1, 0,
-
-                                                   1, 5, 6, 6, 2, 1,
-
-                                                   3, 7, 4, 4, 0, 3};
-
-            di_renderer::graphics::draw_indexed_mesh(cube_vertices, 8, cube_indices, 36, m_shader_program);
+        } catch (const std::exception& e) {
+            std::cerr << "Error drawing mesh: " << e.what() << '\n';
         }
     }
 
