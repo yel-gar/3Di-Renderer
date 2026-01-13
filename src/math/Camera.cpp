@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
 namespace di_renderer::math {
     Camera::Camera()

@@ -91,7 +91,7 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
     m_last_x = event->x;
     m_last_y = event->y;
 
-    // deleted, must be rewritten
+    // TODO: rewrite mouse handling.
     return true;
 }
 

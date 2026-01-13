@@ -47,7 +47,7 @@ namespace di_renderer::math {
         float m_yaw{};
         float m_pitch{};
 
-        // Hardcoded settings (needs to be debugged)
+        // TODO: Hardcoded settings (needs to be debugged)
         float m_sensitivity = 0.1f;
         float m_zoom_speed = 0.5f;
 
