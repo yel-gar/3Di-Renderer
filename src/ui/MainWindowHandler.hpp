@@ -11,6 +11,7 @@ namespace di_renderer::ui {
         MainWindowHandler();
 
         void show(Gtk::Application& app) const;
+        void update_entries() const;
 
       private:
         inline static const std::string UI_LAYOUT_FILENAME{"direnderer/ui/di_renderer.ui"};
@@ -28,6 +29,13 @@ namespace di_renderer::ui {
         Gtk::FileChooserButton* m_texture_selector{nullptr};
         render::OpenGLArea* m_gl_area{nullptr};
 
+        Gtk::Label* m_model_index_label{nullptr};
+        Gtk::Button* m_prev_model_button{nullptr};
+        Gtk::Button* m_next_model_button{nullptr};
+        Gtk::Button* m_close_button{nullptr};
+
+        std::array<Gtk::Entry*, 9> m_transform_entries{};
+
         void load_ui();
         void connect_buttons();
         void connect_entries();
@@ -35,6 +43,7 @@ namespace di_renderer::ui {
         void init_gl_area();
         void on_open_button_click() const;
         void on_save_button_click() const;
+        void on_close_button_click() const;
         void on_texture_selection() const;
         void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
         void on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id);

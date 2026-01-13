@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iomanip>
 #include <math/Vector3.hpp>
 #include <stdexcept>
 #include <string>
@@ -62,5 +63,26 @@ namespace di_renderer::ui {
         }
 
         throw std::invalid_argument("VectorComponent not found"); // shouldn't happen
+    }
+
+    inline float from_transform_and_name_to_value(const math::Transform& transform, const std::string& name) {
+        const auto [tt, comp] = get_transform_type(name);
+        switch (tt) {
+        case TransformType::TRANSLATE:
+            return get_vector_component(transform.get_position(), comp);
+        case TransformType::ROTATE:
+            return get_vector_component(transform.get_rotation(), comp);
+        case TransformType::SCALE:
+            return get_vector_component(transform.get_scale(), comp);
+        }
+
+        throw std::invalid_argument("TransformType not found"); // shouldn't happen
+    }
+
+    // bring this function to some util module if it will be used anywhere besides UI
+    inline std::string float_format(const float val) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(3) << val;
+        return oss.str();
     }
 } // namespace di_renderer::ui

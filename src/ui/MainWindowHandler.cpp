@@ -27,10 +27,39 @@ void MainWindowHandler::show(Gtk::Application& app) const {
     m_window->show_all();
 }
 
+void MainWindowHandler::update_entries() const {
+    auto& app_data = m_gl_area->get_app_data();
+    if (app_data.is_meshes_empty()) {
+        m_model_index_label->set_text("NaN");
+        m_texture_selector->set_filename("(None)");
+        m_texture_selector->set_sensitive(false);
+        m_prev_model_button->set_sensitive(false);
+        m_next_model_button->set_sensitive(false);
+        m_close_button->set_sensitive(false);
+        return;
+    }
+
+    auto& mesh = app_data.get_current_mesh();
+    for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
+        const auto& entry_id = TRANSFORM_IDS[i]; // NOLINT
+        auto* entry = m_transform_entries[i];    // NOLINT
+        const auto value = from_transform_and_name_to_value(mesh.get_transform(), entry_id);
+        entry->set_text(float_format(value));
+    }
+
+    m_model_index_label->set_text(std::to_string(app_data.get_current_mesh_index()));
+    m_texture_selector->set_filename(mesh.get_texture_filename());
+    m_texture_selector->set_sensitive(true);
+    m_prev_model_button->set_sensitive(app_data.left_button_sensitive());
+    m_next_model_button->set_sensitive(app_data.right_button_sensitive());
+    m_close_button->set_sensitive(!app_data.is_meshes_empty());
+}
+
 void MainWindowHandler::load_ui() {
     connect_buttons();
     connect_entries();
     init_gl_area();
+    m_builder->get_widget("model_index", m_model_index_label);
     m_camera_selection_handler.init(m_builder, m_gl_area->get_app_data());
 }
 
@@ -45,6 +74,10 @@ void MainWindowHandler::connect_buttons() {
     m_builder->get_widget("button_save", button);
     button->signal_clicked().connect([this] { on_save_button_click(); });
 
+    // button_close
+    m_builder->get_widget("button_close", m_close_button);
+    m_close_button->signal_clicked().connect([this] { on_close_button_click(); });
+
     // render mode toggle buttons
     Gtk::ToggleButton* toggle_button = nullptr;
     for (const auto& [button_id, render_mode] : ID_TO_MODE_MAP) {
@@ -57,15 +90,29 @@ void MainWindowHandler::connect_buttons() {
     // texture selector
     m_builder->get_widget("texture_file_selector", m_texture_selector);
     m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
+
+    // prev model and next model
+    m_builder->get_widget("prev_model_button", m_prev_model_button);
+    m_builder->get_widget("next_model_button", m_next_model_button);
+    m_prev_model_button->signal_clicked().connect([this] {
+        m_gl_area->get_app_data().move_left();
+        update_entries();
+    });
+    m_next_model_button->signal_clicked().connect([this] {
+        m_gl_area->get_app_data().move_right();
+        update_entries();
+    });
 }
 
 void MainWindowHandler::connect_entries() {
     Gtk::Entry* entry = nullptr;
 
-    for (const auto& entry_id : TRANSFORM_IDS) {
+    for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
+        const auto& entry_id = TRANSFORM_IDS[i]; // NOLINT
         m_builder->get_widget(entry_id, entry);
         assert(entry != nullptr);
         entry->signal_activate().connect([this, entry, id = entry_id] { on_transform_entry_activate(*entry, id); });
+        m_transform_entries[i] = entry; // NOLINT
     }
 }
 
@@ -124,12 +171,7 @@ void MainWindowHandler::on_open_button_click() const {
             const auto [vertices, texture_vertices, normals, faces] = io::ObjReader::read_file(filename);
             core::Mesh mesh{vertices, texture_vertices, normals, faces};
             m_gl_area->get_app_data().add_mesh(std::move(mesh));
-
-            Gtk::Entry* entry = nullptr;
-            for (const auto& entry_id : TRANSFORM_IDS) {
-                m_builder->get_widget(entry_id, entry);
-                entry->set_text(entry_id.substr(0, entry_id.find('_')) == "scale" ? "1" : "0");
-            }
+            update_entries();
         }
     });
 
@@ -156,6 +198,12 @@ void MainWindowHandler::on_save_button_click() const {
     dialog->show();
 }
 
+void MainWindowHandler::on_close_button_click() const {
+    auto& app_data = m_gl_area->get_app_data();
+    app_data.remove_current_mesh();
+    update_entries();
+}
+
 void MainWindowHandler::on_texture_selection() const {
     auto& mesh = m_gl_area->get_app_data().get_current_mesh();
     mesh.load_texture(m_texture_selector->get_filename());
@@ -166,15 +214,12 @@ void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& b
 }
 
 void MainWindowHandler::on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id) {
-    core::Mesh* mesh_ptr = nullptr;
-    try {
-        mesh_ptr = &m_gl_area->get_app_data().get_current_mesh();
-    } catch (const std::exception&) {
+    if (m_gl_area->get_app_data().is_meshes_empty()) {
         std::cout << "No active mesh, ignoring entry value set";
         return;
     }
 
-    auto& transform = mesh_ptr->get_transform(); // safe dereference
+    auto& transform = m_gl_area->get_app_data().get_current_mesh().get_transform(); // safe dereference
     const std::string text = entry.get_text();
     const auto transform_type = get_transform_type(entry_id);
 

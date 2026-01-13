@@ -22,7 +22,14 @@ namespace di_renderer::core {
         void add_mesh(Mesh&& mesh) noexcept;
         void remove_mesh(size_t index);
         void select_mesh(size_t index);
+        bool move_right();
+        bool move_left();
+        void remove_current_mesh();
         const std::vector<Mesh>& get_meshes() const noexcept;
+        bool is_meshes_empty() const noexcept;
+        bool left_button_sensitive() const noexcept;
+        bool right_button_sensitive() const noexcept;
+        size_t get_current_mesh_index() const noexcept;
 
         math::Camera& get_current_camera() noexcept;
         void set_current_camera(unsigned int id) noexcept;
