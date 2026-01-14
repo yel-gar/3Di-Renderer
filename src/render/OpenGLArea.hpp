@@ -56,7 +56,7 @@ namespace di_renderer::render {
         // Rendering helpers
         void set_default_uniforms();
         void draw_current_mesh();
-
+        void update_dynamic_projection();
         // Animation management
         void on_dispatch_render();
         void start_animation();

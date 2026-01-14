@@ -15,13 +15,9 @@
 
 namespace di_renderer::render {
 
-    // =============================================================================
-    // CONSTRUCTOR & DESTRUCTOR
-    // =============================================================================
-
     OpenGLArea::OpenGLArea()
         : m_camera(math::Vector3(0.0f, 0.0f, 3.0f), math::Vector3(0.0f, 0.0f, 0.0f),
-                   45.0f * static_cast<float>(M_PI) / 180.0f, 1.0f, 0.1f, 100000.0f) {
+                   45.0f * static_cast<float>(M_PI) / 180.0f, 1.0f, 0.1f, 1000.0f) {
         set_required_version(3, 3);
         set_has_depth_buffer(true);
         set_auto_render(false);
@@ -38,10 +34,6 @@ namespace di_renderer::render {
         stop_animation();
         cleanup_resources();
     }
-
-    // =============================================================================
-    // FOCUS MANAGEMENT
-    // =============================================================================
 
     void OpenGLArea::ensure_keyboard_focus() {
         std::cout << "Ensuring keyboard focus..." << '\n';
@@ -64,10 +56,6 @@ namespace di_renderer::render {
         return Gtk::GLArea::on_focus_out_event(focus_event);
     }
 
-    // =============================================================================
-    // LIFECYCLE MANAGEMENT
-    // =============================================================================
-
     void OpenGLArea::on_show() {
         Gtk::GLArea::on_show();
         std::cout << "OpenGLArea shown" << '\n';
@@ -88,6 +76,14 @@ namespace di_renderer::render {
             std::cerr << "Error making GL context current: " << e.what() << '\n';
             return;
         }
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glClearDepth(1.0f);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
 
         m_shader_program = di_renderer::graphics::create_shader_program();
 
@@ -152,10 +148,6 @@ namespace di_renderer::render {
         std::cout << "OpenGLArea unmapped" << '\n';
     }
 
-    // =============================================================================
-    // CAMERA MANAGEMENT
-    // =============================================================================
-
     void OpenGLArea::update_camera_for_mesh() {
         if (!m_gl_initialized.load()) {
             return;
@@ -188,37 +180,40 @@ namespace di_renderer::render {
                 float max_dimension = std::max({size.x, size.y, size.z});
                 float model_radius = max_dimension * 0.5f;
 
-                // IMPROVED distance calculation - better scaling for all model sizes
                 float fov_rad = 45.0f * static_cast<float>(M_PI) / 180.0f;
                 float base_distance = model_radius / std::tan(fov_rad / 2.0f);
-
-                // Add padding and ensure minimum distance for small models
                 float distance = base_distance * 1.5f;
-                distance = std::max(2.0f, distance);    // Minimum distance for tiny models
-                distance = std::min(1000.0f, distance); // Maximum distance for huge models
+                distance = std::max(0.5f, distance);
+                distance = std::min(500.0f, distance);
 
                 m_camera.set_position(math::Vector3(center.x, center.y, center.z + distance));
                 m_camera.set_target(center);
 
-                // IMPROVED far plane calculation - much more aggressive for large models
-                float near_plane = std::max(0.1f, model_radius * 0.01f);
-                float far_plane = std::max(10000.0f, model_radius * 2000.0f); // 20x larger than before
-                m_camera.set_planes(near_plane, far_plane);
+                float near_plane, far_plane;
 
-                // IMPROVED movement speed - logarithmic scaling for better control
-                if (model_radius < 1.0f) {
-                    // Small models - slower speed
-                    m_movement_speed = 0.5f + model_radius * 2.0f;
-                } else if (model_radius < 10.0f) {
-                    // Medium models - moderate speed
-                    m_movement_speed = 1.0f + model_radius * 0.8f;
+                if (max_dimension < 1.0f) {
+
+                    near_plane = std::max(0.01f, distance * 0.01f);
+                    far_plane = distance * 3.0f + max_dimension * 2.0f;
+                } else if (max_dimension < 10.0f) {
+
+                    near_plane = std::max(0.1f, distance * 0.05f);
+                    far_plane = distance * 4.0f + max_dimension * 2.0f;
                 } else {
-                    // Large models - faster speed
-                    m_movement_speed = 2.0f + model_radius * 0.3f;
+
+                    near_plane = std::max(0.5f, distance * 0.1f);
+                    far_plane = distance * 5.0f + max_dimension * 2.0f;
                 }
 
-                // Ensure speed stays within reasonable bounds
-                m_movement_speed = std::clamp(m_movement_speed, 0.2f, 50.0f);
+                if (far_plane - near_plane < 0.1f * max_dimension) {
+                    far_plane = near_plane + 0.1f * max_dimension;
+                }
+
+                far_plane = std::min(far_plane, 5000.0f);
+
+                m_camera.set_planes(near_plane, far_plane);
+
+                m_movement_speed = std::clamp(model_radius * 0.8f, 0.2f, 50.0f);
 
                 std::cout << "Mesh loaded: center=(" << center.x << "," << center.y << "," << center.z << "), size=("
                           << size.x << "," << size.y << "," << size.z << "), max_dim=" << max_dimension
@@ -229,7 +224,7 @@ namespace di_renderer::render {
             std::cerr << "Error loading mesh: " << e.what() << '\n';
             m_camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
             m_camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
-            m_camera.set_planes(0.1f, 10000.0f);
+            m_camera.set_planes(0.1f, 100.0f);
             m_movement_speed = 2.5f;
             std::cout << "Using default camera position due to mesh error" << '\n';
         }
@@ -242,14 +237,78 @@ namespace di_renderer::render {
             std::cout << "Aspect ratio set to: " << aspect_ratio << '\n';
         }
     }
+
     void OpenGLArea::reset_camera_for_new_model() {
         update_camera_for_mesh();
         queue_draw();
     }
 
-    // =============================================================================
-    // INPUT HANDLING
-    // =============================================================================
+    void OpenGLArea::update_dynamic_projection() {
+        if (!m_gl_initialized.load()) {
+            return;
+        }
+
+        try {
+            const auto& mesh = core::AppData::instance().get_current_mesh();
+            if (mesh.vertices.empty()) {
+                return;
+            }
+
+            math::Vector3 camera_pos = m_camera.get_position();
+            math::Vector3 target = m_camera.get_target();
+            float distance = (camera_pos - target).length();
+
+            math::Vector3 min_pos(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
+                                  std::numeric_limits<float>::max());
+            math::Vector3 max_pos(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(),
+                                  -std::numeric_limits<float>::max());
+
+            for (const auto& vertex : mesh.vertices) {
+                min_pos.x = std::min(min_pos.x, vertex.x);
+                min_pos.y = std::min(min_pos.y, vertex.y);
+                min_pos.z = std::min(min_pos.z, vertex.z);
+
+                max_pos.x = std::max(max_pos.x, vertex.x);
+                max_pos.y = std::max(max_pos.y, vertex.y);
+                max_pos.z = std::max(max_pos.z, vertex.z);
+            }
+
+            math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
+            float max_dimension = std::max({size.x, size.y, size.z});
+
+            float near_plane, far_plane;
+
+            if (max_dimension < 1.0f) {
+
+                near_plane = std::max(0.005f, distance * 0.005f);
+                far_plane = distance * 2.5f + max_dimension * 3.0f;
+            } else if (max_dimension < 10.0f) {
+                near_plane = std::max(0.05f, distance * 0.03f);
+                far_plane = distance * 3.5f + max_dimension * 2.5f;
+            } else {
+                near_plane = std::max(0.2f, distance * 0.08f);
+                far_plane = distance * 4.5f + max_dimension * 2.0f;
+            }
+
+            float min_range = std::max(0.01f, max_dimension * 0.05f);
+            if (far_plane - near_plane < min_range) {
+                far_plane = near_plane + min_range;
+            }
+
+            m_camera.set_planes(near_plane, far_plane);
+
+            static auto last_log_time = std::chrono::steady_clock::now();
+            auto current_time = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration<float>(current_time - last_log_time).count();
+
+            if (elapsed > 1.0f) {
+                std::cout << "Dynamic planes - Distance: " << distance << " | Near: " << near_plane
+                          << " | Far: " << far_plane << " | Model size: " << max_dimension << std::endl;
+                last_log_time = current_time;
+            }
+        } catch (...) {
+        }
+    }
 
     bool OpenGLArea::on_button_press_event(GdkEventButton* button_event) {
         std::cout << "Mouse button pressed at (" << button_event->x << ", " << button_event->y << ")" << '\n';
@@ -291,7 +350,6 @@ namespace di_renderer::render {
 
         float sensitivity = 0.2f;
 
-        // Get current camera state
         math::Vector3 position = m_camera.get_position();
         math::Vector3 target = m_camera.get_target();
         math::Vector3 to_target = target - position;
@@ -301,29 +359,23 @@ namespace di_renderer::render {
             distance = 3.0f;
         }
 
-        // Calculate current angles FROM target TO camera
-        math::Vector3 direction = position - target; // Camera position relative to target
+        math::Vector3 direction = position - target;
         float yaw = atan2(direction.x, direction.z);
         float pitch = asin(direction.y / distance);
 
-        // Apply rotation (note: dx affects yaw, dy affects pitch)
         yaw += dx * sensitivity * static_cast<float>(M_PI) / 180.0f;
         pitch -= dy * sensitivity * static_cast<float>(M_PI) / 180.0f;
 
-        // Clamp pitch to prevent flipping over
-        pitch = std::clamp(pitch, -1.55f, 1.55f); // About 89 degrees
+        pitch = std::clamp(pitch, -1.55f, 1.55f);
 
-        // Calculate new camera position RELATIVE TO TARGET
         float cos_pitch = cos(pitch);
         math::Vector3 new_position;
         new_position.x = target.x + sin(yaw) * cos_pitch * distance;
         new_position.y = target.y + sin(pitch) * distance;
         new_position.z = target.z + cos(yaw) * cos_pitch * distance;
 
-        // Set new camera position
         m_camera.set_position(new_position);
 
-        // Debug output to catch invalid positions
         if (std::isnan(new_position.x) || std::isnan(new_position.y) || std::isnan(new_position.z)) {
             std::cerr << "ERROR: Invalid camera position calculated!" << '\n';
             m_camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
@@ -428,15 +480,13 @@ namespace di_renderer::render {
 
         m_camera.set_position(current_pos + displacement);
         m_camera.set_target(current_target + displacement);
+
+        update_dynamic_projection();
     }
 
     bool OpenGLArea::key_pressed(unsigned int key) {
         return m_pressed_keys.find(static_cast<guint>(key)) != m_pressed_keys.end();
     }
-
-    // =============================================================================
-    // RENDERING & ANIMATION
-    // =============================================================================
 
     void OpenGLArea::on_dispatch_render() {
         if (m_should_render.load() && get_realized() && get_mapped()) {
@@ -486,7 +536,7 @@ namespace di_renderer::render {
         }
     }
 
-    bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
+    bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
         if (!m_gl_initialized.load() || !m_should_render.load() || m_shader_program == 0) {
             return false;
         }
@@ -510,23 +560,22 @@ namespace di_renderer::render {
 
         parse_keyboard_movement();
 
+        update_dynamic_projection();
+
         glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearDepth(1.0f);
 
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
 
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(1.0f, 1.0f);
-
         set_default_uniforms();
         draw_current_mesh();
-
-        glDisable(GL_POLYGON_OFFSET_FILL);
 
         return true;
     }
@@ -572,7 +621,13 @@ namespace di_renderer::render {
             glUniform3f(camera_pos_loc, camera_pos.x, camera_pos.y, camera_pos.z);
         }
 
-        math::Vector3 light_pos = camera_pos + math::Vector3(2.0f, 2.0f, 2.0f);
+        math::Vector3 camera_forward = (m_camera.get_target() - camera_pos).normalized();
+        math::Vector3 camera_right = camera_forward.cross(math::Vector3(0.0f, 1.0f, 0.0f)).normalized();
+        math::Vector3 camera_up = camera_right.cross(camera_forward).normalized();
+
+        math::Vector3 light_offset = camera_forward * 2.0f + camera_up * 0.5f;
+        math::Vector3 light_pos = camera_pos + light_offset;
+
         if (light_pos_loc != -1) {
             glUniform3f(light_pos_loc, light_pos.x, light_pos.y, light_pos.z);
         }
@@ -581,10 +636,10 @@ namespace di_renderer::render {
             glUniform3f(ambient_color_loc, 0.2f, 0.2f, 0.3f);
         }
         if (ambient_strength_loc != -1) {
-            glUniform1f(ambient_strength_loc, 0.5f);
+            glUniform1f(ambient_strength_loc, 0.4f);
         }
         if (diffuse_strength_loc != -1) {
-            glUniform1f(diffuse_strength_loc, 0.7f);
+            glUniform1f(diffuse_strength_loc, 0.8f);
         }
 
         if (use_texture_loc != -1) {
@@ -599,14 +654,8 @@ namespace di_renderer::render {
         }
 
         if (normal_matrix_loc != -1) {
-            math::Vector3 camera_forward = (m_camera.get_target() - m_camera.get_position()).normalized();
-            math::Vector3 camera_up(0.0f, 1.0f, 0.0f);
-            math::Vector3 camera_right = camera_forward.cross(camera_up).normalized();
-
-            GLfloat normal_matrix[9] = {camera_right.x,   camera_right.y,   camera_right.z,
-                                        camera_up.x,      camera_up.y,      camera_up.z,
-                                        camera_forward.x, camera_forward.y, camera_forward.z};
-            glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, normal_matrix);
+            GLfloat identity_normal_matrix[9] = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+            glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix);
         }
     }
 
@@ -675,9 +724,9 @@ namespace di_renderer::render {
                     vertex.uv[1] = 0.0f;
                 }
 
-                vertex.color[0] = (std::sin(mesh.vertices[i].x * 2.0f) + 1.0f) * 0.5f;
-                vertex.color[1] = (std::sin(mesh.vertices[i].y * 2.0f) + 1.0f) * 0.5f;
-                vertex.color[2] = (std::sin(mesh.vertices[i].z * 2.0f + 2.0f) + 1.0f) * 0.5f;
+                vertex.color[0] = 1.0f;
+                vertex.color[1] = 1.0f;
+                vertex.color[2] = 1.0f;
 
                 vertices.push_back(vertex);
             }
