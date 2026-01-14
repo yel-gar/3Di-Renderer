@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <limits>
-#include <stdexcept>
 #include <string_view>
 
 namespace di_renderer::core {
@@ -37,7 +36,6 @@ namespace di_renderer::core {
 
     void Mesh::load_texture(std::string_view filename) {
         texture_filename = filename;
-        throw std::runtime_error("Not implemented yet!");
     }
 
     const std::string& Mesh::get_texture_filename() const noexcept {

@@ -5,7 +5,10 @@
 #include "math/Camera.hpp"
 
 #include <chrono>
+#include <cstring>
 #include <epoxy/gl.h>
+#include <gdkmm/pixbuf.h>
+#include <glibmm/error.h>
 #include <iostream>
 #include <limits>
 #include <vector>
@@ -374,6 +377,53 @@ void OpenGLArea::cleanup_resources() {
         di_renderer::graphics::destroy_shader_program(m_shader_program);
         m_shader_program = 0;
     }
+
+    for (const auto& pair : m_loaded_textures) {
+        if (pair.second != 0) {
+            glDeleteTextures(1, &pair.second);
+        }
+    }
+    m_loaded_textures.clear();
+}
+
+GLuint OpenGLArea::load_texture_from_file(const std::string& filename) {
+    try {
+        auto pixbuf = Gdk::Pixbuf::create_from_file(filename);
+        int width = pixbuf->get_width();
+        int height = pixbuf->get_height();
+        int channels = pixbuf->get_n_channels();
+        bool has_alpha = pixbuf->get_has_alpha();
+
+        std::vector<guchar> buffer(width * height * channels);
+        const guchar* pixels = pixbuf->get_pixels();
+        int rowstride = pixbuf->get_rowstride();
+
+        for (int y = 0; y < height; ++y) {
+            const guchar* src_row = pixels + y * rowstride;
+            guchar* dst_row = buffer.data() + y * width * channels;
+            std::memcpy(dst_row, src_row, width * channels);
+        }
+
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        GLenum format = has_alpha ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer.data());
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return texture;
+    } catch (const Glib::Error& e) {
+        std::cerr << "Failed to load texture from file '" << filename << "': " << e.what() << std::endl;
+        return 0;
+    }
 }
 
 bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
@@ -412,6 +462,7 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
 
     return true;
 }
+
 void OpenGLArea::set_default_uniforms() {
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
@@ -431,12 +482,8 @@ void OpenGLArea::set_default_uniforms() {
     GLint proj_loc = glGetUniformLocation(m_shader_program, "uProjection");
     GLint camera_pos_loc = glGetUniformLocation(m_shader_program, "uCameraPos");
     GLint light_pos_loc = glGetUniformLocation(m_shader_program, "uLightPos");
-    GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
     GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
     GLint light_color_loc = glGetUniformLocation(m_shader_program, "uLightColor");
-    GLint ambient_color_loc = glGetUniformLocation(m_shader_program, "uAmbientColor");
-    GLint ambient_strength_loc = glGetUniformLocation(m_shader_program, "uAmbientStrength");
-    GLint diffuse_strength_loc = glGetUniformLocation(m_shader_program, "uDiffuseStrength");
     GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
 
     if (model_loc != -1) {
@@ -465,19 +512,6 @@ void OpenGLArea::set_default_uniforms() {
         glUniform3f(light_pos_loc, light_pos.x, light_pos.y, light_pos.z);
     }
 
-    if (ambient_color_loc != -1) {
-        glUniform3f(ambient_color_loc, 0.2f, 0.2f, 0.3f);
-    }
-    if (ambient_strength_loc != -1) {
-        glUniform1f(ambient_strength_loc, 0.4f);
-    }
-    if (diffuse_strength_loc != -1) {
-        glUniform1f(diffuse_strength_loc, 0.8f);
-    }
-
-    if (use_texture_loc != -1) {
-        glUniform1i(use_texture_loc, 0);
-    }
     if (texture_loc != -1) {
         glUniform1i(texture_loc, 0);
     }
@@ -491,6 +525,7 @@ void OpenGLArea::set_default_uniforms() {
         glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix);
     }
 }
+
 void OpenGLArea::draw_current_mesh() {
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
@@ -563,9 +598,39 @@ void OpenGLArea::draw_current_mesh() {
             vertices.push_back(vertex);
         }
 
-        if (!vertices.empty()) {
-            di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(),
-                                                     m_shader_program);
+        if (vertices.empty()) {
+            return;
+        }
+
+        bool has_texture = false;
+        GLuint texture_id = 0;
+        const std::string& tex_filename = mesh.get_texture_filename();
+        if (!tex_filename.empty()) {
+            auto it = m_loaded_textures.find(tex_filename);
+            if (it == m_loaded_textures.end()) {
+                texture_id = load_texture_from_file(tex_filename);
+                m_loaded_textures[tex_filename] = texture_id;
+            } else {
+                texture_id = it->second;
+            }
+            has_texture = (texture_id != 0);
+        }
+
+        GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
+        if (use_texture_loc != -1) {
+            glUniform1i(use_texture_loc, has_texture ? 1 : 0);
+        }
+
+        if (has_texture) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+        }
+
+        di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(),
+                                                 m_shader_program);
+
+        if (has_texture) {
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
     } catch (const std::exception& e) {
         std::cerr << "Error drawing mesh: " << e.what() << '\n';
