@@ -27,7 +27,6 @@ namespace di_renderer::render {
         add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
                    Gdk::POINTER_MOTION_MASK | Gdk::FOCUS_CHANGE_MASK);
 
-        std::cout << "OpenGLArea created" << '\n';
         m_render_dispatcher.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
     }
 
@@ -37,35 +36,29 @@ namespace di_renderer::render {
     }
 
     void OpenGLArea::ensure_keyboard_focus() {
-        std::cout << "Ensuring keyboard focus..." << '\n';
         set_can_focus(true);
         grab_focus();
         m_has_focus = true;
-        std::cout << "Focus grabbed successfully" << '\n';
     }
 
     bool OpenGLArea::on_focus_in_event(GdkEventFocus* focus_event) {
         m_has_focus = true;
-        std::cout << "FOCUS IN EVENT - OpenGLArea now has keyboard focus" << '\n';
         queue_draw();
         return Gtk::GLArea::on_focus_in_event(focus_event);
     }
 
     bool OpenGLArea::on_focus_out_event(GdkEventFocus* focus_event) {
         m_has_focus = false;
-        std::cout << "FOCUS OUT EVENT - OpenGLArea lost keyboard focus" << '\n';
         return Gtk::GLArea::on_focus_out_event(focus_event);
     }
 
     void OpenGLArea::on_show() {
         Gtk::GLArea::on_show();
-        std::cout << "OpenGLArea shown" << '\n';
         ensure_keyboard_focus();
     }
 
     void OpenGLArea::on_hide() {
         Gtk::GLArea::on_hide();
-        std::cout << "OpenGLArea hidden" << '\n';
     }
 
     void OpenGLArea::on_realize() {
@@ -95,17 +88,12 @@ namespace di_renderer::render {
 
         di_renderer::graphics::init_mesh_batch();
         m_gl_initialized.store(true);
-
-        std::cout << "GL context realized" << '\n';
-        update_camera_for_mesh();
-        ensure_keyboard_focus();
     }
 
     void OpenGLArea::on_unrealize() {
         m_gl_initialized.store(false);
         cleanup_resources();
         Gtk::GLArea::on_unrealize();
-        std::cout << "GL context unrealized" << '\n';
     }
 
     void OpenGLArea::on_resize(int width, int height) {
@@ -125,8 +113,6 @@ namespace di_renderer::render {
 
         float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
         m_camera.set_aspect_ratio(aspect_ratio);
-
-        std::cout << "Resized to " << width << "x" << height << " | aspect ratio: " << aspect_ratio << '\n';
     }
 
     void OpenGLArea::on_map() {
@@ -138,7 +124,6 @@ namespace di_renderer::render {
             update_camera_for_mesh();
         }
 
-        std::cout << "OpenGLArea mapped" << '\n';
         ensure_keyboard_focus();
     }
 
@@ -146,7 +131,6 @@ namespace di_renderer::render {
         m_should_render.store(false);
         stop_animation();
         Gtk::GLArea::on_unmap();
-        std::cout << "OpenGLArea unmapped" << '\n';
     }
 
     void OpenGLArea::update_camera_for_mesh() {
@@ -194,15 +178,12 @@ namespace di_renderer::render {
                 float far_plane = NAN;
 
                 if (max_dimension < 1.0f) {
-
                     near_plane = std::max(0.01f, distance * 0.01f);
                     far_plane = (distance * 3.0f) + (max_dimension * 2.0f);
                 } else if (max_dimension < 10.0f) {
-
                     near_plane = std::max(0.1f, distance * 0.05f);
                     far_plane = (distance * 4.0f) + (max_dimension * 2.0f);
                 } else {
-
                     near_plane = std::max(0.5f, distance * 0.1f);
                     far_plane = (distance * 5.0f) + (max_dimension * 2.0f);
                 }
@@ -216,11 +197,6 @@ namespace di_renderer::render {
                 m_camera.set_planes(near_plane, far_plane);
 
                 m_movement_speed = std::clamp(model_radius * 0.8f, 0.2f, 50.0f);
-
-                std::cout << "Mesh loaded: center=(" << center.x << "," << center.y << "," << center.z << "), size=("
-                          << size.x << "," << size.y << "," << size.z << "), max_dim=" << max_dimension
-                          << ", distance=" << distance << ", near/far=(" << near_plane << "/" << far_plane << ")"
-                          << ", speed=" << m_movement_speed << '\n';
             }
         } catch (const std::exception& e) {
             std::cerr << "Error loading mesh: " << e.what() << '\n';
@@ -228,7 +204,6 @@ namespace di_renderer::render {
             m_camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
             m_camera.set_planes(0.1f, 100.0f);
             m_movement_speed = 2.5f;
-            std::cout << "Using default camera position due to mesh error" << '\n';
         }
 
         int width = get_width();
@@ -236,7 +211,6 @@ namespace di_renderer::render {
         if (width > 0 && height > 0) {
             float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
             m_camera.set_aspect_ratio(aspect_ratio);
-            std::cout << "Aspect ratio set to: " << aspect_ratio << '\n';
         }
     }
 
@@ -282,7 +256,6 @@ namespace di_renderer::render {
             float far_plane = NAN;
 
             if (max_dimension < 1.0f) {
-
                 near_plane = std::max(0.005f, distance * 0.005f);
                 far_plane = (distance * 2.5f) + (max_dimension * 3.0f);
             } else if (max_dimension < 10.0f) {
@@ -299,23 +272,11 @@ namespace di_renderer::render {
             }
 
             m_camera.set_planes(near_plane, far_plane);
-
-            static auto last_log_time = std::chrono::steady_clock::now();
-            auto current_time = std::chrono::steady_clock::now();
-            auto elapsed = std::chrono::duration<float>(current_time - last_log_time).count();
-
-            if (elapsed > 1.0f) {
-                std::cout << "Dynamic planes - Distance: " << distance << " | Near: " << near_plane
-                          << " | Far: " << far_plane << " | Model size: " << max_dimension << '\n';
-                last_log_time = current_time;
-            }
         } catch (...) {
         }
     }
 
     bool OpenGLArea::on_button_press_event(GdkEventButton* button_event) {
-        std::cout << "Mouse button pressed at (" << button_event->x << ", " << button_event->y << ")" << '\n';
-
         if (button_event->button == 1) {
             m_dragging = true;
             m_last_x = button_event->x;
@@ -325,7 +286,6 @@ namespace di_renderer::render {
                 ensure_keyboard_focus();
             }
 
-            std::cout << "Mouse drag started" << '\n';
             return true;
         }
 
@@ -335,7 +295,6 @@ namespace di_renderer::render {
     bool OpenGLArea::on_button_release_event(GdkEventButton* button_event) {
         if (button_event->button == 1) {
             m_dragging = false;
-            std::cout << "Mouse drag ended" << '\n';
             return true;
         }
         return Gtk::GLArea::on_button_release_event(button_event);
@@ -390,20 +349,12 @@ namespace di_renderer::render {
     }
 
     bool OpenGLArea::on_key_press_event(GdkEventKey* key_event) {
-        std::cout << "KEY PRESSED: " << key_event->keyval << " (\"" << static_cast<char>(key_event->keyval) << "\")"
-                  << " | has_focus_: " << m_has_focus << '\n';
-
         m_pressed_keys.insert(key_event->keyval);
         queue_draw();
-
-        math::Vector3 pos = m_camera.get_position();
-        std::cout << "Camera position: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << '\n';
-
         return true;
     }
 
     bool OpenGLArea::on_key_release_event(GdkEventKey* key_event) {
-        std::cout << "KEY RELEASED: " << key_event->keyval << " | has_focus_: " << m_has_focus << '\n';
         m_pressed_keys.erase(key_event->keyval);
         return true;
     }
