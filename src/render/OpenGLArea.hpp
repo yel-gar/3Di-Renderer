@@ -61,7 +61,6 @@ namespace di_renderer::render {
         std::atomic<bool> m_gl_initialized{false};
         std::atomic<bool> m_should_render{false};
         GLuint m_shader_program = 0;
-        float m_last_frame_time = 0.0f;
 
         core::AppData m_app_data;
 

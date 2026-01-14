@@ -16,92 +16,24 @@ OpenGLArea::OpenGLArea() {
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
+    set_can_focus(true);
 
-    // mouse events
     add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
-
-    // keyboard events
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+
+    auto& camera = m_app_data.get_current_camera();
+    camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
+    camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
+    camera.set_planes(0.1f, 100.0f);
+    camera.set_fov(45.0f * static_cast<float>(M_PI) / 180.0f);
+    camera.set_aspect_ratio(1.0f);
+
+    m_render_dispatcher.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
 }
 
 OpenGLArea::~OpenGLArea() {
     stop_animation();
     cleanup_resources();
-}
-
-bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
-    if (event->button == 1) { // Left mouse button
-        grab_focus();
-        m_dragging = true;
-        m_last_x = event->x;
-        m_last_y = event->y;
-        return true;
-    }
-    return false;
-}
-
-bool OpenGLArea::on_button_release_event(GdkEventButton* event) {
-    if (event->button == 1) {
-        m_dragging = false;
-        return true;
-    }
-    return false;
-}
-
-bool OpenGLArea::on_key_press_event(GdkEventKey* event) {
-    m_pressed_keys.insert(event->keyval);
-    parse_keyboard_movement();
-    return true;
-}
-
-bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
-    m_pressed_keys.erase(event->keyval);
-    parse_keyboard_movement();
-    return true;
-}
-
-void OpenGLArea::parse_keyboard_movement() {
-    math::Vector3 vec;
-
-    // i don't know how which axis goes to which vector component so please figure it out
-    if (key_pressed(GDK_KEY_w))
-        vec.z += 1.f;
-    if (key_pressed(GDK_KEY_s))
-        vec.z -= 1.f;
-    if (key_pressed(GDK_KEY_a))
-        vec.x -= 1.f;
-    if (key_pressed(GDK_KEY_d))
-        vec.x += 1.f;
-    if (key_pressed(GDK_KEY_q))
-        vec.y -= 1.f;
-    if (key_pressed(GDK_KEY_e))
-        vec.y += 1.f;
-
-    // zero
-    if (vec.length() <= std::numeric_limits<float>::epsilon()) {
-        return;
-    }
-
-    m_app_data.get_current_camera().move(vec.normalized());
-}
-
-bool OpenGLArea::key_pressed(unsigned int key) {
-    return m_pressed_keys.find(key) != m_pressed_keys.end();
-}
-
-bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
-    if (!m_dragging) {
-        return false;
-    }
-
-    double dx = event->x - m_last_x;
-    double dy = event->y - m_last_y;
-
-    m_last_x = event->x;
-    m_last_y = event->y;
-
-    m_app_data.get_current_camera().rotate_view(dx, dy);
-    return true;
 }
 
 void OpenGLArea::on_realize() {
@@ -156,6 +88,81 @@ void OpenGLArea::on_resize(int width, int height) {
 
     float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
     m_app_data.get_current_camera().set_aspect_ratio(aspect_ratio);
+}
+
+bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
+    if (event->button == 1) {
+        grab_focus();
+        m_dragging = true;
+        m_last_x = event->x;
+        m_last_y = event->y;
+        return true;
+    }
+    return false;
+}
+
+bool OpenGLArea::on_button_release_event(GdkEventButton* event) {
+    if (event->button == 1) {
+        m_dragging = false;
+        return true;
+    }
+    return false;
+}
+
+bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
+    if (!m_dragging) {
+        return false;
+    }
+
+    double dx = event->x - m_last_x;
+    double dy = event->y - m_last_y;
+
+    m_last_x = event->x;
+    m_last_y = event->y;
+
+    m_app_data.get_current_camera().rotate_view(dx, dy);
+    queue_draw();
+    return true;
+}
+
+bool OpenGLArea::on_key_press_event(GdkEventKey* event) {
+    m_pressed_keys.insert(event->keyval);
+    parse_keyboard_movement();
+    queue_draw();
+    return true;
+}
+
+bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
+    m_pressed_keys.erase(event->keyval);
+    parse_keyboard_movement();
+    return true;
+}
+
+void OpenGLArea::parse_keyboard_movement() {
+    math::Vector3 vec;
+
+    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W))
+        vec.z += 1.f;
+    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S))
+        vec.z -= 1.f;
+    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A))
+        vec.x -= 1.f;
+    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D))
+        vec.x += 1.f;
+    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q))
+        vec.y -= 1.f;
+    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E))
+        vec.y += 1.f;
+
+    if (vec.length() <= std::numeric_limits<float>::epsilon()) {
+        return;
+    }
+
+    m_app_data.get_current_camera().move(vec.normalized());
+}
+
+bool OpenGLArea::key_pressed(unsigned int key) {
+    return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
 void OpenGLArea::update_camera_for_mesh() {
@@ -224,7 +231,7 @@ void OpenGLArea::update_camera_for_mesh() {
             camera.set_planes(near_plane, far_plane);
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error loading mesh: " << e.what() << '\n';
+        std::cerr << "Error loading mesh for camera update: " << e.what() << '\n';
         camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
         camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
         camera.set_planes(0.1f, 100.0f);
@@ -304,6 +311,7 @@ void OpenGLArea::update_dynamic_projection() {
 void OpenGLArea::on_map() {
     Gtk::GLArea::on_map();
     m_should_render.store(true);
+    grab_focus();
 
     if (m_gl_initialized.load()) {
         start_animation();
@@ -368,7 +376,7 @@ void OpenGLArea::cleanup_resources() {
     }
 }
 
-bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
+bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
     if (!m_gl_initialized.load() || !m_should_render.load() || m_shader_program == 0) {
         return false;
     }
@@ -378,16 +386,6 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
     } catch (const Glib::Error& e) {
         std::cerr << "Error making GL context current during render: " << e.what() << '\n';
         return false;
-    }
-
-    static auto start_time = std::chrono::steady_clock::now();
-    auto current_time = std::chrono::steady_clock::now();
-    float current_frame_time = std::chrono::duration<float>(current_time - start_time).count();
-    float elapsed = current_frame_time - m_last_frame_time;
-    m_last_frame_time = current_frame_time;
-
-    if (elapsed < 1.0f / 60.0f) {
-        return true;
     }
 
     update_dynamic_projection();
@@ -407,9 +405,13 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
     set_default_uniforms();
     draw_current_mesh();
 
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << error << std::endl;
+    }
+
     return true;
 }
-
 void OpenGLArea::set_default_uniforms() {
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
@@ -489,18 +491,19 @@ void OpenGLArea::set_default_uniforms() {
         glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix);
     }
 }
-
 void OpenGLArea::draw_current_mesh() {
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
     }
 
-    if (get_app_data().is_meshes_empty()) {
+    auto& app_data = get_app_data();
+
+    if (app_data.is_meshes_empty()) {
         return;
     }
 
     try {
-        const auto& mesh = get_app_data().get_current_mesh();
+        const auto& mesh = app_data.get_current_mesh();
 
         if (mesh.vertices.empty()) {
             return;

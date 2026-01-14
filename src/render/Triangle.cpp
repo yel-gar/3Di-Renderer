@@ -39,7 +39,6 @@ out vec4 FragColor;
 uniform bool uUseTexture;
 uniform sampler2D uTexture;
 uniform vec3 uLightPos;
-uniform vec3 uViewPos;
 uniform vec3 uLightColor;
 void main() {
     vec3 normal = normalize(vNormal);
@@ -53,7 +52,7 @@ void main() {
         if (texColor.a < 0.1) discard;
         result *= texColor.rgb;
     }
-    FragColor = vec4(pow(result, vec3(1.0/2.2)), 1.0);
+    FragColor = vec4(result, 1.0);
 })";
 
     static GLuint compile_shader(GLenum type, const char* src) {
