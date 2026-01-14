@@ -1,5 +1,6 @@
 #include "core/AppData.hpp"
 #include "core/FaceVerticeData.hpp"
+#include "math/Camera.hpp"
 #include "math/UVCoord.hpp"
 #include "math/Vector3.hpp"
 
@@ -12,15 +13,8 @@ using di_renderer::core::RenderMode;
 
 constexpr float EPS = std::numeric_limits<float>::epsilon();
 
-TEST(CoreTests, InstanceAllocation) {
-    const auto& instance = AppData::instance();
-    const auto& instance2 = AppData::instance();
-    EXPECT_EQ(&instance, &instance2);
-}
-
 TEST(CoreTests, RenderModeSetting) {
-    auto& instance = AppData::instance();
-    instance.clean();
+    AppData instance;
 
     instance.enable_render_mode(RenderMode::TEXTURE);
     EXPECT_TRUE(instance.is_render_mode_enabled(RenderMode::TEXTURE));
@@ -39,8 +33,7 @@ TEST(CoreTests, RenderModeSetting) {
 }
 
 TEST(CoreTests, MeshData) {
-    auto& instance = AppData::instance();
-    instance.clean();
+    AppData instance;
 
     Mesh mesh0;
     Mesh mesh1{{{}}, {}, {}, {}};
@@ -63,8 +56,7 @@ TEST(CoreTests, MeshData) {
 }
 
 TEST(CoreTests, AdvancedMeshRemove) {
-    auto& instance = AppData::instance();
-    instance.clean();
+    AppData instance;
 
     // mesh ladder???
     const Mesh mesh0;
@@ -107,6 +99,72 @@ TEST(CoreTests, AdvancedMeshRemove) {
     // index auto selects to last
     instance.remove_mesh(2);
     EXPECT_EQ(instance.get_current_mesh().vertex_count(), 4);
+}
+
+TEST(CoreTests, GetCreatesCameraIfMissing) {
+    AppData app;
+
+    // default index assumed to be 0
+    const di_renderer::math::Camera& cam = app.get_current_camera();
+
+    // Calling again should return the same object
+    const di_renderer::math::Camera& cam2 = app.get_current_camera();
+
+    EXPECT_EQ(&cam, &cam2);
+}
+
+TEST(CoreTests, SetChangesReturnedCamera) {
+    AppData app;
+
+    app.set_current_camera(1);
+    const di_renderer::math::Camera& cam1 = app.get_current_camera();
+
+    app.set_current_camera(2);
+    const di_renderer::math::Camera& cam2 = app.get_current_camera();
+
+    EXPECT_NE(&cam1, &cam2);
+}
+
+TEST(CoreTests, DeleteRemovesCamera) {
+    AppData app;
+
+    app.set_current_camera(1);
+    di_renderer::math::Camera& cam = app.get_current_camera();
+    cam.set_position({200, 200, 200});
+
+    app.delete_current_camera();
+
+    // Re-fetching should create a NEW camera
+    const di_renderer::math::Camera& new_cam = app.get_current_camera();
+
+    EXPECT_NE(new_cam.get_position().x, 200);
+}
+
+TEST(CoreTests, DeleteWhenMissingDoesNothing) {
+    AppData app;
+
+    app.set_current_camera(42);
+
+    // No camera exists yet
+    EXPECT_NO_THROW(app.delete_current_camera());
+}
+
+TEST(CoreTests, DeleteDoesNotAffectOtherCameras) {
+    AppData app;
+
+    app.set_current_camera(1);
+    app.get_current_camera(); // just to create
+
+    app.set_current_camera(2);
+    const di_renderer::math::Camera& cam2 = app.get_current_camera();
+
+    app.set_current_camera(1);
+    app.delete_current_camera();
+
+    app.set_current_camera(2);
+    const di_renderer::math::Camera& cam2_again = app.get_current_camera();
+
+    EXPECT_EQ(&cam2, &cam2_again);
 }
 
 TEST(MeshTriangulationTest, TriangleFaceRemainsUnchanged) {

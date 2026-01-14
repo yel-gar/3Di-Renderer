@@ -1,5 +1,6 @@
 #include "MainWindowHandler.hpp"
 
+#include "TransformTypeHelper.hpp"
 #include "core/AppData.hpp"
 #include "core/Mesh.hpp"
 #include "io/ObjReader.hpp"
@@ -26,9 +27,40 @@ void MainWindowHandler::show(Gtk::Application& app) const {
     m_window->show_all();
 }
 
+void MainWindowHandler::update_entries() const {
+    auto& app_data = m_gl_area->get_app_data();
+    if (app_data.is_meshes_empty()) {
+        m_model_index_label->set_text("NaN");
+        m_texture_selector->set_filename("(None)");
+        m_texture_selector->set_sensitive(false);
+        m_prev_model_button->set_sensitive(false);
+        m_next_model_button->set_sensitive(false);
+        m_close_button->set_sensitive(false);
+        return;
+    }
+
+    auto& mesh = app_data.get_current_mesh();
+    for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
+        const auto& entry_id = TRANSFORM_IDS[i]; // NOLINT
+        auto* entry = m_transform_entries[i];    // NOLINT
+        const auto value = from_transform_and_name_to_value(mesh.get_transform(), entry_id);
+        entry->set_text(float_format(value));
+    }
+
+    m_model_index_label->set_text(std::to_string(app_data.get_current_mesh_index()));
+    m_texture_selector->set_filename(mesh.get_texture_filename());
+    m_texture_selector->set_sensitive(true);
+    m_prev_model_button->set_sensitive(app_data.left_button_sensitive());
+    m_next_model_button->set_sensitive(app_data.right_button_sensitive());
+    m_close_button->set_sensitive(!app_data.is_meshes_empty());
+}
+
 void MainWindowHandler::load_ui() {
     connect_buttons();
+    connect_entries();
     init_gl_area();
+    m_builder->get_widget("model_index", m_model_index_label);
+    m_camera_selection_handler.init(m_builder, m_gl_area->get_app_data());
 }
 
 void MainWindowHandler::connect_buttons() {
@@ -42,18 +74,46 @@ void MainWindowHandler::connect_buttons() {
     m_builder->get_widget("button_save", button);
     button->signal_clicked().connect([this] { on_save_button_click(); });
 
+    // button_close
+    m_builder->get_widget("button_close", m_close_button);
+    m_close_button->signal_clicked().connect([this] { on_close_button_click(); });
+
     // render mode toggle buttons
     Gtk::ToggleButton* toggle_button = nullptr;
     for (const auto& [button_id, render_mode] : ID_TO_MODE_MAP) {
         m_builder->get_widget(button_id, toggle_button);
         assert(toggle_button != nullptr);
         toggle_button->signal_toggled().connect(
-            [toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
+            [this, toggle_button, mode = render_mode] { on_render_toggle_button_click(*toggle_button, mode); });
     }
 
     // texture selector
     m_builder->get_widget("texture_file_selector", m_texture_selector);
     m_texture_selector->signal_file_set().connect([this] { on_texture_selection(); });
+
+    // prev model and next model
+    m_builder->get_widget("prev_model_button", m_prev_model_button);
+    m_builder->get_widget("next_model_button", m_next_model_button);
+    m_prev_model_button->signal_clicked().connect([this] {
+        m_gl_area->get_app_data().move_left();
+        update_entries();
+    });
+    m_next_model_button->signal_clicked().connect([this] {
+        m_gl_area->get_app_data().move_right();
+        update_entries();
+    });
+}
+
+void MainWindowHandler::connect_entries() {
+    Gtk::Entry* entry = nullptr;
+
+    for (size_t i = 0; i < TRANSFORM_IDS.size(); ++i) {
+        const auto& entry_id = TRANSFORM_IDS[i]; // NOLINT
+        m_builder->get_widget(entry_id, entry);
+        assert(entry != nullptr);
+        entry->signal_activate().connect([this, entry, id = entry_id] { on_transform_entry_activate(*entry, id); });
+        m_transform_entries[i] = entry; // NOLINT
+    }
 }
 
 void MainWindowHandler::init_error_handling() const {
@@ -83,14 +143,14 @@ void MainWindowHandler::init_error_handling() const {
     Glib::add_exception_handler(handler);
 }
 
-void MainWindowHandler::init_gl_area() const {
-    auto* const gl_area = Gtk::make_managed<OpenGLArea>();
+void MainWindowHandler::init_gl_area() {
+    m_gl_area = Gtk::make_managed<OpenGLArea>();
 
     Gtk::Widget* placeholder_box = nullptr;
     m_builder->get_widget("gl_placeholder", placeholder_box);
 
     if (auto* const box = dynamic_cast<Gtk::Box*>(placeholder_box)) {
-        box->pack_start(*gl_area);
+        box->pack_start(*m_gl_area);
     } else {
         std::cerr << "Error: Box is not a Gtk::Box" << '\n';
     }
@@ -105,12 +165,13 @@ void MainWindowHandler::on_open_button_click() const {
     filter->add_pattern("*.obj");
     dialog->set_filter(filter);
 
-    dialog->signal_response().connect([dialog](const int response_id) {
+    dialog->signal_response().connect([this, dialog](const int response_id) {
         if (response_id == Gtk::RESPONSE_ACCEPT) {
             const auto filename = dialog->get_filename();
             const auto [vertices, texture_vertices, normals, faces] = io::ObjReader::read_file(filename);
             core::Mesh mesh{vertices, texture_vertices, normals, faces};
-            core::AppData::instance().add_mesh(std::move(mesh));
+            m_gl_area->get_app_data().add_mesh(std::move(mesh));
+            update_entries();
         }
     });
 
@@ -126,10 +187,10 @@ void MainWindowHandler::on_save_button_click() const {
     filter->add_pattern("*.obj");
     dialog->set_filter(filter);
 
-    dialog->signal_response().connect([dialog](const int response_id) {
+    dialog->signal_response().connect([this, dialog](const int response_id) {
         if (response_id == Gtk::RESPONSE_ACCEPT) {
             const auto& filename = dialog->get_filename();
-            const auto& mesh = core::AppData::instance().get_current_mesh();
+            const auto& mesh = m_gl_area->get_app_data().get_current_mesh();
             io::ObjWriter::write_file(filename, mesh);
         }
     });
@@ -137,11 +198,55 @@ void MainWindowHandler::on_save_button_click() const {
     dialog->show();
 }
 
+void MainWindowHandler::on_close_button_click() const {
+    auto& app_data = m_gl_area->get_app_data();
+    app_data.remove_current_mesh();
+    update_entries();
+}
+
 void MainWindowHandler::on_texture_selection() const {
-    auto& mesh = core::AppData::instance().get_current_mesh();
+    auto& mesh = m_gl_area->get_app_data().get_current_mesh();
     mesh.load_texture(m_texture_selector->get_filename());
 }
 
 void MainWindowHandler::on_render_toggle_button_click(const Gtk::ToggleButton& btn, const core::RenderMode mode) {
-    core::AppData::instance().set_render_mode(mode, btn.get_active());
+    m_gl_area->get_app_data().set_render_mode(mode, btn.get_active());
+}
+
+void MainWindowHandler::on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id) {
+    if (m_gl_area->get_app_data().is_meshes_empty()) {
+        std::cout << "No active mesh, ignoring entry value set";
+        return;
+    }
+
+    auto& transform = m_gl_area->get_app_data().get_current_mesh().get_transform(); // safe dereference
+    const std::string text = entry.get_text();
+    const auto transform_type = get_transform_type(entry_id);
+
+    float value = 0.0f;
+    try {
+        value = std::stof(text);
+    } catch (const std::exception& e) {
+        std::cout << "Bad numeric value: " << e.what() << '\n';
+        return;
+    }
+
+    // special case for scale invalid input
+    if (transform_type.type == TransformType::SCALE && value <= std::numeric_limits<float>::epsilon()) {
+        entry.set_text(std::to_string(get_vector_component(transform.get_scale(), transform_type.component)));
+        return;
+    }
+
+    // ugly code incoming
+    switch (transform_type.type) {
+    case TransformType::TRANSLATE:
+        transform.set_position(get_new_vector(transform.get_position(), transform_type.component, value));
+        break;
+    case TransformType::ROTATE:
+        transform.set_rotation(get_new_vector(transform.get_rotation(), transform_type.component, value));
+        break;
+    case TransformType::SCALE:
+        transform.set_scale(get_new_vector(transform.get_scale(), transform_type.component, value));
+        break;
+    }
 }

@@ -1,15 +1,15 @@
 #pragma once
 #include "Mesh.hpp"
 #include "RenderMode.hpp"
+#include "math/Camera.hpp"
 
 #include <bitset>
+#include <unordered_map>
 
 namespace di_renderer::core {
     class AppData final {
       public:
         AppData() = default;
-
-        static AppData& instance() noexcept;
 
         void clean() noexcept;
 
@@ -22,11 +22,24 @@ namespace di_renderer::core {
         void add_mesh(Mesh&& mesh) noexcept;
         void remove_mesh(size_t index);
         void select_mesh(size_t index);
-        bool has_current_mesh() const noexcept;
+        bool move_right();
+        bool move_left();
+        void remove_current_mesh();
+        const std::vector<Mesh>& get_meshes() const noexcept;
+        bool is_meshes_empty() const noexcept;
+        bool left_button_sensitive() const noexcept;
+        bool right_button_sensitive() const noexcept;
+        size_t get_current_mesh_index() const noexcept;
+
+        math::Camera& get_current_camera() noexcept;
+        void set_current_camera(unsigned int id) noexcept;
+        void delete_current_camera() noexcept;
 
       private:
         size_t m_current_mesh_index = 0;
+        unsigned int m_current_camera_index = 0;
         std::vector<Mesh> m_meshes;
+        std::unordered_map<unsigned int, math::Camera> m_cameras;
 
         std::bitset<3> m_render_mode;
     };

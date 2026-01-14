@@ -47,4 +47,4 @@ jobs:
         run: find . -type f -regex ".*\.\(cpp\|hpp\)" -print0 | xargs -0 clang-format-21 --style=file --Werror
 
       - name: Run clang-tidy
-        run: run-clang-tidy-21 -p=buildDir/ -warnings-as-errors='*'
+        run: run-clang-tidy-21 -p=buildDir/ -warnings-as-errors='*' -j 10

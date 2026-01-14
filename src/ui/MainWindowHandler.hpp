@@ -1,5 +1,7 @@
 #pragma once
+#include "CameraSelectionHandler.hpp"
 #include "core/RenderMode.hpp"
+#include "render/OpenGLArea.hpp"
 
 #include <gtkmm.h>
 
@@ -9,6 +11,7 @@ namespace di_renderer::ui {
         MainWindowHandler();
 
         void show(Gtk::Application& app) const;
+        void update_entries() const;
 
       private:
         inline static const std::string UI_LAYOUT_FILENAME{"direnderer/ui/di_renderer.ui"};
@@ -16,18 +19,33 @@ namespace di_renderer::ui {
             {"button_toggle_polygons", core::RenderMode::POLYGON},
             {"button_toggle_texture", core::RenderMode::TEXTURE},
             {"button_toggle_lighting", core::RenderMode::LIGHTING}};
+        inline static const std::array<std::string, 9> TRANSFORM_IDS = {
+            "translation_x", "translation_y", "translation_z", "rotation_x", "rotation_y",
+            "rotation_z",    "scale_x",       "scale_y",       "scale_z"};
 
+        CameraSelectionHandler m_camera_selection_handler;
         Glib::RefPtr<Gtk::Builder> m_builder;
         Gtk::Window* m_window{nullptr};
         Gtk::FileChooserButton* m_texture_selector{nullptr};
+        render::OpenGLArea* m_gl_area{nullptr};
+
+        Gtk::Label* m_model_index_label{nullptr};
+        Gtk::Button* m_prev_model_button{nullptr};
+        Gtk::Button* m_next_model_button{nullptr};
+        Gtk::Button* m_close_button{nullptr};
+
+        std::array<Gtk::Entry*, 9> m_transform_entries{};
 
         void load_ui();
         void connect_buttons();
+        void connect_entries();
         void init_error_handling() const;
-        void init_gl_area() const;
+        void init_gl_area();
         void on_open_button_click() const;
         void on_save_button_click() const;
+        void on_close_button_click() const;
         void on_texture_selection() const;
-        static void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
+        void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
+        void on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id);
     };
 } // namespace di_renderer::ui

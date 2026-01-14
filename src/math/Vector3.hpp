@@ -19,15 +19,19 @@ namespace di_renderer::math {
 
         Vector3 operator+(const Vector3& other) const;
         Vector3 operator-(const Vector3& other) const;
-        Vector3 operator*(float scalar) const;
+        Vector3 operator*(float value) const;
 
         Vector3& operator+=(const Vector3& other);
         Vector3& operator-=(const Vector3& other);
-        Vector3& operator*=(float scalar);
+        Vector3& operator*=(float value);
 
         bool operator==(const Vector3& other) const;
 
       private:
         constexpr const static float EPSILON = std::numeric_limits<float>::epsilon();
     };
+
+    inline Vector3 operator*(float value, const Vector3& vec) {
+        return vec * value;
+    }
 } // namespace di_renderer::math
