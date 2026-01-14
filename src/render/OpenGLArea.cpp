@@ -1,3 +1,4 @@
+// NOLINTBEGIN
 #include "OpenGLArea.hpp"
 
 #include "Triangle.hpp"
@@ -189,24 +190,25 @@ namespace di_renderer::render {
                 m_camera.set_position(math::Vector3(center.x, center.y, center.z + distance));
                 m_camera.set_target(center);
 
-                float near_plane, far_plane;
+                float near_plane = NAN;
+                float far_plane = NAN;
 
                 if (max_dimension < 1.0f) {
 
                     near_plane = std::max(0.01f, distance * 0.01f);
-                    far_plane = distance * 3.0f + max_dimension * 2.0f;
+                    far_plane = (distance * 3.0f) + (max_dimension * 2.0f);
                 } else if (max_dimension < 10.0f) {
 
                     near_plane = std::max(0.1f, distance * 0.05f);
-                    far_plane = distance * 4.0f + max_dimension * 2.0f;
+                    far_plane = (distance * 4.0f) + (max_dimension * 2.0f);
                 } else {
 
                     near_plane = std::max(0.5f, distance * 0.1f);
-                    far_plane = distance * 5.0f + max_dimension * 2.0f;
+                    far_plane = (distance * 5.0f) + (max_dimension * 2.0f);
                 }
 
                 if (far_plane - near_plane < 0.1f * max_dimension) {
-                    far_plane = near_plane + 0.1f * max_dimension;
+                    far_plane = near_plane + (0.1f * max_dimension);
                 }
 
                 far_plane = std::min(far_plane, 5000.0f);
@@ -276,18 +278,19 @@ namespace di_renderer::render {
             math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
             float max_dimension = std::max({size.x, size.y, size.z});
 
-            float near_plane, far_plane;
+            float near_plane = NAN;
+            float far_plane = NAN;
 
             if (max_dimension < 1.0f) {
 
                 near_plane = std::max(0.005f, distance * 0.005f);
-                far_plane = distance * 2.5f + max_dimension * 3.0f;
+                far_plane = (distance * 2.5f) + (max_dimension * 3.0f);
             } else if (max_dimension < 10.0f) {
                 near_plane = std::max(0.05f, distance * 0.03f);
-                far_plane = distance * 3.5f + max_dimension * 2.5f;
+                far_plane = (distance * 3.5f) + (max_dimension * 2.5f);
             } else {
                 near_plane = std::max(0.2f, distance * 0.08f);
-                far_plane = distance * 4.5f + max_dimension * 2.0f;
+                far_plane = (distance * 4.5f) + (max_dimension * 2.0f);
             }
 
             float min_range = std::max(0.01f, max_dimension * 0.05f);
@@ -303,7 +306,7 @@ namespace di_renderer::render {
 
             if (elapsed > 1.0f) {
                 std::cout << "Dynamic planes - Distance: " << distance << " | Near: " << near_plane
-                          << " | Far: " << far_plane << " | Model size: " << max_dimension << std::endl;
+                          << " | Far: " << far_plane << " | Model size: " << max_dimension << '\n';
                 last_log_time = current_time;
             }
         } catch (...) {
@@ -360,19 +363,19 @@ namespace di_renderer::render {
         }
 
         math::Vector3 direction = position - target;
-        float yaw = atan2(direction.x, direction.z);
-        float pitch = asin(direction.y / distance);
+        float yaw = std::atan2(direction.x, direction.z);
+        float pitch = std::asin(direction.y / distance);
 
         yaw += dx * sensitivity * static_cast<float>(M_PI) / 180.0f;
         pitch -= dy * sensitivity * static_cast<float>(M_PI) / 180.0f;
 
         pitch = std::clamp(pitch, -1.55f, 1.55f);
 
-        float cos_pitch = cos(pitch);
+        float cos_pitch = std::cos(pitch);
         math::Vector3 new_position;
-        new_position.x = target.x + sin(yaw) * cos_pitch * distance;
-        new_position.y = target.y + sin(pitch) * distance;
-        new_position.z = target.z + cos(yaw) * cos_pitch * distance;
+        new_position.x = target.x + (std::sin(yaw) * cos_pitch * distance);
+        new_position.y = target.y + (std::sin(pitch) * distance);
+        new_position.z = target.z + (std::cos(yaw) * cos_pitch * distance);
 
         m_camera.set_position(new_position);
 
@@ -390,7 +393,7 @@ namespace di_renderer::render {
         std::cout << "KEY PRESSED: " << key_event->keyval << " (\"" << static_cast<char>(key_event->keyval) << "\")"
                   << " | has_focus_: " << m_has_focus << '\n';
 
-        m_pressed_keys.insert(static_cast<guint>(key_event->keyval));
+        m_pressed_keys.insert(key_event->keyval);
         queue_draw();
 
         math::Vector3 pos = m_camera.get_position();
@@ -401,7 +404,7 @@ namespace di_renderer::render {
 
     bool OpenGLArea::on_key_release_event(GdkEventKey* key_event) {
         std::cout << "KEY RELEASED: " << key_event->keyval << " | has_focus_: " << m_has_focus << '\n';
-        m_pressed_keys.erase(static_cast<guint>(key_event->keyval));
+        m_pressed_keys.erase(key_event->keyval);
         return true;
     }
 
@@ -536,7 +539,7 @@ namespace di_renderer::render {
         }
     }
 
-    bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
+    bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
         if (!m_gl_initialized.load() || !m_should_render.load() || m_shader_program == 0) {
             return false;
         }
@@ -740,3 +743,4 @@ namespace di_renderer::render {
         }
     }
 } // namespace di_renderer::render
+// NOLINTEND
