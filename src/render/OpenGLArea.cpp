@@ -22,7 +22,7 @@
 
 using di_renderer::render::OpenGLArea;
 
-OpenGLArea::OpenGLArea() : m_last_x(0.0), m_last_y(0.0) {
+OpenGLArea::OpenGLArea() : m_last_x(0.0), m_last_y(0.0) { // NOLINT
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
@@ -130,7 +130,7 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
     m_last_x = event->x;
     m_last_y = event->y;
 
-    m_app_data.get_current_camera().rotate_view(dx, dy);
+    m_app_data.get_current_camera().rotate_view(static_cast<float>(dx), static_cast<float>(dy));
     queue_draw();
     return true;
 }
@@ -181,7 +181,7 @@ bool OpenGLArea::key_pressed(unsigned int key) {
     return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
-void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
+void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos, // NOLINT
                                          const di_renderer::math::Vector3& max_pos, float distance,
                                          di_renderer::math::Camera& camera) {
     const di_renderer::math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
@@ -209,12 +209,12 @@ void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_p
     camera.set_planes(near_plane, far_plane);
 }
 
-di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex,
+di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex, // NOLINT
                                                         const di_renderer::math::Transform& transform) {
-    di_renderer::math::Matrix4x4 transform_matrix = transform.get_matrix();
-    di_renderer::math::Vector4 transformed =
+    const di_renderer::math::Matrix4x4 transform_matrix = transform.get_matrix();
+    const di_renderer::math::Vector4 transformed =
         transform_matrix * di_renderer::math::Vector4(vertex.x, vertex.y, vertex.z, 1.0f);
-    return di_renderer::math::Vector3(transformed.x, transformed.y, transformed.z);
+    return {transformed.x, transformed.y, transformed.z};
 }
 
 void OpenGLArea::update_camera_for_mesh() {
@@ -234,14 +234,14 @@ void OpenGLArea::update_camera_for_mesh() {
         bool has_vertices = false;
 
         for (const auto& mesh : meshes) {
-            if (mesh.vertices.empty())
+            if (mesh.vertices.empty()) {
                 continue;
+            }
             has_vertices = true;
 
-            // Use const_cast since get_transform() isn't const in Mesh class
-            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
             for (const auto& vertex : mesh.vertices) {
-                di_renderer::math::Vector3 transformed = transform_vertex(vertex, transform);
+                const di_renderer::math::Vector3 transformed = transform_vertex(vertex, transform);
                 min_pos.x = std::min(min_pos.x, transformed.x);
                 min_pos.y = std::min(min_pos.y, transformed.y);
                 min_pos.z = std::min(min_pos.z, transformed.z);
@@ -305,7 +305,6 @@ void OpenGLArea::update_dynamic_projection() {
 
     auto& camera = app_data.get_current_camera();
     try {
-        // Use all meshes for projection calculation
         const auto& meshes = app_data.get_meshes();
 
         di_renderer::math::Vector3 min_pos(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
@@ -315,14 +314,14 @@ void OpenGLArea::update_dynamic_projection() {
         bool has_vertices = false;
 
         for (const auto& mesh : meshes) {
-            if (mesh.vertices.empty())
+            if (mesh.vertices.empty()) {
                 continue;
+            }
             has_vertices = true;
 
-            // Use const_cast since get_transform() isn't const in Mesh class
-            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
             for (const auto& vertex : mesh.vertices) {
-                di_renderer::math::Vector3 transformed = transform_vertex(vertex, transform);
+                const di_renderer::math::Vector3 transformed = transform_vertex(vertex, transform);
                 min_pos.x = std::min(min_pos.x, transformed.x);
                 min_pos.y = std::min(min_pos.y, transformed.y);
                 min_pos.z = std::min(min_pos.z, transformed.z);
@@ -422,7 +421,7 @@ void OpenGLArea::cleanup_resources() {
     m_loaded_textures.clear();
 }
 
-void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) {
+void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) { // NOLINT
     namespace fs = std::filesystem;
 
     if (fs::exists(texture_path)) {
@@ -484,8 +483,9 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
         const int rowstride = pixbuf->get_rowstride();
 
         if (has_alpha) {
-            std::vector<guchar> rgba_buffer(static_cast<long>(width * height) * 4);
+            std::vector<guchar> rgba_buffer(static_cast<size_t>(width) * static_cast<size_t>(height) * 4);
             for (int y = 0; y < height; ++y) {
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 const guchar* src_row = pixels + static_cast<ptrdiff_t>(y * rowstride);
                 guchar* dst_row = rgba_buffer.data() + static_cast<ptrdiff_t>(y * width * 4);
                 for (int x = 0; x < width; ++x) {
@@ -494,18 +494,21 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
                     dst_row[(x * 4) + 2] = src_row[(x * channels) + 2];
                     dst_row[(x * 4) + 3] = (channels > 3) ? src_row[(x * channels) + 3] : 255;
                 }
+                // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             }
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
         } else {
-            std::vector<guchar> rgb_buffer(width * height * 3);
+            std::vector<guchar> rgb_buffer(static_cast<size_t>(width) * static_cast<size_t>(height) * 3);
             for (int y = 0; y < height; ++y) {
-                const guchar* src_row = pixels + y * rowstride;
-                guchar* dst_row = rgb_buffer.data() + y * width * 3;
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const guchar* src_row = pixels + static_cast<ptrdiff_t>(y * rowstride);
+                guchar* dst_row = rgb_buffer.data() + static_cast<ptrdiff_t>(y * width * 3);
                 for (int x = 0; x < width; ++x) {
                     dst_row[(x * 3) + 0] = src_row[(x * channels) + 0];
                     dst_row[(x * 3) + 1] = src_row[(x * channels) + 1];
                     dst_row[(x * 3) + 2] = src_row[(x * channels) + 2];
                 }
+                // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             }
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer.data());
         }
@@ -599,12 +602,11 @@ void OpenGLArea::draw_wireframe_overlay() {
             continue;
         }
 
-        // Use const_cast since get_transform() isn't const in Mesh class
-        const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+        const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
         for (size_t i = 0; i < mesh.vertices.size(); ++i) {
             di_renderer::graphics::Vertex vertex{};
 
-            di_renderer::math::Vector3 transformed = transform_vertex(mesh.vertices[i], transform);
+            const di_renderer::math::Vector3 transformed = transform_vertex(mesh.vertices[i], transform);
             vertex.position[0] = transformed.x;
             vertex.position[1] = transformed.y;
             vertex.position[2] = transformed.z;
@@ -726,6 +728,7 @@ void OpenGLArea::set_default_uniforms() {
     }
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
 void OpenGLArea::draw_current_mesh() {
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
@@ -740,9 +743,7 @@ void OpenGLArea::draw_current_mesh() {
     try {
         const auto& meshes = app_data.get_meshes();
 
-        for (size_t mesh_idx = 0; mesh_idx < meshes.size(); ++mesh_idx) {
-            const auto& mesh = meshes[mesh_idx];
-
+        for (const auto& mesh : meshes) {
             if (mesh.vertices.empty()) {
                 continue;
             }
@@ -769,12 +770,13 @@ void OpenGLArea::draw_current_mesh() {
                 continue;
             }
 
-            // Use const_cast since get_transform() isn't const in Mesh class
+            // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
             const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+            // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
                 di_renderer::graphics::Vertex vertex{};
 
-                di_renderer::math::Vector3 transformed = transform_vertex(mesh.vertices[i], transform);
+                const di_renderer::math::Vector3 transformed = transform_vertex(mesh.vertices[i], transform);
                 vertex.position[0] = transformed.x;
                 vertex.position[1] = transformed.y;
                 vertex.position[2] = transformed.z;
@@ -844,6 +846,7 @@ void OpenGLArea::draw_current_mesh() {
         std::cerr << "Error drawing meshes: " << e.what() << '\n';
     }
 }
+// NOLINTEND(readability-function-cognitive-complexity)
 
 void OpenGLArea::set_current_mesh_path(const std::string& path) {
     m_current_mesh_path = path;
