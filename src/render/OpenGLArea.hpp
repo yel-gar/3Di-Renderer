@@ -59,7 +59,8 @@ namespace di_renderer::render {
         void cleanup_resources();
         void resolve_texture_path(std::string& texture_path, const std::string& base_path);
         GLuint load_texture_from_file(const std::string& filename, const std::string& base_path);
-
+        di_renderer::math::Vector3 transform_vertex(const di_renderer::math::Vector3& vertex,
+                                                    const di_renderer::math::Transform& transform);
         Glib::Dispatcher m_render_dispatcher;
         sigc::connection m_render_connection;
         std::atomic<bool> m_gl_initialized{false};
