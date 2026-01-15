@@ -40,6 +40,7 @@ namespace di_renderer::render {
         bool key_pressed(unsigned int key);
         void set_default_uniforms();
         void draw_current_mesh();
+        void draw_wireframe_overlay();
         void update_dynamic_projection();
         void on_dispatch_render();
         void start_animation();

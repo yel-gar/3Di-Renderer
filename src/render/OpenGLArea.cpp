@@ -518,12 +518,100 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
     set_default_uniforms();
     draw_current_mesh();
 
+    auto& app_data = get_app_data();
+    bool wireframe_mode = app_data.is_render_mode_enabled(core::RenderMode::POLYGON);
+
+    if (wireframe_mode) {
+        draw_wireframe_overlay();
+    }
+
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
         std::cerr << "OpenGL error: " << error << std::endl;
     }
 
     return true;
+}
+
+void OpenGLArea::draw_wireframe_overlay() {
+    if ((m_shader_program == 0u) || !m_gl_initialized.load() || m_app_data.is_meshes_empty()) {
+        return;
+    }
+
+    const auto& mesh = m_app_data.get_current_mesh();
+    if (mesh.vertices.empty()) {
+        return;
+    }
+
+    std::vector<di_renderer::graphics::Vertex> vertices;
+    vertices.reserve(mesh.vertices.size());
+
+    std::vector<unsigned int> indices;
+    for (const auto& face : mesh.faces) {
+        if (face.size() >= 3) {
+            indices.push_back(face[0].vi);
+            indices.push_back(face[1].vi);
+            indices.push_back(face[2].vi);
+
+            for (size_t i = 3; i < face.size(); ++i) {
+                indices.push_back(face[0].vi);
+                indices.push_back(face[i - 1].vi);
+                indices.push_back(face[i].vi);
+            }
+        }
+    }
+
+    if (indices.empty()) {
+        return;
+    }
+
+    for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+        di_renderer::graphics::Vertex vertex{};
+
+        vertex.position[0] = mesh.vertices[i].x;
+        vertex.position[1] = mesh.vertices[i].y;
+        vertex.position[2] = mesh.vertices[i].z;
+
+        if (i < mesh.normals.size()) {
+            vertex.normal[0] = mesh.normals[i].x;
+            vertex.normal[1] = mesh.normals[i].y;
+            vertex.normal[2] = mesh.normals[i].z;
+        } else {
+            vertex.normal[0] = 0.0f;
+            vertex.normal[1] = 1.0f;
+            vertex.normal[2] = 0.0f;
+        }
+
+        if (i < mesh.texture_vertices.size()) {
+            vertex.uv[0] = mesh.texture_vertices[i].u;
+            vertex.uv[1] = m_flip_uv_y ? (1.0f - mesh.texture_vertices[i].v) : mesh.texture_vertices[i].v;
+        } else {
+            vertex.uv[0] = 0.0f;
+            vertex.uv[1] = 0.0f;
+        }
+
+        vertex.color[0] = 1.0f;
+        vertex.color[1] = 0.5f;
+        vertex.color[2] = 0.0f;
+
+        vertices.push_back(vertex);
+    }
+
+    if (vertices.empty()) {
+        return;
+    }
+
+    glUseProgram(m_shader_program);
+    glEnable(GL_POLYGON_OFFSET_LINE);
+    glPolygonOffset(-1.0f, -1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(1.5f);
+
+    di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(),
+                                             m_shader_program);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDisable(GL_POLYGON_OFFSET_LINE);
 }
 
 void OpenGLArea::set_default_uniforms() {
