@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/AppData.hpp"
+#include "math/Camera.hpp"
 
 #include <atomic>
 #include <epoxy/gl.h>
@@ -23,6 +24,7 @@ namespace di_renderer::render {
         OpenGLArea(OpenGLArea&&) = delete;
         OpenGLArea& operator=(OpenGLArea&&) = delete;
 
+        void set_current_mesh_path(const std::string& path);
         core::AppData& get_app_data() noexcept;
 
       protected:
@@ -39,6 +41,9 @@ namespace di_renderer::render {
         bool on_key_release_event(GdkEventKey* event) override;
 
       private:
+        void calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
+                                     const di_renderer::math::Vector3& max_pos, float distance,
+                                     di_renderer::math::Camera& camera);
         void update_camera_for_mesh();
         void reset_camera_for_new_model();
         void parse_keyboard_movement();
@@ -62,8 +67,8 @@ namespace di_renderer::render {
         GLuint m_shader_program = 0;
         core::AppData m_app_data;
         bool m_dragging = false;
-        double m_last_x;
-        double m_last_y;
+        double m_last_x = 0.0;
+        double m_last_y = 0.0;
         std::unordered_set<unsigned int> m_pressed_keys;
         std::unordered_map<std::string, GLuint> m_loaded_textures;
         std::string m_current_mesh_path;

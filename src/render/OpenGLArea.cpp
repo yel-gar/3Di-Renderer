@@ -18,7 +18,7 @@
 
 using di_renderer::render::OpenGLArea;
 
-OpenGLArea::OpenGLArea() : m_last_x(0.0), m_last_y(0.0) {
+OpenGLArea::OpenGLArea() {
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
@@ -72,8 +72,8 @@ void OpenGLArea::on_realize() {
 }
 
 void OpenGLArea::on_unrealize() {
-    m_gl_initialized.store(false);
     cleanup_resources();
+    m_gl_initialized.store(false);
     Gtk::GLArea::on_unrealize();
 }
 
@@ -92,7 +92,7 @@ void OpenGLArea::on_resize(int width, int height) {
 
     glViewport(0, 0, width, height);
 
-    float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+    const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
     m_app_data.get_current_camera().set_aspect_ratio(aspect_ratio);
 }
 
@@ -120,13 +120,13 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
         return false;
     }
 
-    double dx = event->x - m_last_x;
-    double dy = event->y - m_last_y;
+    const double dx = event->x - m_last_x;
+    const double dy = event->y - m_last_y;
 
     m_last_x = event->x;
     m_last_y = event->y;
 
-    m_app_data.get_current_camera().rotate_view(dx, dy); // NOLINT
+    m_app_data.get_current_camera().rotate_view(dx, dy);
     queue_draw();
     return true;
 }
@@ -177,6 +177,33 @@ bool OpenGLArea::key_pressed(unsigned int key) {
     return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
+void OpenGLArea::calculate_camera_planes(const math::Vector3& min_pos, const math::Vector3& max_pos, float distance,
+                                         di_renderer::math::Camera& camera) {
+    const math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
+    const float max_dimension = std::max({size.x, size.y, size.z});
+
+    float near_plane = NAN;
+    float far_plane = NAN;
+
+    if (max_dimension < 1.0f) {
+        near_plane = std::max(0.005f, distance * 0.005f);
+        far_plane = (distance * 2.5f) + (max_dimension * 3.0f);
+    } else if (max_dimension < 10.0f) {
+        near_plane = std::max(0.05f, distance * 0.03f);
+        far_plane = (distance * 3.5f) + (max_dimension * 2.5f);
+    } else {
+        near_plane = std::max(0.2f, distance * 0.08f);
+        far_plane = (distance * 4.5f) + (max_dimension * 2.0f);
+    }
+
+    const float min_range = std::max(0.01f, max_dimension * 0.05f);
+    if (far_plane - near_plane < min_range) {
+        far_plane = near_plane + min_range;
+    }
+
+    camera.set_planes(near_plane, far_plane);
+}
+
 void OpenGLArea::update_camera_for_mesh() {
     auto& app_data = get_app_data();
     if (!m_gl_initialized.load() || app_data.is_meshes_empty()) {
@@ -185,13 +212,18 @@ void OpenGLArea::update_camera_for_mesh() {
 
     auto& camera = app_data.get_current_camera();
     try {
-        const auto& mesh = app_data.get_current_mesh();
+        const auto& meshes = app_data.get_meshes();
 
-        if (!mesh.vertices.empty()) {
-            math::Vector3 min_pos(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
-                                  std::numeric_limits<float>::max());
-            math::Vector3 max_pos(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(),
-                                  -std::numeric_limits<float>::max());
+        math::Vector3 min_pos(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
+                              std::numeric_limits<float>::max());
+        math::Vector3 max_pos(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(),
+                              -std::numeric_limits<float>::max());
+        bool has_vertices = false;
+
+        for (const auto& mesh : meshes) {
+            if (mesh.vertices.empty())
+                continue;
+            has_vertices = true;
 
             for (const auto& vertex : mesh.vertices) {
                 min_pos.x = std::min(min_pos.x, vertex.x);
@@ -202,57 +234,40 @@ void OpenGLArea::update_camera_for_mesh() {
                 max_pos.y = std::max(max_pos.y, vertex.y);
                 max_pos.z = std::max(max_pos.z, vertex.z);
             }
-
-            math::Vector3 center((min_pos.x + max_pos.x) * 0.5f, (min_pos.y + max_pos.y) * 0.5f,
-                                 (min_pos.z + max_pos.z) * 0.5f);
-
-            math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
-
-            float max_dimension = std::max({size.x, size.y, size.z});
-            float model_radius = max_dimension * 0.5f;
-
-            float fov_rad = 45.0f * static_cast<float>(M_PI) / 180.0f;
-            float base_distance = model_radius / std::tan(fov_rad / 2.0f);
-            float distance = base_distance * 1.5f;
-            distance = std::max(0.5f, distance);
-            distance = std::min(500.0f, distance);
-
-            camera.set_position(math::Vector3(center.x, center.y, center.z + distance));
-            camera.set_target(center);
-
-            float near_plane = NAN;
-            float far_plane = NAN;
-
-            if (max_dimension < 1.0f) {
-                near_plane = std::max(0.01f, distance * 0.01f);
-                far_plane = (distance * 3.0f) + (max_dimension * 2.0f);
-            } else if (max_dimension < 10.0f) {
-                near_plane = std::max(0.1f, distance * 0.05f);
-                far_plane = (distance * 4.0f) + (max_dimension * 2.0f);
-            } else {
-                near_plane = std::max(0.5f, distance * 0.1f);
-                far_plane = (distance * 5.0f) + (max_dimension * 2.0f);
-            }
-
-            if (far_plane - near_plane < 0.1f * max_dimension) {
-                far_plane = near_plane + (0.1f * max_dimension);
-            }
-
-            far_plane = std::min(far_plane, 5000.0f);
-
-            camera.set_planes(near_plane, far_plane);
         }
+
+        if (!has_vertices) {
+            return;
+        }
+
+        const math::Vector3 center((min_pos.x + max_pos.x) * 0.5f, (min_pos.y + max_pos.y) * 0.5f,
+                                   (min_pos.z + max_pos.z) * 0.5f);
+
+        const math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
+        const float max_dimension = std::max({size.x, size.y, size.z});
+        const float model_radius = max_dimension * 0.5f;
+
+        const float fov_rad = 45.0f * static_cast<float>(M_PI) / 180.0f;
+        const float base_distance = model_radius / std::tan(fov_rad / 2.0f);
+        float distance = base_distance * 1.5f;
+        distance = std::max(0.5f, distance);
+        distance = std::min(500.0f, distance);
+
+        camera.set_position(math::Vector3(center.x, center.y, center.z + distance));
+        camera.set_target(center);
+
+        calculate_camera_planes(min_pos, max_pos, distance, camera);
     } catch (const std::exception& e) {
-        std::cerr << "Error loading mesh for camera update: " << e.what() << '\n';
+        std::cerr << "Error loading meshes for camera update: " << e.what() << '\n';
         camera.set_position(math::Vector3(0.0f, 0.0f, 3.0f));
         camera.set_target(math::Vector3(0.0f, 0.0f, 0.0f));
         camera.set_planes(0.1f, 100.0f);
     }
 
-    int width = get_width();
-    int height = get_height();
+    const int width = get_width();
+    const int height = get_height();
     if (width > 0 && height > 0) {
-        float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+        const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
         camera.set_aspect_ratio(aspect_ratio);
     }
 }
@@ -279,9 +294,9 @@ void OpenGLArea::update_dynamic_projection() {
             return;
         }
 
-        math::Vector3 camera_pos = camera.get_position();
-        math::Vector3 target = camera.get_target();
-        float distance = (camera_pos - target).length();
+        const math::Vector3 camera_pos = camera.get_position();
+        const math::Vector3 target = camera.get_target();
+        const float distance = (camera_pos - target).length();
 
         math::Vector3 min_pos(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
                               std::numeric_limits<float>::max());
@@ -298,33 +313,12 @@ void OpenGLArea::update_dynamic_projection() {
             max_pos.z = std::max(max_pos.z, vertex.z);
         }
 
-        math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
-        float max_dimension = std::max({size.x, size.y, size.z});
-
-        float near_plane = NAN;
-        float far_plane = NAN;
-
-        if (max_dimension < 1.0f) {
-            near_plane = std::max(0.005f, distance * 0.005f);
-            far_plane = (distance * 2.5f) + (max_dimension * 3.0f);
-        } else if (max_dimension < 10.0f) {
-            near_plane = std::max(0.05f, distance * 0.03f);
-            far_plane = (distance * 3.5f) + (max_dimension * 2.5f);
-        } else {
-            near_plane = std::max(0.2f, distance * 0.08f);
-            far_plane = (distance * 4.5f) + (max_dimension * 2.0f);
-        }
-
-        float min_range = std::max(0.01f, max_dimension * 0.05f);
-        if (far_plane - near_plane < min_range) {
-            far_plane = near_plane + min_range;
-        }
-
-        camera.set_planes(near_plane, far_plane);
+        calculate_camera_planes(min_pos, max_pos, distance, camera);
     } catch (const std::exception& e) {
         std::cerr << "Error updating dynamic projection: " << e.what() << '\n';
     }
 }
+
 void OpenGLArea::on_map() {
     Gtk::GLArea::on_map();
     m_should_render.store(true);
@@ -400,31 +394,31 @@ void OpenGLArea::cleanup_resources() {
     m_loaded_textures.clear();
 }
 
-void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) { // NOLINT
+void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) {
     namespace fs = std::filesystem;
 
     if (fs::exists(texture_path)) {
         return;
     }
 
-    fs::path base_dir = fs::path(base_path).parent_path();
-    fs::path relative_path = base_dir / texture_path;
+    const fs::path base_dir = fs::path(base_path).parent_path();
+    const fs::path relative_path = base_dir / texture_path;
 
     if (fs::exists(relative_path)) {
         texture_path = relative_path.string();
         return;
     }
 
-    std::vector<std::string> subdirs = {"textures", "texture", "tex", "images", "img"};
+    const std::vector<std::string> subdirs = {"textures", "texture", "tex", "images", "img"};
     for (const auto& subdir : subdirs) {
-        fs::path subdir_path = base_dir / subdir / fs::path(texture_path).filename();
+        const fs::path subdir_path = base_dir / subdir / fs::path(texture_path).filename();
         if (fs::exists(subdir_path)) {
             texture_path = subdir_path.string();
             return;
         }
     }
 
-    fs::path simple_path = base_dir / fs::path(texture_path).filename();
+    const fs::path simple_path = base_dir / fs::path(texture_path).filename();
     if (fs::exists(simple_path)) {
         texture_path = simple_path.string();
     }
@@ -444,10 +438,10 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
         }
 
         auto pixbuf = Gdk::Pixbuf::create_from_file(texture_path);
-        int width = pixbuf->get_width();
-        int height = pixbuf->get_height();
-        int channels = pixbuf->get_n_channels();
-        bool has_alpha = pixbuf->get_has_alpha();
+        const int width = pixbuf->get_width();
+        const int height = pixbuf->get_height();
+        const int channels = pixbuf->get_n_channels();
+        const bool has_alpha = pixbuf->get_has_alpha();
 
         GLuint texture = 0;
         glGenTextures(1, &texture);
@@ -459,8 +453,8 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         guchar* pixels = pixbuf->get_pixels();
-        int rowstride = pixbuf->get_rowstride();
-        // NOLINTBEGIN
+        const int rowstride = pixbuf->get_rowstride();
+
         if (has_alpha) {
             std::vector<guchar> rgba_buffer(static_cast<long>(width * height) * 4);
             for (int y = 0; y < height; ++y) {
@@ -487,7 +481,7 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
             }
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer.data());
         }
-        // NOLINTEND
+
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -530,13 +524,13 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
     draw_current_mesh();
 
     auto& app_data = get_app_data();
-    bool wireframe_mode = app_data.is_render_mode_enabled(core::RenderMode::POLYGON);
+    const bool wireframe_mode = app_data.is_render_mode_enabled(core::RenderMode::POLYGON);
 
     if (wireframe_mode) {
         draw_wireframe_overlay();
     }
 
-    GLenum error = glGetError();
+    const GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
         std::cerr << "OpenGL error: " << error << '\n';
     }
@@ -614,7 +608,7 @@ void OpenGLArea::draw_wireframe_overlay() {
 
     glUseProgram(m_shader_program);
 
-    GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
+    const GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
     if (use_texture_loc != -1) {
         glUniform1i(use_texture_loc, 0);
     }
@@ -645,17 +639,17 @@ void OpenGLArea::set_default_uniforms() {
                                             0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
     const auto& camera = m_app_data.get_current_camera();
-    math::Matrix4x4 view_matrix = camera.get_view_matrix();
-    math::Matrix4x4 proj_matrix = camera.get_projection_matrix();
+    const math::Matrix4x4 view_matrix = camera.get_view_matrix();
+    const math::Matrix4x4 proj_matrix = camera.get_projection_matrix();
 
-    GLint model_loc = glGetUniformLocation(m_shader_program, "uModel");
-    GLint view_loc = glGetUniformLocation(m_shader_program, "uView");
-    GLint proj_loc = glGetUniformLocation(m_shader_program, "uProjection");
-    GLint camera_pos_loc = glGetUniformLocation(m_shader_program, "uCameraPos");
-    GLint light_pos_loc = glGetUniformLocation(m_shader_program, "uLightPos");
-    GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
-    GLint light_color_loc = glGetUniformLocation(m_shader_program, "uLightColor");
-    GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
+    const GLint model_loc = glGetUniformLocation(m_shader_program, "uModel");
+    const GLint view_loc = glGetUniformLocation(m_shader_program, "uView");
+    const GLint proj_loc = glGetUniformLocation(m_shader_program, "uProjection");
+    const GLint camera_pos_loc = glGetUniformLocation(m_shader_program, "uCameraPos");
+    const GLint light_pos_loc = glGetUniformLocation(m_shader_program, "uLightPos");
+    const GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
+    const GLint light_color_loc = glGetUniformLocation(m_shader_program, "uLightColor");
+    const GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
 
     if (model_loc != -1) {
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix.data());
@@ -667,17 +661,17 @@ void OpenGLArea::set_default_uniforms() {
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj_matrix.data());
     }
 
-    math::Vector3 camera_pos = camera.get_position();
+    const math::Vector3 camera_pos = camera.get_position();
     if (camera_pos_loc != -1) {
         glUniform3f(camera_pos_loc, camera_pos.x, camera_pos.y, camera_pos.z);
     }
 
-    math::Vector3 camera_forward = (camera.get_target() - camera_pos).normalized();
-    math::Vector3 camera_right = camera_forward.cross(math::Vector3(0.0f, 1.0f, 0.0f)).normalized();
-    math::Vector3 camera_up = camera_right.cross(camera_forward).normalized();
+    const math::Vector3 camera_forward = (camera.get_target() - camera_pos).normalized();
+    const math::Vector3 camera_right = camera_forward.cross(math::Vector3(0.0f, 1.0f, 0.0f)).normalized();
+    const math::Vector3 camera_up = camera_right.cross(camera_forward).normalized();
 
-    math::Vector3 light_offset = camera_forward * 2.0f + camera_up * 0.5f;
-    math::Vector3 light_pos = camera_pos + light_offset;
+    const math::Vector3 light_offset = camera_forward * 2.0f + camera_up * 0.5f;
+    const math::Vector3 light_pos = camera_pos + light_offset;
 
     if (light_pos_loc != -1) {
         glUniform3f(light_pos_loc, light_pos.x, light_pos.y, light_pos.z);
@@ -710,102 +704,119 @@ void OpenGLArea::draw_current_mesh() {
     }
 
     try {
-        const auto& mesh = app_data.get_current_mesh();
+        const auto& meshes = app_data.get_meshes();
+        const size_t mesh_count = meshes.size();
+        const float color_step = mesh_count > 0 ? 1.0f / static_cast<float>(mesh_count) : 1.0f;
 
-        if (mesh.vertices.empty()) {
-            return;
-        }
+        for (size_t mesh_idx = 0; mesh_idx < mesh_count; ++mesh_idx) {
+            const auto& mesh = meshes[mesh_idx];
 
-        std::vector<di_renderer::graphics::Vertex> vertices;
-        vertices.reserve(mesh.vertices.size());
+            if (mesh.vertices.empty()) {
+                continue;
+            }
 
-        std::vector<unsigned int> indices;
-        for (const auto& face : mesh.faces) {
-            if (face.size() >= 3) {
-                indices.push_back(face[0].vi);
-                indices.push_back(face[1].vi);
-                indices.push_back(face[2].vi);
+            std::vector<di_renderer::graphics::Vertex> vertices;
+            vertices.reserve(mesh.vertices.size());
 
-                for (size_t i = 3; i < face.size(); ++i) {
+            std::vector<unsigned int> indices;
+            for (const auto& face : mesh.faces) {
+                if (face.size() >= 3) {
                     indices.push_back(face[0].vi);
-                    indices.push_back(face[i - 1].vi);
-                    indices.push_back(face[i].vi);
+                    indices.push_back(face[1].vi);
+                    indices.push_back(face[2].vi);
+
+                    for (size_t i = 3; i < face.size(); ++i) {
+                        indices.push_back(face[0].vi);
+                        indices.push_back(face[i - 1].vi);
+                        indices.push_back(face[i].vi);
+                    }
                 }
             }
-        }
 
-        if (indices.empty()) {
-            return;
-        }
-
-        for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-            di_renderer::graphics::Vertex vertex{};
-
-            vertex.position[0] = mesh.vertices[i].x;
-            vertex.position[1] = mesh.vertices[i].y;
-            vertex.position[2] = mesh.vertices[i].z;
-
-            if (i < mesh.normals.size()) {
-                vertex.normal[0] = mesh.normals[i].x;
-                vertex.normal[1] = mesh.normals[i].y;
-                vertex.normal[2] = mesh.normals[i].z;
-            } else {
-                vertex.normal[0] = 0.0f;
-                vertex.normal[1] = 1.0f;
-                vertex.normal[2] = 0.0f;
+            if (indices.empty()) {
+                continue;
             }
 
-            if (i < mesh.texture_vertices.size()) {
-                vertex.uv[0] = mesh.texture_vertices[i].u;
-                vertex.uv[1] = m_flip_uv_y ? (1.0f - mesh.texture_vertices[i].v) : mesh.texture_vertices[i].v;
-            } else {
-                vertex.uv[0] = 0.0f;
-                vertex.uv[1] = 0.0f;
+            for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+                di_renderer::graphics::Vertex vertex{};
+
+                vertex.position[0] = mesh.vertices[i].x;
+                vertex.position[1] = mesh.vertices[i].y;
+                vertex.position[2] = mesh.vertices[i].z;
+
+                if (i < mesh.normals.size()) {
+                    vertex.normal[0] = mesh.normals[i].x;
+                    vertex.normal[1] = mesh.normals[i].y;
+                    vertex.normal[2] = mesh.normals[i].z;
+                } else {
+                    vertex.normal[0] = 0.0f;
+                    vertex.normal[1] = 1.0f;
+                    vertex.normal[2] = 0.0f;
+                }
+
+                if (i < mesh.texture_vertices.size()) {
+                    vertex.uv[0] = mesh.texture_vertices[i].u;
+                    vertex.uv[1] = m_flip_uv_y ? (1.0f - mesh.texture_vertices[i].v) : mesh.texture_vertices[i].v;
+                } else {
+                    vertex.uv[0] = 0.0f;
+                    vertex.uv[1] = 0.0f;
+                }
+
+                if (mesh_idx == app_data.get_current_mesh_index()) {
+                    vertex.color[0] = 1.0f;
+                    vertex.color[1] = 1.0f;
+                    vertex.color[2] = 1.0f;
+                } else {
+                    float hue = mesh_idx * color_step;
+                    vertex.color[0] = std::sin(hue * 2.0f * static_cast<float>(M_PI)) * 0.5f + 0.5f;
+                    vertex.color[1] = std::sin((hue + 0.33f) * 2.0f * static_cast<float>(M_PI)) * 0.5f + 0.5f;
+                    vertex.color[2] = std::sin((hue + 0.66f) * 2.0f * static_cast<float>(M_PI)) * 0.5f + 0.5f;
+                }
+
+                vertices.push_back(vertex);
             }
 
-            vertex.color[0] = 1.0f;
-            vertex.color[1] = 1.0f;
-            vertex.color[2] = 1.0f;
-
-            vertices.push_back(vertex);
-        }
-
-        if (vertices.empty()) {
-            return;
-        }
-
-        bool use_textures = app_data.is_render_mode_enabled(core::RenderMode::TEXTURE);
-        bool has_texture = false;
-        GLuint texture_id = 0;
-        const std::string& tex_filename = mesh.get_texture_filename();
-        if (use_textures && !tex_filename.empty()) {
-            auto it = m_loaded_textures.find(tex_filename);
-            if (it == m_loaded_textures.end()) {
-                texture_id = load_texture_from_file(tex_filename, m_current_mesh_path);
-                m_loaded_textures[tex_filename] = texture_id;
-            } else {
-                texture_id = it->second;
+            if (vertices.empty()) {
+                continue;
             }
-            has_texture = (texture_id != 0);
-        }
 
-        GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
-        if (use_texture_loc != -1) {
-            glUniform1i(use_texture_loc, has_texture ? 1 : 0);
-        }
+            const bool use_textures = app_data.is_render_mode_enabled(core::RenderMode::TEXTURE);
+            bool has_texture = false;
+            GLuint texture_id = 0;
+            const std::string& tex_filename = mesh.get_texture_filename();
+            if (use_textures && !tex_filename.empty()) {
+                auto it = m_loaded_textures.find(tex_filename);
+                if (it == m_loaded_textures.end()) {
+                    texture_id = load_texture_from_file(tex_filename, m_current_mesh_path);
+                    m_loaded_textures[tex_filename] = texture_id;
+                } else {
+                    texture_id = it->second;
+                }
+                has_texture = (texture_id != 0);
+            }
 
-        if (has_texture) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id);
-        }
+            const GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
+            if (use_texture_loc != -1) {
+                glUniform1i(use_texture_loc, has_texture ? 1 : 0);
+            }
 
-        di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(),
-                                                 m_shader_program);
+            if (has_texture) {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, texture_id);
+            }
 
-        if (has_texture) {
-            glBindTexture(GL_TEXTURE_2D, 0);
+            di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(),
+                                                     m_shader_program);
+
+            if (has_texture) {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error drawing mesh: " << e.what() << '\n';
+        std::cerr << "Error drawing meshes: " << e.what() << '\n';
     }
+}
+
+void OpenGLArea::set_current_mesh_path(const std::string& path) {
+    m_current_mesh_path = path;
 }
