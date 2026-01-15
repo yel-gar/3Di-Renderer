@@ -8,6 +8,7 @@
 #include <gtkmm.h>
 #include <gtkmm/glarea.h>
 #include <sigc++/connection.h>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -45,7 +46,8 @@ namespace di_renderer::render {
         bool on_animation_timeout();
         void stop_animation();
         void cleanup_resources();
-        GLuint load_texture_from_file(const std::string& filename);
+        void resolve_texture_path(std::string& texture_path, const std::string& base_path);
+        GLuint load_texture_from_file(const std::string& filename, const std::string& base_path);
 
         Glib::Dispatcher m_render_dispatcher;
         sigc::connection m_render_connection;
@@ -58,5 +60,7 @@ namespace di_renderer::render {
         double m_last_y;
         std::unordered_set<unsigned int> m_pressed_keys;
         std::unordered_map<std::string, GLuint> m_loaded_textures;
+        std::string m_current_mesh_path;
+        bool m_flip_uv_y = true;
     };
 } // namespace di_renderer::render

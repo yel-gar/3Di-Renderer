@@ -4,9 +4,9 @@
 #include "core/AppData.hpp"
 #include "math/Camera.hpp"
 
-#include <chrono>
 #include <cstring>
 #include <epoxy/gl.h>
+#include <filesystem>
 #include <gdkmm/pixbuf.h>
 #include <glibmm/error.h>
 #include <iostream>
@@ -144,18 +144,24 @@ bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
 void OpenGLArea::parse_keyboard_movement() {
     math::Vector3 vec;
 
-    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W))
+    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
         vec.z += 1.f;
-    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S))
+    }
+    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
         vec.z -= 1.f;
-    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A))
+    }
+    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
         vec.x -= 1.f;
-    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D))
+    }
+    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D)) {
         vec.x += 1.f;
-    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q))
+    }
+    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q)) {
         vec.y -= 1.f;
-    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E))
+    }
+    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E)) {
         vec.y += 1.f;
+    }
 
     if (vec.length() <= std::numeric_limits<float>::epsilon()) {
         return;
@@ -386,23 +392,54 @@ void OpenGLArea::cleanup_resources() {
     m_loaded_textures.clear();
 }
 
-GLuint OpenGLArea::load_texture_from_file(const std::string& filename) {
+void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) {
+    namespace fs = std::filesystem;
+
+    if (fs::exists(texture_path)) {
+        return;
+    }
+
+    fs::path base_dir = fs::path(base_path).parent_path();
+    fs::path relative_path = base_dir / texture_path;
+
+    if (fs::exists(relative_path)) {
+        texture_path = relative_path.string();
+        return;
+    }
+
+    std::vector<std::string> subdirs = {"textures", "texture", "tex", "images", "img"};
+    for (const auto& subdir : subdirs) {
+        fs::path subdir_path = base_dir / subdir / fs::path(texture_path).filename();
+        if (fs::exists(subdir_path)) {
+            texture_path = subdir_path.string();
+            return;
+        }
+    }
+
+    fs::path simple_path = base_dir / fs::path(texture_path).filename();
+    if (fs::exists(simple_path)) {
+        texture_path = simple_path.string();
+    }
+}
+
+GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std::string& base_path) {
+    std::string texture_path = filename;
+    resolve_texture_path(texture_path, base_path);
+
     try {
-        auto pixbuf = Gdk::Pixbuf::create_from_file(filename);
+        if (!std::filesystem::exists(texture_path)) {
+            texture_path = filename;
+            if (!std::filesystem::exists(texture_path)) {
+                std::cerr << "Texture file not found: " << texture_path << std::endl;
+                return 0;
+            }
+        }
+
+        auto pixbuf = Gdk::Pixbuf::create_from_file(texture_path);
         int width = pixbuf->get_width();
         int height = pixbuf->get_height();
         int channels = pixbuf->get_n_channels();
         bool has_alpha = pixbuf->get_has_alpha();
-
-        std::vector<guchar> buffer(width * height * channels);
-        const guchar* pixels = pixbuf->get_pixels();
-        int rowstride = pixbuf->get_rowstride();
-
-        for (int y = 0; y < height; ++y) {
-            const guchar* src_row = pixels + y * rowstride;
-            guchar* dst_row = buffer.data() + y * width * channels;
-            std::memcpy(dst_row, src_row, width * channels);
-        }
 
         GLuint texture;
         glGenTextures(1, &texture);
@@ -413,17 +450,46 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        GLenum format = has_alpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer.data());
-        glGenerateMipmap(GL_TEXTURE_2D);
+        guchar* pixels = pixbuf->get_pixels();
+        int rowstride = pixbuf->get_rowstride();
 
+        if (has_alpha) {
+            std::vector<guchar> rgba_buffer(width * height * 4);
+            for (int y = 0; y < height; ++y) {
+                const guchar* src_row = pixels + y * rowstride;
+                guchar* dst_row = rgba_buffer.data() + y * width * 4;
+                for (int x = 0; x < width; ++x) {
+                    dst_row[x * 4 + 0] = src_row[x * channels + 0];
+                    dst_row[x * 4 + 1] = src_row[x * channels + 1];
+                    dst_row[x * 4 + 2] = src_row[x * channels + 2];
+                    dst_row[x * 4 + 3] = (channels > 3) ? src_row[x * channels + 3] : 255;
+                }
+            }
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
+        } else {
+            std::vector<guchar> rgb_buffer(width * height * 3);
+            for (int y = 0; y < height; ++y) {
+                const guchar* src_row = pixels + y * rowstride;
+                guchar* dst_row = rgb_buffer.data() + y * width * 3;
+                for (int x = 0; x < width; ++x) {
+                    dst_row[x * 3 + 0] = src_row[x * channels + 0];
+                    dst_row[x * 3 + 1] = src_row[x * channels + 1];
+                    dst_row[x * 3 + 2] = src_row[x * channels + 2];
+                }
+            }
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer.data());
+        }
+
+        glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return texture;
     } catch (const Glib::Error& e) {
-        std::cerr << "Failed to load texture from file '" << filename << "': " << e.what() << std::endl;
-        return 0;
+        std::cerr << "Failed to load texture from '" << texture_path << "': " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Texture loading error: " << e.what() << std::endl;
     }
+    return 0;
 }
 
 bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
@@ -585,7 +651,7 @@ void OpenGLArea::draw_current_mesh() {
 
             if (i < mesh.texture_vertices.size()) {
                 vertex.uv[0] = mesh.texture_vertices[i].u;
-                vertex.uv[1] = mesh.texture_vertices[i].v;
+                vertex.uv[1] = m_flip_uv_y ? (1.0f - mesh.texture_vertices[i].v) : mesh.texture_vertices[i].v;
             } else {
                 vertex.uv[0] = 0.0f;
                 vertex.uv[1] = 0.0f;
@@ -608,7 +674,7 @@ void OpenGLArea::draw_current_mesh() {
         if (!tex_filename.empty()) {
             auto it = m_loaded_textures.find(tex_filename);
             if (it == m_loaded_textures.end()) {
-                texture_id = load_texture_from_file(tex_filename);
+                texture_id = load_texture_from_file(tex_filename, m_current_mesh_path);
                 m_loaded_textures[tex_filename] = texture_id;
             } else {
                 texture_id = it->second;
