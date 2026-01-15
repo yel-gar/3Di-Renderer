@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TextureLoader.hpp"
+#include "Triangle.hpp"
 #include "core/AppData.hpp"
 #include "glibmm/dispatcher.h"
 #include "glibmm/main.h"
@@ -49,7 +50,6 @@ namespace di_renderer::render {
         void stop_animation();
         bool on_animation_timeout();
         void on_dispatch_render();
-        void cleanup_resources();
         void parse_keyboard_movement();
         bool key_pressed(unsigned int key);
         void update_camera_for_mesh();
@@ -57,7 +57,21 @@ namespace di_renderer::render {
         void set_default_uniforms();
         void draw_current_mesh();
         void draw_wireframe_overlay();
+        std::unordered_map<std::string, GLuint> m_texture_cache;
+        di_renderer::math::Vector3 m_scene_min;
+        di_renderer::math::Vector3 m_scene_max;
+        bool m_bounds_valid = false;
+        std::vector<std::vector<unsigned int>> m_wireframe_indices;
+        bool m_wireframe_dirty = true;
+        bool m_flip_uv_y = false;
+        std::string m_current_mesh_path;
+        void update_scene_bounds();
+        std::pair<di_renderer::math::Vector3, di_renderer::math::Vector3>
+        get_transformed_bounds(const di_renderer::core::Mesh& mesh, const di_renderer::math::Transform& transform);
+        void update_wireframe_data();
+        std::vector<di_renderer::graphics::Vertex> get_transformed_vertices(const di_renderer::core::Mesh& mesh);
 
+        void cleanup_resources();
         void calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
                                      const di_renderer::math::Vector3& max_pos, float distance,
                                      di_renderer::math::Camera& camera);
@@ -75,8 +89,6 @@ namespace di_renderer::render {
         Glib::RefPtr<Glib::MainContext> m_main_context;
         sigc::connection m_render_connection;
         Glib::Dispatcher m_render_dispatcher;
-        bool m_flip_uv_y = true;
-        std::string m_current_mesh_path;
     };
 
 } // namespace di_renderer::render
