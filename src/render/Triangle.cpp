@@ -1,4 +1,3 @@
-// NOLINTBEGIN
 #include "Triangle.hpp"
 
 #include <cstddef>
@@ -38,23 +37,38 @@ in vec3 vWorldPos;
 out vec4 FragColor;
 uniform bool uUseTexture;
 uniform sampler2D uTexture;
-uniform vec3 uLightPos;
-uniform vec3 uLightColor = vec3(1.0); // Default value
+uniform vec3 uLightPos1;
+uniform vec3 uLightColor1;
+uniform vec3 uLightPos2;
+uniform vec3 uLightColor2;
+uniform bool uUseLight2;
 void main() {
     vec3 normal = normalize(vNormal);
-    vec3 lightDir = normalize(uLightPos - vWorldPos);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * uLightColor;
     vec3 ambient = vec3(0.1);
-    vec3 result = (ambient + diffuse) * vColor;
+    
+    // First light (camera light)
+    vec3 lightDir1 = normalize(uLightPos1 - vWorldPos);
+    float diff1 = max(dot(normal, lightDir1), 0.0);
+    vec3 diffuse1 = diff1 * uLightColor1 * 0.8;
+    
+    // Second light (top light) - only if enabled
+    vec3 diffuse2 = vec3(0.0);
+    if (uUseLight2) {
+        vec3 lightDir2 = normalize(uLightPos2 - vWorldPos);
+        float diff2 = max(dot(normal, lightDir2), 0.0);
+        diffuse2 = diff2 * uLightColor2;
+    }
+    
+    vec3 result = (ambient + diffuse1 + diffuse2) * vColor;
+    
     if (uUseTexture) {
         vec4 texColor = texture(uTexture, vUV);
         if (texColor.a < 0.1) discard;
         result *= texColor.rgb;
     }
+    
     FragColor = vec4(result, 1.0);
 })";
-
     static GLuint compile_shader(GLenum type, const char* src) {
         GLuint s = glCreateShader(type);
         glShaderSource(s, 1, &src, nullptr);
@@ -165,4 +179,3 @@ void main() {
     }
 
 } // namespace di_renderer::graphics
-// NOLINTEND

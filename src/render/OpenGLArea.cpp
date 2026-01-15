@@ -193,7 +193,7 @@ bool OpenGLArea::key_pressed(unsigned int key) {
     return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
-void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos, // NOLINT
+void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
                                          const di_renderer::math::Vector3& max_pos, float distance,
                                          di_renderer::math::Camera& camera) {
     const di_renderer::math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
@@ -227,7 +227,7 @@ void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_p
     camera.set_planes(near_plane, far_plane);
 }
 
-di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex, // NOLINT
+di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex,
                                                         const di_renderer::math::Transform& transform) {
     const di_renderer::math::Matrix4x4 transform_matrix = transform.get_matrix();
     const di_renderer::math::Vector4 transformed =
@@ -249,7 +249,7 @@ void OpenGLArea::update_scene_bounds() {
         }
         has_vertices = true;
 
-        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
+        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
         auto [min, max] = get_transformed_bounds(mesh, transform);
 
         m_scene_min = di_renderer::math::Vector3(std::min(m_scene_min.x, min.x), std::min(m_scene_min.y, min.y),
@@ -504,7 +504,7 @@ void OpenGLArea::draw_wireframe_overlay() {
             continue;
         }
 
-        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
+        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
         for (size_t i = 0; i < mesh.vertices.size(); ++i) {
             di_renderer::graphics::Vertex vertex{};
 
@@ -585,9 +585,12 @@ void OpenGLArea::set_default_uniforms() {
     const GLint view_loc = glGetUniformLocation(m_shader_program, "uView");
     const GLint proj_loc = glGetUniformLocation(m_shader_program, "uProjection");
     const GLint camera_pos_loc = glGetUniformLocation(m_shader_program, "uCameraPos");
-    const GLint light_pos_loc = glGetUniformLocation(m_shader_program, "uLightPos");
+    const GLint light_pos1_loc = glGetUniformLocation(m_shader_program, "uLightPos1");
+    const GLint light_color1_loc = glGetUniformLocation(m_shader_program, "uLightColor1");
+    const GLint light_pos2_loc = glGetUniformLocation(m_shader_program, "uLightPos2");
+    const GLint light_color2_loc = glGetUniformLocation(m_shader_program, "uLightColor2");
+    const GLint use_light2_loc = glGetUniformLocation(m_shader_program, "uUseLight2");
     const GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
-    const GLint light_color_loc = glGetUniformLocation(m_shader_program, "uLightColor");
     const GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
 
     if (model_loc != -1) {
@@ -610,22 +613,60 @@ void OpenGLArea::set_default_uniforms() {
         camera_forward.cross(di_renderer::math::Vector3(0.0f, 1.0f, 0.0f)).normalized();
     const di_renderer::math::Vector3 camera_up = camera_right.cross(camera_forward).normalized();
 
-    // ADAPTIVE LIGHT POSITION BASED ON CAMERA DISTANCE
     const float light_distance = std::max(2.0f, (camera_pos - camera.get_target()).length() * 0.5f);
     const di_renderer::math::Vector3 light_offset =
         camera_forward * light_distance + camera_up * (light_distance * 0.3f);
-    const di_renderer::math::Vector3 light_pos = camera_pos + light_offset;
+    const di_renderer::math::Vector3 light1_pos = camera_pos + light_offset;
 
-    if (light_pos_loc != -1) {
-        glUniform3f(light_pos_loc, light_pos.x, light_pos.y, light_pos.z);
+    if (light_pos1_loc != -1) {
+        glUniform3f(light_pos1_loc, light1_pos.x, light1_pos.y, light1_pos.z);
+    }
+
+    if (light_color1_loc != -1) {
+        glUniform3f(light_color1_loc, 1.0f, 1.0f, 1.0f);
+    }
+
+    auto& app_data = get_app_data();
+    const bool lighting_mode = app_data.is_render_mode_enabled(core::RenderMode::LIGHTING);
+
+    if (!m_bounds_valid) {
+        const di_renderer::math::Vector3 default_light2_pos(0.0f, 10.0f, 0.0f);
+
+        if (light_pos2_loc != -1) {
+            glUniform3f(light_pos2_loc, default_light2_pos.x, default_light2_pos.y, default_light2_pos.z);
+        }
+        if (light_color2_loc != -1) {
+            glUniform3f(light_color2_loc, 0.25f, 0.2f, 0.1f);
+        }
+
+        if (use_light2_loc != -1) {
+            glUniform1i(use_light2_loc, lighting_mode ? 1 : 0);
+        }
+    } else {
+        if (use_light2_loc != -1) {
+            glUniform1i(use_light2_loc, lighting_mode && m_bounds_valid ? 1 : 0);
+        }
+
+        if (lighting_mode && m_bounds_valid) {
+            const di_renderer::math::Vector3 center((m_scene_min.x + m_scene_max.x) * 0.5f,
+                                                    (m_scene_min.y + m_scene_max.y) * 0.5f,
+                                                    (m_scene_min.z + m_scene_max.z) * 0.5f);
+            const float scene_height = m_scene_max.y - m_scene_min.y;
+            const float light2_height = std::max(scene_height * 10.5f, 2.0f);
+            const di_renderer::math::Vector3 light2_pos =
+                center + di_renderer::math::Vector3(0.0f, light2_height, 0.0f);
+
+            if (light_pos2_loc != -1) {
+                glUniform3f(light_pos2_loc, light2_pos.x, light2_pos.y, light2_pos.z);
+            }
+            if (light_color2_loc != -1) {
+                glUniform3f(light_color2_loc, 1.0f, 0.0f, 0.0f);
+            }
+        }
     }
 
     if (texture_loc != -1) {
         glUniform1i(texture_loc, 0);
-    }
-
-    if (light_color_loc != -1) {
-        glUniform3f(light_color_loc, 1.0f, 1.0f, 1.0f);
     }
 
     std::array<GLfloat, 9> identity_normal_matrix = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
@@ -634,8 +675,7 @@ void OpenGLArea::set_default_uniforms() {
         glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix.data());
     }
 }
-
-void OpenGLArea::draw_current_mesh() { // NOLINT
+void OpenGLArea::draw_current_mesh() {
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
     }
@@ -676,7 +716,7 @@ void OpenGLArea::draw_current_mesh() { // NOLINT
                 continue;
             }
 
-            auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
+            auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
                 di_renderer::graphics::Vertex vertex{};
 
