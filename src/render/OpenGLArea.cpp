@@ -22,7 +22,7 @@
 
 using di_renderer::render::OpenGLArea;
 
-OpenGLArea::OpenGLArea() : m_last_x(0.0), m_last_y(0.0) { // NOLINT
+OpenGLArea::OpenGLArea() : m_last_x(0.0), m_last_y(0.0) {
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
@@ -181,7 +181,7 @@ bool OpenGLArea::key_pressed(unsigned int key) {
     return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
-void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos, // NOLINT
+void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
                                          const di_renderer::math::Vector3& max_pos, float distance,
                                          di_renderer::math::Camera& camera) {
     const di_renderer::math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
@@ -209,7 +209,7 @@ void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_p
     camera.set_planes(near_plane, far_plane);
 }
 
-di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex, // NOLINT
+di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex,
                                                         const di_renderer::math::Transform& transform) {
     const di_renderer::math::Matrix4x4 transform_matrix = transform.get_matrix();
     const di_renderer::math::Vector4 transformed =
@@ -239,7 +239,7 @@ void OpenGLArea::update_camera_for_mesh() {
             }
             has_vertices = true;
 
-            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
+            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
             for (const auto& vertex : mesh.vertices) {
                 const di_renderer::math::Vector3 transformed = transform_vertex(vertex, transform);
                 min_pos.x = std::min(min_pos.x, transformed.x);
@@ -319,7 +319,7 @@ void OpenGLArea::update_dynamic_projection() {
             }
             has_vertices = true;
 
-            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
+            const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
             for (const auto& vertex : mesh.vertices) {
                 const di_renderer::math::Vector3 transformed = transform_vertex(vertex, transform);
                 min_pos.x = std::min(min_pos.x, transformed.x);
@@ -408,121 +408,19 @@ void OpenGLArea::cleanup_resources() {
     }
 
     if (m_shader_program != 0u) {
+        glUseProgram(m_shader_program);
+        const GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
+        if (use_texture_loc != -1) {
+            glUniform1i(use_texture_loc, 0);
+        }
+        glUseProgram(0);
+
         di_renderer::graphics::destroy_mesh_batch();
         di_renderer::graphics::destroy_shader_program(m_shader_program);
         m_shader_program = 0;
     }
 
-    for (const auto& pair : m_loaded_textures) {
-        if (pair.second != 0) {
-            glDeleteTextures(1, &pair.second);
-        }
-    }
-    m_loaded_textures.clear();
-}
-
-void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) { // NOLINT
-    namespace fs = std::filesystem;
-
-    if (fs::exists(texture_path)) {
-        return;
-    }
-
-    const fs::path base_dir = fs::path(base_path).parent_path();
-    const fs::path relative_path = base_dir / texture_path;
-
-    if (fs::exists(relative_path)) {
-        texture_path = relative_path.string();
-        return;
-    }
-
-    const std::vector<std::string> subdirs = {"textures", "texture", "tex", "images", "img"};
-    for (const auto& subdir : subdirs) {
-        const fs::path subdir_path = base_dir / subdir / fs::path(texture_path).filename();
-        if (fs::exists(subdir_path)) {
-            texture_path = subdir_path.string();
-            return;
-        }
-    }
-
-    const fs::path simple_path = base_dir / fs::path(texture_path).filename();
-    if (fs::exists(simple_path)) {
-        texture_path = simple_path.string();
-    }
-}
-
-GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std::string& base_path) {
-    std::string texture_path = filename;
-    resolve_texture_path(texture_path, base_path);
-
-    try {
-        if (!std::filesystem::exists(texture_path)) {
-            texture_path = filename;
-            if (!std::filesystem::exists(texture_path)) {
-                std::cerr << "Texture file not found: " << texture_path << '\n';
-                return 0;
-            }
-        }
-
-        auto pixbuf = Gdk::Pixbuf::create_from_file(texture_path);
-        const int width = pixbuf->get_width();
-        const int height = pixbuf->get_height();
-        const int channels = pixbuf->get_n_channels();
-        const bool has_alpha = pixbuf->get_has_alpha();
-
-        GLuint texture = 0;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        guchar* pixels = pixbuf->get_pixels();
-        const int rowstride = pixbuf->get_rowstride();
-
-        if (has_alpha) {
-            std::vector<guchar> rgba_buffer(static_cast<size_t>(width) * static_cast<size_t>(height) * 4);
-            for (int y = 0; y < height; ++y) {
-                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                const guchar* src_row = pixels + static_cast<ptrdiff_t>(y * rowstride);
-                guchar* dst_row = rgba_buffer.data() + static_cast<ptrdiff_t>(y * width * 4);
-                for (int x = 0; x < width; ++x) {
-                    dst_row[(x * 4) + 0] = src_row[(x * channels) + 0];
-                    dst_row[(x * 4) + 1] = src_row[(x * channels) + 1];
-                    dst_row[(x * 4) + 2] = src_row[(x * channels) + 2];
-                    dst_row[(x * 4) + 3] = (channels > 3) ? src_row[(x * channels) + 3] : 255;
-                }
-                // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            }
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
-        } else {
-            std::vector<guchar> rgb_buffer(static_cast<size_t>(width) * static_cast<size_t>(height) * 3);
-            for (int y = 0; y < height; ++y) {
-                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                const guchar* src_row = pixels + static_cast<ptrdiff_t>(y * rowstride);
-                guchar* dst_row = rgb_buffer.data() + static_cast<ptrdiff_t>(y * width * 3);
-                for (int x = 0; x < width; ++x) {
-                    dst_row[(x * 3) + 0] = src_row[(x * channels) + 0];
-                    dst_row[(x * 3) + 1] = src_row[(x * channels) + 1];
-                    dst_row[(x * 3) + 2] = src_row[(x * channels) + 2];
-                }
-                // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            }
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer.data());
-        }
-
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        return texture;
-    } catch (const Glib::Error& e) {
-        std::cerr << "Failed to load texture from '" << texture_path << "': " << e.what() << '\n';
-    } catch (const std::exception& e) {
-        std::cerr << "Texture loading error: " << e.what() << '\n';
-    }
-    return 0;
+    m_texture_loader.cleanup();
 }
 
 bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
@@ -602,7 +500,7 @@ void OpenGLArea::draw_wireframe_overlay() {
             continue;
         }
 
-        const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
+        const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
         for (size_t i = 0; i < mesh.vertices.size(); ++i) {
             di_renderer::graphics::Vertex vertex{};
 
@@ -770,9 +668,7 @@ void OpenGLArea::draw_current_mesh() {
                 continue;
             }
 
-            // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
             const auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
-            // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
                 di_renderer::graphics::Vertex vertex{};
 
@@ -810,37 +706,38 @@ void OpenGLArea::draw_current_mesh() {
                 continue;
             }
 
-            const bool use_textures = app_data.is_render_mode_enabled(core::RenderMode::TEXTURE);
+            const std::string& tex_filename = mesh.get_texture_filename();
+            const bool has_texture_filename = !tex_filename.empty();
+            const bool render_textures = app_data.is_render_mode_enabled(core::RenderMode::TEXTURE);
             bool has_texture = false;
             GLuint texture_id = 0;
-            const std::string& tex_filename = mesh.get_texture_filename();
-            if (use_textures && !tex_filename.empty()) {
-                auto it = m_loaded_textures.find(tex_filename);
-                if (it == m_loaded_textures.end()) {
-                    texture_id = load_texture_from_file(tex_filename, m_current_mesh_path);
-                    m_loaded_textures[tex_filename] = texture_id;
-                } else {
-                    texture_id = it->second;
-                }
+
+            if (has_texture_filename) {
+                texture_id = m_texture_loader.load_texture(tex_filename, m_current_mesh_path);
                 has_texture = (texture_id != 0);
             }
 
+            const bool use_textures_in_shader = render_textures && has_texture_filename && has_texture;
+
+            glUseProgram(m_shader_program);
+
             const GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
             if (use_texture_loc != -1) {
-                glUniform1i(use_texture_loc, has_texture ? 1 : 0);
+                glUniform1i(use_texture_loc, use_textures_in_shader ? 1 : 0);
             }
 
-            if (has_texture) {
+            if (use_textures_in_shader && has_texture) {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, texture_id);
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, 0);
             }
 
             di_renderer::graphics::draw_indexed_mesh(vertices.data(), vertices.size(), indices.data(), indices.size(),
                                                      m_shader_program);
 
-            if (has_texture) {
-                glBindTexture(GL_TEXTURE_2D, 0);
-            }
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
     } catch (const std::exception& e) {
         std::cerr << "Error drawing meshes: " << e.what() << '\n';
