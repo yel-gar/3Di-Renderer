@@ -267,9 +267,14 @@ void OpenGLArea::update_dynamic_projection() {
         return;
     }
 
-    auto& camera = get_app_data().get_current_camera();
+    auto& app_data = get_app_data();
+    if (app_data.is_meshes_empty()) {
+        return;
+    }
+
+    auto& camera = app_data.get_current_camera();
     try {
-        const auto& mesh = get_app_data().get_current_mesh();
+        const auto& mesh = app_data.get_current_mesh();
         if (mesh.vertices.empty()) {
             return;
         }
@@ -320,7 +325,6 @@ void OpenGLArea::update_dynamic_projection() {
         std::cerr << "Error updating dynamic projection: " << e.what() << '\n';
     }
 }
-
 void OpenGLArea::on_map() {
     Gtk::GLArea::on_map();
     m_should_render.store(true);

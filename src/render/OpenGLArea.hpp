@@ -18,6 +18,11 @@ namespace di_renderer::render {
         OpenGLArea();
         ~OpenGLArea() override;
 
+        OpenGLArea(const OpenGLArea&) = delete;
+        OpenGLArea& operator=(const OpenGLArea&) = delete;
+        OpenGLArea(OpenGLArea&&) = delete;
+        OpenGLArea& operator=(OpenGLArea&&) = delete;
+
         core::AppData& get_app_data() noexcept;
 
       protected:
