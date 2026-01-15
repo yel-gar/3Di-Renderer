@@ -5,11 +5,11 @@
 #include "core/RenderMode.hpp"
 #include "math/Camera.hpp"
 
-#include <chrono>
+#include <array>
+#include <cstddef>
 #include <cstring>
 #include <epoxy/gl.h>
 #include <filesystem>
-#include <fstream>
 #include <gdkmm/pixbuf.h>
 #include <glibmm/error.h>
 #include <iostream>
@@ -18,7 +18,7 @@
 
 using di_renderer::render::OpenGLArea;
 
-OpenGLArea::OpenGLArea() {
+OpenGLArea::OpenGLArea() : m_last_x(0.0), m_last_y(0.0) {
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
@@ -126,7 +126,7 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
     m_last_x = event->x;
     m_last_y = event->y;
 
-    m_app_data.get_current_camera().rotate_view(dx, dy);
+    m_app_data.get_current_camera().rotate_view(dx, dy); // NOLINT
     queue_draw();
     return true;
 }
@@ -147,18 +147,24 @@ bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
 void OpenGLArea::parse_keyboard_movement() {
     math::Vector3 vec;
 
-    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W))
+    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
         vec.z += 1.f;
-    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S))
+    }
+    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
         vec.z -= 1.f;
-    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A))
+    }
+    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
         vec.x -= 1.f;
-    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D))
+    }
+    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D)) {
         vec.x += 1.f;
-    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q))
+    }
+    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q)) {
         vec.y -= 1.f;
-    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E))
+    }
+    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E)) {
         vec.y += 1.f;
+    }
 
     if (vec.length() <= std::numeric_limits<float>::epsilon()) {
         return;
@@ -310,7 +316,8 @@ void OpenGLArea::update_dynamic_projection() {
         }
 
         camera.set_planes(near_plane, far_plane);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        std::cerr << "Error updating dynamic projection: " << e.what() << '\n';
     }
 }
 
@@ -389,7 +396,7 @@ void OpenGLArea::cleanup_resources() {
     m_loaded_textures.clear();
 }
 
-void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) {
+void OpenGLArea::resolve_texture_path(std::string& texture_path, const std::string& base_path) { // NOLINT
     namespace fs = std::filesystem;
 
     if (fs::exists(texture_path)) {
@@ -427,7 +434,7 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
         if (!std::filesystem::exists(texture_path)) {
             texture_path = filename;
             if (!std::filesystem::exists(texture_path)) {
-                std::cerr << "Texture file not found: " << texture_path << std::endl;
+                std::cerr << "Texture file not found: " << texture_path << '\n';
                 return 0;
             }
         }
@@ -438,7 +445,7 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
         int channels = pixbuf->get_n_channels();
         bool has_alpha = pixbuf->get_has_alpha();
 
-        GLuint texture;
+        GLuint texture = 0;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -449,17 +456,17 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
 
         guchar* pixels = pixbuf->get_pixels();
         int rowstride = pixbuf->get_rowstride();
-
+        // NOLINTBEGIN
         if (has_alpha) {
-            std::vector<guchar> rgba_buffer(width * height * 4);
+            std::vector<guchar> rgba_buffer(static_cast<long>(width * height) * 4);
             for (int y = 0; y < height; ++y) {
-                const guchar* src_row = pixels + y * rowstride;
-                guchar* dst_row = rgba_buffer.data() + y * width * 4;
+                const guchar* src_row = pixels + static_cast<ptrdiff_t>(y * rowstride);
+                guchar* dst_row = rgba_buffer.data() + static_cast<ptrdiff_t>(y * width * 4);
                 for (int x = 0; x < width; ++x) {
-                    dst_row[x * 4 + 0] = src_row[x * channels + 0];
-                    dst_row[x * 4 + 1] = src_row[x * channels + 1];
-                    dst_row[x * 4 + 2] = src_row[x * channels + 2];
-                    dst_row[x * 4 + 3] = (channels > 3) ? src_row[x * channels + 3] : 255;
+                    dst_row[(x * 4) + 0] = src_row[(x * channels) + 0];
+                    dst_row[(x * 4) + 1] = src_row[(x * channels) + 1];
+                    dst_row[(x * 4) + 2] = src_row[(x * channels) + 2];
+                    dst_row[(x * 4) + 3] = (channels > 3) ? src_row[(x * channels) + 3] : 255;
                 }
             }
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
@@ -469,27 +476,27 @@ GLuint OpenGLArea::load_texture_from_file(const std::string& filename, const std
                 const guchar* src_row = pixels + y * rowstride;
                 guchar* dst_row = rgb_buffer.data() + y * width * 3;
                 for (int x = 0; x < width; ++x) {
-                    dst_row[x * 3 + 0] = src_row[x * channels + 0];
-                    dst_row[x * 3 + 1] = src_row[x * channels + 1];
-                    dst_row[x * 3 + 2] = src_row[x * channels + 2];
+                    dst_row[(x * 3) + 0] = src_row[(x * channels) + 0];
+                    dst_row[(x * 3) + 1] = src_row[(x * channels) + 1];
+                    dst_row[(x * 3) + 2] = src_row[(x * channels) + 2];
                 }
             }
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer.data());
         }
-
+        // NOLINTEND
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return texture;
     } catch (const Glib::Error& e) {
-        std::cerr << "Failed to load texture from '" << texture_path << "': " << e.what() << std::endl;
+        std::cerr << "Failed to load texture from '" << texture_path << "': " << e.what() << '\n';
     } catch (const std::exception& e) {
-        std::cerr << "Texture loading error: " << e.what() << std::endl;
+        std::cerr << "Texture loading error: " << e.what() << '\n';
     }
     return 0;
 }
 
-bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
+bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
     if (!m_gl_initialized.load() || !m_should_render.load() || m_shader_program == 0) {
         return false;
     }
@@ -527,7 +534,7 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>&) {
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << error << std::endl;
+        std::cerr << "OpenGL error: " << error << '\n';
     }
 
     return true;
@@ -602,6 +609,15 @@ void OpenGLArea::draw_wireframe_overlay() {
     }
 
     glUseProgram(m_shader_program);
+
+    GLint use_texture_loc = glGetUniformLocation(m_shader_program, "uUseTexture");
+    if (use_texture_loc != -1) {
+        glUniform1i(use_texture_loc, 0);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
+
     glEnable(GL_POLYGON_OFFSET_LINE);
     glPolygonOffset(-1.0f, -1.0f);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -621,8 +637,8 @@ void OpenGLArea::set_default_uniforms() {
 
     glUseProgram(m_shader_program);
 
-    GLfloat model_matrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                                0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    std::array<GLfloat, 16> model_matrix = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                                            0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
     const auto& camera = m_app_data.get_current_camera();
     math::Matrix4x4 view_matrix = camera.get_view_matrix();
@@ -638,7 +654,7 @@ void OpenGLArea::set_default_uniforms() {
     GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
 
     if (model_loc != -1) {
-        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix);
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix.data());
     }
     if (view_loc != -1) {
         glUniformMatrix4fv(view_loc, 1, GL_FALSE, view_matrix.data());
@@ -671,9 +687,10 @@ void OpenGLArea::set_default_uniforms() {
         glUniform3f(light_color_loc, 1.0f, 1.0f, 1.0f);
     }
 
+    std::array<GLfloat, 9> identity_normal_matrix = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+
     if (normal_matrix_loc != -1) {
-        GLfloat identity_normal_matrix[9] = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-        glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix);
+        glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix.data());
     }
 }
 
