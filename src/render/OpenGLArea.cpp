@@ -2,11 +2,14 @@
 
 #include "Triangle.hpp"
 #include "core/AppData.hpp"
+#include "core/RenderMode.hpp"
 #include "math/Camera.hpp"
 
+#include <chrono>
 #include <cstring>
 #include <epoxy/gl.h>
 #include <filesystem>
+#include <fstream>
 #include <gdkmm/pixbuf.h>
 #include <glibmm/error.h>
 #include <iostream>
@@ -144,24 +147,18 @@ bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
 void OpenGLArea::parse_keyboard_movement() {
     math::Vector3 vec;
 
-    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
+    if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W))
         vec.z += 1.f;
-    }
-    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
+    if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S))
         vec.z -= 1.f;
-    }
-    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
+    if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A))
         vec.x -= 1.f;
-    }
-    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D)) {
+    if (key_pressed(GDK_KEY_d) || key_pressed(GDK_KEY_D))
         vec.x += 1.f;
-    }
-    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q)) {
+    if (key_pressed(GDK_KEY_q) || key_pressed(GDK_KEY_Q))
         vec.y -= 1.f;
-    }
-    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E)) {
+    if (key_pressed(GDK_KEY_e) || key_pressed(GDK_KEY_E))
         vec.y += 1.f;
-    }
 
     if (vec.length() <= std::numeric_limits<float>::epsilon()) {
         return;
@@ -668,10 +665,11 @@ void OpenGLArea::draw_current_mesh() {
             return;
         }
 
+        bool use_textures = app_data.is_render_mode_enabled(core::RenderMode::TEXTURE);
         bool has_texture = false;
         GLuint texture_id = 0;
         const std::string& tex_filename = mesh.get_texture_filename();
-        if (!tex_filename.empty()) {
+        if (use_textures && !tex_filename.empty()) {
             auto it = m_loaded_textures.find(tex_filename);
             if (it == m_loaded_textures.end()) {
                 texture_id = load_texture_from_file(tex_filename, m_current_mesh_path);
