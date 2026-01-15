@@ -25,10 +25,11 @@
 using di_renderer::render::OpenGLArea;
 
 OpenGLArea::OpenGLArea()
-    : m_last_x(0.0), m_last_y(0.0), m_scene_min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
-                                                std::numeric_limits<float>::max()),
+    : m_scene_min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
+                  std::numeric_limits<float>::max()),
       m_scene_max(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(),
-                  -std::numeric_limits<float>::max()) {
+                  -std::numeric_limits<float>::max()),
+      m_last_x(0.0), m_last_y(0.0) {
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
@@ -62,8 +63,8 @@ void OpenGLArea::on_realize() {
         return;
     }
 
-    GLint depthBits = 0;
-    glGetIntegerv(GL_DEPTH_BITS, &depthBits);
+    GLint depth_bits = 0;
+    glGetIntegerv(GL_DEPTH_BITS, &depth_bits);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -192,7 +193,7 @@ bool OpenGLArea::key_pressed(unsigned int key) {
     return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
-void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
+void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos, // NOLINT
                                          const di_renderer::math::Vector3& max_pos, float distance,
                                          di_renderer::math::Camera& camera) {
     const di_renderer::math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
@@ -203,16 +204,16 @@ void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_p
 
     if (max_dimension < 1.0f) {
         near_plane = std::max(0.01f, distance * 0.01f);
-        far_plane = distance * 5.0f + max_dimension * 10.0f;
+        far_plane = (distance * 5.0f) + (max_dimension * 10.0f);
     } else if (max_dimension < 10.0f) {
         near_plane = std::max(0.1f, distance * 0.05f);
-        far_plane = distance * 10.0f + max_dimension * 10.0f;
+        far_plane = (distance * 10.0f) + (max_dimension * 10.0f);
     } else if (max_dimension < 100.0f) {
         near_plane = std::max(0.5f, distance * 0.1f);
-        far_plane = distance * 20.0f + max_dimension * 10.0f;
+        far_plane = (distance * 20.0f) + (max_dimension * 10.0f);
     } else {
         near_plane = std::max(1.0f, distance * 0.2f);
-        far_plane = distance * 50.0f + max_dimension * 10.0f;
+        far_plane = (distance * 50.0f) + (max_dimension * 10.0f);
     }
 
     const float min_far_plane = 1000.0f;
@@ -226,12 +227,12 @@ void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_p
     camera.set_planes(near_plane, far_plane);
 }
 
-di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex,
+di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex, // NOLINT
                                                         const di_renderer::math::Transform& transform) {
     const di_renderer::math::Matrix4x4 transform_matrix = transform.get_matrix();
     const di_renderer::math::Vector4 transformed =
         transform_matrix * di_renderer::math::Vector4(vertex.x, vertex.y, vertex.z, 1.0f);
-    return di_renderer::math::Vector3(transformed.x, transformed.y, transformed.z);
+    return {transformed.x, transformed.y, transformed.z};
 }
 
 void OpenGLArea::update_scene_bounds() {
@@ -243,11 +244,12 @@ void OpenGLArea::update_scene_bounds() {
 
     const auto& meshes = m_app_data.get_meshes();
     for (const auto& mesh : meshes) {
-        if (mesh.vertices.empty())
+        if (mesh.vertices.empty()) {
             continue;
+        }
         has_vertices = true;
 
-        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
         auto [min, max] = get_transformed_bounds(mesh, transform);
 
         m_scene_min = di_renderer::math::Vector3(std::min(m_scene_min.x, min.x), std::min(m_scene_min.y, min.y),
@@ -408,8 +410,9 @@ void OpenGLArea::cleanup_resources() {
     }
 
     for (auto& [_, tex_id] : m_texture_cache) {
-        if (tex_id)
+        if (tex_id != 0u) {
             glDeleteTextures(1, &tex_id);
+        }
     }
     m_texture_cache.clear();
 
@@ -501,7 +504,7 @@ void OpenGLArea::draw_wireframe_overlay() {
             continue;
         }
 
-        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
         for (size_t i = 0; i < mesh.vertices.size(); ++i) {
             di_renderer::graphics::Vertex vertex{};
 
@@ -632,7 +635,7 @@ void OpenGLArea::set_default_uniforms() {
     }
 }
 
-void OpenGLArea::draw_current_mesh() {
+void OpenGLArea::draw_current_mesh() { // NOLINT
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
     }
@@ -673,7 +676,7 @@ void OpenGLArea::draw_current_mesh() {
                 continue;
             }
 
-            auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+            auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
                 di_renderer::graphics::Vertex vertex{};
 
