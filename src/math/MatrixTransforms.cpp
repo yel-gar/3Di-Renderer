@@ -85,27 +85,19 @@ namespace di_renderer::math {
      * @return - view matrix (V)
      */
     Matrix4x4 MatrixTransforms::look_at(const Vector3& eye, const Vector3& target, const Vector3& up) {
-        const Vector3 forward = (target - eye).normalized(); // Direction FROM eye TO target
-        const Vector3 right = forward.cross(up).normalized();
-        const Vector3 new_up = right.cross(forward).normalized();
+        const Vector3 z = (eye - target).normalized();
+        const Vector3 x = (up.cross(z)).normalized();
+        const Vector3 y = (z.cross(x)).normalized();
 
         // clang-format off
-        Matrix4x4 const rotation({
-            right.x, right.y, right.z, 0,
-            new_up.x, new_up.y, new_up.z, 0,
-            -forward.x, -forward.y, -forward.z, 0,  // Negative forward for right-handed system
-            0, 0, 0, 1
+        Matrix4x4 res({
+            x.x, x.y, x.z, 0,
+            y.x, y.y, y.z, 0,
+            z.x, z.y, z.z, 0,
+            -eye.dot(x), -eye.dot(y), -eye.dot(z), 1
         });
-
-        Matrix4x4 const translation({
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            -eye.x, -eye.y, -eye.z, 1
-        });
-
-        return rotation * translation;
         // clang-format on
+        return res;
     }
 
     /**
