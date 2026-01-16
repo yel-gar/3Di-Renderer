@@ -182,10 +182,10 @@ void OpenGLArea::parse_keyboard_movement() {
     di_renderer::math::Vector3 vec(0.0f, 0.0f, 0.0f);
 
     if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
-        vec.z += 1.f;
+        vec.z -= 1.f;
     }
     if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
-        vec.z -= 1.f;
+        vec.z += 1.f;
     }
     if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
         vec.x -= 1.f;

@@ -49,7 +49,7 @@ namespace di_renderer::math {
 
         // TODO: Hardcoded settings (needs to be debugged)
         float m_sensitivity = 0.1f;
-        float m_zoom_speed = 0.5f;
+        float m_zoom_speed = 2.5f;
 
         float m_fov;
         float m_aspect_ratio;
