@@ -48,8 +48,7 @@ namespace di_renderer::math {
         float m_pitch{};
         float m_distance_to_target;
 
-        // TODO: Hardcoded settings (needs to be debugged)
-        float m_sensitivity = 0.1f;
+        float m_sensitivity = 0.2f;
         float m_zoom_speed = 2.5f;
 
         float m_fov;

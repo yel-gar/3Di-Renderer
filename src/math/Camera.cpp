@@ -103,12 +103,9 @@ namespace di_renderer::math {
     void Camera::update_euler_from_vectors() {
         Vector3 direction = m_target - m_position;
         m_distance_to_target = direction.length();
-        if (m_distance_to_target < 0.001f) {
-            m_distance_to_target = 0.001f;
-            direction.z = 1.0f;
-        }
+        m_distance_to_target = std::max(m_distance_to_target, 0.001f);
         const Vector3 front = direction.normalized();
-        float clamped_y = std::clamp(front.y, -1.0f, 1.0f);
+        const float clamped_y = std::clamp(front.y, -1.0f, 1.0f);
         m_pitch = std::asin(clamped_y) * (180.0f / M_PIf);
         m_yaw = std::atan2(front.z, front.x) * (180.0f / M_PIf);
     }
