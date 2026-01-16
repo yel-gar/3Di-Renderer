@@ -109,9 +109,9 @@ void OpenGLArea::on_resize(int width, int height) {
 }
 
 bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
-    if (event->button == 1) { // Left mouse button
+    if (event->button == 1 || event->button == 3) { // Left / RIGHT
+        (event->button == 1 ? m_lmb_drag : m_rmb_drag) = true;
         grab_focus();
-        m_dragging = true;
         m_last_x = event->x;
         m_last_y = event->y;
         return true;
@@ -120,15 +120,15 @@ bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
 }
 
 bool OpenGLArea::on_button_release_event(GdkEventButton* event) {
-    if (event->button == 1) {
-        m_dragging = false;
+    if (event->button == 1 || event->button == 3) {
+        (event->button == 1 ? m_lmb_drag : m_rmb_drag) = false;
         return true;
     }
     return false;
 }
 
 bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
-    if (!m_dragging) {
+    if (!m_lmb_drag && !m_rmb_drag) {
         return false;
     }
 
@@ -137,10 +137,17 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
 
     m_last_x = event->x;
     m_last_y = event->y;
+    if (m_lmb_drag) {
+        m_app_data.get_current_camera().rotate_view(static_cast<float>(dx), static_cast<float>(dy));
+        queue_draw();
+        return true;
+    }
+    if (m_rmb_drag) {
+        m_app_data.get_current_camera().orbit_around_target(static_cast<float>(dx), static_cast<float>(dy));
+        return true;
+    }
 
-    m_app_data.get_current_camera().rotate_view(static_cast<float>(dx), static_cast<float>(dy));
-    queue_draw();
-    return true;
+    return false;
 }
 
 bool OpenGLArea::on_key_press_event(GdkEventKey* event) {
