@@ -40,6 +40,14 @@ namespace di_renderer::math {
     Vector3 Vector3::operator*(float value) const {
         return {x * value, y * value, z * value};
     }
+
+    Vector3 Vector3::operator/(float value) const {
+        if (value <= EPSILON) {
+            return {};
+        }
+        return {x / value, y / value, z / value};
+    }
+
     Vector3& Vector3::operator+=(const Vector3& other) {
         x += other.x;
         y += other.y;

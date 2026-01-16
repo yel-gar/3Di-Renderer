@@ -357,9 +357,9 @@ TEST(CameraTests, ViewMatrix_Rotation_90Degrees) {
     const Camera cam({0, 0, 0}, {-1, 0, 0}, 1.0f, 1.0f, 0.1f, 100.0f);
     // clang-format off
     Matrix4x4 const expected({
-        0.0f, 0.0f, -1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 1.0f,  0.0f, 0.0f,
-        1.0f, 0.0f,  0.0f, 0.0f,
+        -1.0f, 0.0f,  0.0f, 0.0f,
         0.0f, 0.0f,  0.0f, 1.0f
     });
     // clang-format on
