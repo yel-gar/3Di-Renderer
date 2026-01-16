@@ -46,6 +46,7 @@ namespace di_renderer::math {
 
         float m_yaw{};
         float m_pitch{};
+        float m_distance_to_target;
 
         // TODO: Hardcoded settings (needs to be debugged)
         float m_sensitivity = 0.1f;

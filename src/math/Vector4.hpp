@@ -20,6 +20,7 @@ namespace di_renderer::math {
         Vector4 operator+(const Vector4& other) const;
         Vector4 operator-(const Vector4& other) const;
         Vector4 operator*(float value) const;
+        Vector4 operator/(float value) const;
 
         Vector4& operator+=(const Vector4& other);
         Vector4& operator-=(const Vector4& other);
@@ -32,5 +33,9 @@ namespace di_renderer::math {
 
     inline Vector4 operator*(float value, const Vector4& vec) {
         return vec * value;
+    }
+
+    inline Vector4 operator/(float value, const Vector4& vec) {
+        return vec / value;
     }
 } // namespace di_renderer::math

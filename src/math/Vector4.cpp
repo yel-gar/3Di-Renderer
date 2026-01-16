@@ -36,6 +36,10 @@ namespace di_renderer::math {
         return {x * value, y * value, z * value, w * value};
     }
 
+    Vector4 Vector4::operator/(float value) const {
+        return {x / value, y / value, z / value, w / value};
+    }
+
     Vector4& Vector4::operator+=(const Vector4& other) {
         x += other.x;
         y += other.y;
