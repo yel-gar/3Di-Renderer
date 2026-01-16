@@ -139,15 +139,13 @@ bool OpenGLArea::on_motion_notify_event(GdkEventMotion* event) {
     m_last_y = event->y;
     if (m_lmb_drag) {
         m_app_data.get_current_camera().rotate_view(static_cast<float>(dx), static_cast<float>(dy));
-        queue_draw();
-        return true;
     }
     if (m_rmb_drag) {
         m_app_data.get_current_camera().orbit_around_target(static_cast<float>(dx), static_cast<float>(dy));
-        return true;
     }
 
-    return false;
+    queue_draw();
+    return true;
 }
 
 bool OpenGLArea::on_key_press_event(GdkEventKey* event) {
@@ -182,10 +180,10 @@ void OpenGLArea::parse_keyboard_movement() {
     di_renderer::math::Vector3 vec(0.0f, 0.0f, 0.0f);
 
     if (key_pressed(GDK_KEY_w) || key_pressed(GDK_KEY_W)) {
-        vec.z -= 1.f;
+        vec.z += 1.f;
     }
     if (key_pressed(GDK_KEY_s) || key_pressed(GDK_KEY_S)) {
-        vec.z += 1.f;
+        vec.z -= 1.f;
     }
     if (key_pressed(GDK_KEY_a) || key_pressed(GDK_KEY_A)) {
         vec.x -= 1.f;

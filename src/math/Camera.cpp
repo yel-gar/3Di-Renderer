@@ -71,8 +71,16 @@ namespace di_renderer::math {
     }
 
     void Camera::move(const Vector3& direction) {
-        m_position += direction;
-        m_target += direction;
+        // Calculate camera's local axes
+        const auto front = get_front().normalized();
+        const auto right = front.cross(Vector3(0.0f, 1.0f, 0.0f)).normalized();
+        const auto up = right.cross(front).normalized();
+
+        // Move along camera's local axes
+        const auto world_direction = (right * direction.x) + (up * direction.y) + (front * direction.z);
+
+        m_position += world_direction;
+        m_target += world_direction;
         m_distance_to_target = (m_target - m_position).length();
     }
 
