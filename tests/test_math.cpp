@@ -375,8 +375,13 @@ TEST(CameraTests, ProjectionMatrix_Calculated) {
 
     const Camera cam({0, 0, 0}, {0, 0, -1}, fov, aspect, n, f);
 
-    const Matrix4x4 expected(
-        {0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -2.0f, -1.0f, 0.0f, 0.0f, -3.0f, 0.0f});
+    // clang-format off
+    const Matrix4x4 expected({
+        0.5f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, -2.0f, -1.0f,
+        0.0f, 0.0f, -3.0f, 0.0f
+    });
     // clang-format on
 
     EXPECT_EQ(cam.get_projection_matrix(), expected);

@@ -34,7 +34,10 @@ OpenGLArea::OpenGLArea()
     set_required_version(3, 3);
     set_can_focus(true);
 
+    // mouse events
     add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
+
+    // keyboard events
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 
     m_render_dispatcher.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
@@ -106,7 +109,7 @@ void OpenGLArea::on_resize(int width, int height) {
 }
 
 bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
-    if (event->button == 1) {
+    if (event->button == 1) { // Left mouse button
         grab_focus();
         m_dragging = true;
         m_last_x = event->x;

@@ -71,7 +71,7 @@ GLuint TextureLoader::load_texture(const std::string& filename, const std::strin
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        guchar* pixels = pixbuf->get_pixels();
+        const guchar* pixels = pixbuf->get_pixels();
         const int rowstride = pixbuf->get_rowstride();
 
         if (has_alpha) {
