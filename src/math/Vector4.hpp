@@ -35,7 +35,4 @@ namespace di_renderer::math {
         return vec * value;
     }
 
-    inline Vector4 operator/(float value, const Vector4& vec) {
-        return vec / value;
-    }
 } // namespace di_renderer::math

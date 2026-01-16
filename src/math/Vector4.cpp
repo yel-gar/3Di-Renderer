@@ -37,6 +37,9 @@ namespace di_renderer::math {
     }
 
     Vector4 Vector4::operator/(float value) const {
+        if (value < EPSILON) {
+            return {};
+        }
         return {x / value, y / value, z / value, w / value};
     }
 

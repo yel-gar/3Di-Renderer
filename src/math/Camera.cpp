@@ -101,7 +101,7 @@ namespace di_renderer::math {
     }
 
     void Camera::update_euler_from_vectors() {
-        Vector3 direction = m_target - m_position;
+        const Vector3 direction = m_target - m_position;
         m_distance_to_target = direction.length();
         m_distance_to_target = std::max(m_distance_to_target, 0.001f);
         const Vector3 front = direction.normalized();
