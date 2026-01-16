@@ -35,7 +35,7 @@ OpenGLArea::OpenGLArea()
     set_can_focus(true);
 
     // mouse events
-    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
+    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK | Gdk::SCROLL_MASK);
 
     // keyboard events
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
@@ -153,6 +153,21 @@ bool OpenGLArea::on_key_press_event(GdkEventKey* event) {
 bool OpenGLArea::on_key_release_event(GdkEventKey* event) {
     m_pressed_keys.erase(event->keyval);
     parse_keyboard_movement();
+    return true;
+}
+bool OpenGLArea::on_scroll_event(GdkEventScroll* scroll_event) {
+    float val = 0;
+    switch (scroll_event->direction) {
+    case GDK_SCROLL_UP:
+        val = 1.0f;
+        break;
+    case GDK_SCROLL_DOWN:
+        val = -1.0f;
+        break;
+    default:
+        break;
+    }
+    m_app_data.get_current_camera().zoom(val);
     return true;
 }
 

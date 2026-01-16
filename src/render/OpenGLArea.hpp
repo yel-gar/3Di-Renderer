@@ -42,6 +42,7 @@ namespace di_renderer::render {
         bool on_motion_notify_event(GdkEventMotion* event) override;
         bool on_key_press_event(GdkEventKey* event) override;
         bool on_key_release_event(GdkEventKey* event) override;
+        bool on_scroll_event(GdkEventScroll* scroll_event) override;
         void on_map() override;
         void on_unmap() override;
         void on_camera_changed();
