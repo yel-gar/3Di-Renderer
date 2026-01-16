@@ -37,13 +37,6 @@ OpenGLArea::OpenGLArea()
     add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 
-    auto& camera = m_app_data.get_current_camera();
-    camera.set_position(di_renderer::math::Vector3(0.0f, 0.0f, 3.0f));
-    camera.set_target(di_renderer::math::Vector3(0.0f, 0.0f, 0.0f));
-    camera.set_planes(0.1f, 1000.0f);
-    camera.set_fov(45.0f * static_cast<float>(M_PI) / 180.0f);
-    camera.set_aspect_ratio(1.0f);
-
     m_render_dispatcher.connect(sigc::mem_fun(*this, &OpenGLArea::on_dispatch_render));
 }
 
@@ -109,6 +102,7 @@ void OpenGLArea::on_resize(int width, int height) {
 
     const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
     m_app_data.get_current_camera().set_aspect_ratio(aspect_ratio);
+    update_dynamic_projection();
 }
 
 bool OpenGLArea::on_button_press_event(GdkEventButton* event) {
@@ -286,9 +280,7 @@ void OpenGLArea::update_camera_for_mesh() {
 
     if (!m_bounds_valid) {
         auto& camera = app_data.get_current_camera();
-        camera.set_position(di_renderer::math::Vector3(0.0f, 0.0f, 3.0f));
-        camera.set_target(di_renderer::math::Vector3(0.0f, 0.0f, 0.0f));
-        camera.set_planes(0.1f, 1000.0f);
+        camera = di_renderer::math::Camera(); // Uses fixed default constructor
         return;
     }
 
@@ -343,6 +335,7 @@ void OpenGLArea::update_dynamic_projection() {
 
 void OpenGLArea::reset_camera_for_new_model() {
     m_bounds_valid = false;
+    m_app_data.get_current_camera() = di_renderer::math::Camera();
     update_camera_for_mesh();
     queue_draw();
 }
@@ -808,4 +801,11 @@ void OpenGLArea::draw_current_mesh() { // NOLINT
 
 void OpenGLArea::set_current_mesh_path(const std::string& path) {
     m_current_mesh_path = path;
+}
+
+void OpenGLArea::on_camera_changed() {
+    if (m_gl_initialized.load() && get_realized() && get_mapped()) {
+        update_dynamic_projection();
+        queue_draw();
+    }
 }

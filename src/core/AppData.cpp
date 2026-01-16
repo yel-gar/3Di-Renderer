@@ -44,6 +44,9 @@ Mesh& AppData::get_current_mesh() {
 
 di_renderer::math::Camera& AppData::get_current_camera() noexcept {
     auto [it, inserted] = m_cameras.try_emplace(m_current_camera_index);
+    if (inserted) {
+        it->second = di_renderer::math::Camera();
+    }
     return it->second;
 }
 

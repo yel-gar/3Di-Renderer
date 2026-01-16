@@ -7,8 +7,8 @@
 
 namespace di_renderer::math {
     Camera::Camera()
-        : m_position(Vector3(0, 0, 0)), m_target(Vector3(0, 0, 0)), m_fov(M_PI), m_aspect_ratio(1), m_near_plane(1),
-          m_far_plane(10) {
+        : m_position(0.0f, 0.0f, 3.0f), m_target(0.0f, 0.0f, 0.0f), m_fov(45.0f * static_cast<float>(M_PI) / 180.0f),
+          m_aspect_ratio(1.0f), m_near_plane(0.1f), m_far_plane(1000.0f) {
         update_euler_from_vectors();
     }
 
@@ -19,7 +19,6 @@ namespace di_renderer::math {
 
         update_euler_from_vectors();
     }
-
     void Camera::set_position(const Vector3& position) {
         m_position = position;
         update_euler_from_vectors();

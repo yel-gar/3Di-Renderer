@@ -44,6 +44,7 @@ namespace di_renderer::render {
         bool on_key_release_event(GdkEventKey* event) override;
         void on_map() override;
         void on_unmap() override;
+        void on_camera_changed();
 
       private:
         void start_animation();
