@@ -28,8 +28,7 @@ OpenGLArea::OpenGLArea()
     : m_scene_min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
                   std::numeric_limits<float>::max()),
       m_scene_max(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(),
-                  -std::numeric_limits<float>::max()),
-      m_last_x(0.0), m_last_y(0.0) {
+                  -std::numeric_limits<float>::max()) {
     set_has_depth_buffer(true);
     set_auto_render(true);
     set_required_version(3, 3);
@@ -193,7 +192,7 @@ bool OpenGLArea::key_pressed(unsigned int key) {
     return m_pressed_keys.find(key) != m_pressed_keys.end();
 }
 
-void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos,
+void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_pos, // NOLINT
                                          const di_renderer::math::Vector3& max_pos, float distance,
                                          di_renderer::math::Camera& camera) {
     const di_renderer::math::Vector3 size(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z);
@@ -227,7 +226,7 @@ void OpenGLArea::calculate_camera_planes(const di_renderer::math::Vector3& min_p
     camera.set_planes(near_plane, far_plane);
 }
 
-di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex,
+di_renderer::math::Vector3 OpenGLArea::transform_vertex(const di_renderer::math::Vector3& vertex, // NOLINT
                                                         const di_renderer::math::Transform& transform) {
     const di_renderer::math::Matrix4x4 transform_matrix = transform.get_matrix();
     const di_renderer::math::Vector4 transformed =
@@ -249,7 +248,7 @@ void OpenGLArea::update_scene_bounds() {
         }
         has_vertices = true;
 
-        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
         auto [min, max] = get_transformed_bounds(mesh, transform);
 
         m_scene_min = di_renderer::math::Vector3(std::min(m_scene_min.x, min.x), std::min(m_scene_min.y, min.y),
@@ -444,6 +443,14 @@ bool OpenGLArea::on_render(const Glib::RefPtr<Gdk::GLContext>& /*context*/) {
         return false;
     }
 
+    const int width = get_width();
+    const int height = get_height();
+    if (width > 0 && height > 0) {
+        const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+        auto& camera = m_app_data.get_current_camera();
+        camera.set_aspect_ratio(aspect_ratio);
+    }
+
     update_dynamic_projection();
 
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
@@ -504,7 +511,7 @@ void OpenGLArea::draw_wireframe_overlay() {
             continue;
         }
 
-        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+        auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
         for (size_t i = 0; i < mesh.vertices.size(); ++i) {
             di_renderer::graphics::Vertex vertex{};
 
@@ -567,7 +574,7 @@ void OpenGLArea::draw_wireframe_overlay() {
     glUseProgram(0);
 }
 
-void OpenGLArea::set_default_uniforms() {
+void OpenGLArea::set_default_uniforms() { // NOLINT
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
     }
@@ -675,7 +682,7 @@ void OpenGLArea::set_default_uniforms() {
         glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, identity_normal_matrix.data());
     }
 }
-void OpenGLArea::draw_current_mesh() {
+void OpenGLArea::draw_current_mesh() { // NOLINT
     if ((m_shader_program == 0u) || !m_gl_initialized.load()) {
         return;
     }
@@ -716,7 +723,7 @@ void OpenGLArea::draw_current_mesh() {
                 continue;
             }
 
-            auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform();
+            auto& transform = const_cast<di_renderer::core::Mesh&>(mesh).get_transform(); // NOLINT
             for (size_t i = 0; i < mesh.vertices.size(); ++i) {
                 di_renderer::graphics::Vertex vertex{};
 

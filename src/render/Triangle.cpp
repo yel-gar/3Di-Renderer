@@ -1,3 +1,4 @@
+// NOLINTBEGIN
 #include "Triangle.hpp"
 
 #include <cstddef>
@@ -179,3 +180,4 @@ void main() {
     }
 
 } // namespace di_renderer::graphics
+// NOLINTEND

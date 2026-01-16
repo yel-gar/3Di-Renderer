@@ -81,7 +81,7 @@ namespace di_renderer::render {
         di_renderer::core::AppData m_app_data;
         di_renderer::graphics::TextureLoader m_texture_loader;
         GLuint m_shader_program = 0;
-        double m_last_x, m_last_y;
+        double m_last_x{0.0}, m_last_y{0.0};
         bool m_dragging = false;
         std::unordered_set<unsigned int> m_pressed_keys;
         std::atomic<bool> m_gl_initialized{false};

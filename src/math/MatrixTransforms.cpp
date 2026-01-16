@@ -90,14 +90,14 @@ namespace di_renderer::math {
         const Vector3 new_up = right.cross(forward).normalized();
 
         // clang-format off
-    Matrix4x4 rotation({
+    Matrix4x4 const rotation({
         right.x, right.y, right.z, 0,
         new_up.x, new_up.y, new_up.z, 0,
         -forward.x, -forward.y, -forward.z, 0,  // Negative forward for right-handed system
         0, 0, 0, 1
     });
     
-    Matrix4x4 translation({
+    Matrix4x4 const translation({
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
