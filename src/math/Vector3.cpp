@@ -54,6 +54,13 @@ namespace di_renderer::math {
         return *this;
     }
 
+    Vector3& Vector3::operator*=(float value) {
+        x *= value;
+        y *= value;
+        z *= value;
+        return *this;
+    }
+
     bool Vector3::operator==(const Vector3& other) const {
         return std::abs(x - other.x) < EPSILON && std::abs(y - other.y) < EPSILON && std::abs(z - other.z) < EPSILON;
     }

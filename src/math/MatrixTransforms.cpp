@@ -90,11 +90,10 @@ namespace di_renderer::math {
         const Vector3 y = (z.cross(x)).normalized();
 
         // clang-format off
-        // сразу перемноженная матрица P * T
         Matrix4x4 res({
-            x.x, y.x, z.x, 0,
-            x.y, y.y, z.y, 0,
-            x.z, y.z, z.z, 0,
+            x.x, x.y, x.z, 0,
+            y.x, y.y, y.z, 0,
+            z.x, z.y, z.z, 0,
             -eye.dot(x), -eye.dot(y), -eye.dot(z), 1
         });
         // clang-format on
@@ -111,13 +110,15 @@ namespace di_renderer::math {
      */
     Matrix4x4 MatrixTransforms::perspective(float fov_radians, float aspect_ratio, float near_plane, float far_plane) {
         const float tan_of_half_fov = std::tan(fov_radians * 0.5f);
+        const float f = 1.0f / tan_of_half_fov;
+
         // clang-format off
-        Matrix4x4 res({
-            1 / tan_of_half_fov, 0, 0, 0,
-            0, 1 / (aspect_ratio * tan_of_half_fov), 0, 0,
-            0, 0, -(far_plane + near_plane) / (far_plane - near_plane), -1,
-            0, 0, -2 * far_plane * near_plane / (far_plane - near_plane), 0
-        });
+    Matrix4x4 res({
+        f / aspect_ratio, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, -(far_plane + near_plane) / (far_plane - near_plane), -1,
+        0, 0, -2 * far_plane * near_plane / (far_plane - near_plane), 0
+    });
         // clang-format on
         return res;
     }
