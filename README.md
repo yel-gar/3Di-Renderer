@@ -1,3 +1,30 @@
+# Setup for users
+## Step 1: Install required packages
+### Ubuntu
+```bash
+$ sudo apt install build-essential ninja-build cmake libgtkmm-3.0-dev libglfw3-dev libglew-dev libglm-dev libgl-dev libepoxy-dev
+```
+
+### Arch
+```bash
+$ sudo pacman -S base-devel ninja clang clang-tools-extra cmake gtkmm3 glfw glew glm libepoxy pre-commit meson
+```
+
+## Step 2: Configure and compile
+```bash
+$ git clone https://github.com/yel-gar/3Di-Renderer.git
+$ cd 3Di-Renderer
+$ chmod +x install.sh
+$ ./install.sh
+```
+
+## Step 3: Run project
+```bash
+$ ~/.local/bin/3d-renderer
+```
+
+> You can optionally configure desktop file or PATH
+
 # Setup for developers
 ## Required packages
 ### Ubuntu
