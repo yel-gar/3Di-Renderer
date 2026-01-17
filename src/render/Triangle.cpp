@@ -56,23 +56,22 @@ void main() {
     float diff1 = max(dot(normal, lightDir1), 0.0);
     vec3 diffuse1 = diff1 * uLightColor1 * 0.8;
     
-    // Additional lights (2, 3, 4) - only active when uUseLight2 is true
     vec3 diffuse2 = vec3(0.0);
     vec3 diffuse3 = vec3(0.0);
     vec3 diffuse4 = vec3(0.0);
     
     if (uUseLight2) {
-        // Second light (top light)
+        // Second light
         vec3 lightDir2 = normalize(uLightPos2 - vWorldPos);
         float diff2 = max(dot(normal, lightDir2), 0.0);
         diffuse2 = diff2 * uLightColor2;
         
-        // Third light (left blue light)
+        // Third light
         vec3 lightDir3 = normalize(uLightPos3 - vWorldPos);
         float diff3 = max(dot(normal, lightDir3), 0.0);
         diffuse3 = diff3 * uLightColor3;
         
-        // Fourth light (right green light)
+        // Fourth light
         vec3 lightDir4 = normalize(uLightPos4 - vWorldPos);
         float diff4 = max(dot(normal, lightDir4), 0.0);
         diffuse4 = diff4 * uLightColor4;
