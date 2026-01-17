@@ -102,6 +102,18 @@ void MainWindowHandler::connect_buttons() {
         m_gl_area->get_app_data().move_right();
         update_entries();
     });
+
+    // color buttons
+    Gtk::ColorButton* color_button = nullptr;
+    for (size_t i = 1; i <= 3; ++i) {
+        std::stringstream ss;
+        ss << "light" << i << "_color";
+        const auto entry_id = ss.str();
+        m_builder->get_widget(entry_id, color_button);
+        color_button->signal_color_set().connect([this, color_button, i = i] {
+            m_gl_area->get_app_data().m_light_colors[i] = color_button->get_rgba();
+        });
+    }
 }
 
 void MainWindowHandler::connect_entries() {
@@ -113,6 +125,16 @@ void MainWindowHandler::connect_entries() {
         assert(entry != nullptr);
         entry->signal_activate().connect([this, entry, id = entry_id] { on_transform_entry_activate(*entry, id); });
         m_transform_entries[i] = entry; // NOLINT
+    }
+
+    for (size_t i = 1; i <= 3; ++i) {
+        for (char v : {'x', 'y', 'z'}) {
+            std::stringstream ss;
+            ss << "light" << i << "_" << v;
+            const auto entry_id = ss.str();
+            m_builder->get_widget(entry_id, entry);
+            entry->signal_activate().connect([this, entry, id = i, v = v] {on_light_entry_activate(*entry, v, id);});
+        }
     }
 }
 
@@ -248,5 +270,20 @@ void MainWindowHandler::on_transform_entry_activate(Gtk::Entry& entry, const std
     case TransformType::SCALE:
         transform.set_scale(get_new_vector(transform.get_scale(), transform_type.component, value));
         break;
+    }
+}
+
+void MainWindowHandler::on_light_entry_activate(Gtk::Entry &entry, const char component, size_t id) {
+    auto& app_data = m_gl_area->get_app_data();
+    const auto val = std::stof(entry.get_text());
+    auto& vec = app_data.m_lights_positions[id];
+    if (component == 'x') {
+        vec.x = val;
+    }
+    if (component == 'y') {
+        vec.y = val;
+    }
+    if (component == 'z') {
+        vec.z = val;
     }
 }

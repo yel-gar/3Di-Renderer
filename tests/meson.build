@@ -32,7 +32,7 @@ if get_option('tests')
                 'test_core',
                 'test_core.cpp',
                 include_directories: incdir,
-                dependencies: [gtest_dep],
+                dependencies: [gtk_dep, gtest_dep],
                 link_with: [core_lib, math_lib],
             ),
         )

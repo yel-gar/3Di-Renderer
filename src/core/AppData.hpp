@@ -5,6 +5,7 @@
 
 #include <bitset>
 #include <unordered_map>
+#include <gtkmm.h>
 
 namespace di_renderer::core {
     class AppData final {
@@ -34,6 +35,9 @@ namespace di_renderer::core {
         math::Camera& get_current_camera() noexcept;
         void set_current_camera(unsigned int id) noexcept;
         void delete_current_camera() noexcept;
+
+        std::array<math::Vector3, 3> m_lights_positions;
+        std::array<Gdk::RGBA, 3> m_light_colors;
 
       private:
         size_t m_current_mesh_index = 0;

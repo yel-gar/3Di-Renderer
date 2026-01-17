@@ -47,5 +47,6 @@ namespace di_renderer::ui {
         void on_texture_selection() const;
         void on_render_toggle_button_click(const Gtk::ToggleButton& btn, core::RenderMode mode);
         void on_transform_entry_activate(Gtk::Entry& entry, const std::string& entry_id);
+        void on_light_entry_activate(Gtk::Entry &entry, char component, size_t id);
     };
 } // namespace di_renderer::ui
