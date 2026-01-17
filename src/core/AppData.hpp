@@ -5,7 +5,7 @@
 
 #include <bitset>
 #include <unordered_map>
-#include <gtkmm-3.0/gtkmm.h>
+#include <gtkmm.h>
 
 namespace di_renderer::core {
     class AppData final {
