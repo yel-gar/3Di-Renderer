@@ -616,6 +616,12 @@ void OpenGLArea::set_default_uniforms() { // NOLINT
     const GLint texture_loc = glGetUniformLocation(m_shader_program, "uTexture");
     const GLint normal_matrix_loc = glGetUniformLocation(m_shader_program, "uNormalMatrix");
 
+    // New light locations
+    const GLint light_pos3_loc = glGetUniformLocation(m_shader_program, "uLightPos3");
+    const GLint light_color3_loc = glGetUniformLocation(m_shader_program, "uLightColor3");
+    const GLint light_pos4_loc = glGetUniformLocation(m_shader_program, "uLightPos4");
+    const GLint light_color4_loc = glGetUniformLocation(m_shader_program, "uLightColor4");
+
     if (model_loc != -1) {
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix.data());
     }
@@ -652,6 +658,7 @@ void OpenGLArea::set_default_uniforms() { // NOLINT
     auto& app_data = get_app_data();
     const bool lighting_mode = app_data.is_render_mode_enabled(core::RenderMode::LIGHTING);
 
+    bool use_light2 = false;
     if (!m_bounds_valid) {
         const di_renderer::math::Vector3 default_light2_pos(0.0f, 10.0f, 0.0f);
 
@@ -662,14 +669,8 @@ void OpenGLArea::set_default_uniforms() { // NOLINT
             glUniform3f(light_color2_loc, 0.25f, 0.2f, 0.1f);
         }
 
-        if (use_light2_loc != -1) {
-            glUniform1i(use_light2_loc, lighting_mode ? 1 : 0);
-        }
+        use_light2 = lighting_mode;
     } else {
-        if (use_light2_loc != -1) {
-            glUniform1i(use_light2_loc, lighting_mode && m_bounds_valid ? 1 : 0);
-        }
-
         if (lighting_mode && m_bounds_valid) {
             const di_renderer::math::Vector3 center((m_scene_min.x + m_scene_max.x) * 0.5f,
                                                     (m_scene_min.y + m_scene_max.y) * 0.5f,
@@ -685,7 +686,27 @@ void OpenGLArea::set_default_uniforms() { // NOLINT
             if (light_color2_loc != -1) {
                 glUniform3f(light_color2_loc, 1.0f, 0.0f, 0.0f);
             }
+            use_light2 = true;
         }
+    }
+
+    // Set uUseLight2 uniform based on conditions
+    if (use_light2_loc != -1) {
+        glUniform1i(use_light2_loc, use_light2 ? 1 : 0);
+    }
+
+    // Hardcoded positions and colors for extra lights (only effective when uUseLight2 is true)
+    if (light_pos3_loc != -1) {
+        glUniform3f(light_pos3_loc, -5.0f, 5.0f, 5.0f); // Left blue light
+    }
+    if (light_color3_loc != -1) {
+        glUniform3f(light_color3_loc, 0.0f, 0.0f, 1.0f); // Blue
+    }
+    if (light_pos4_loc != -1) {
+        glUniform3f(light_pos4_loc, 5.0f, 5.0f, 5.0f); // Right green light
+    }
+    if (light_color4_loc != -1) {
+        glUniform3f(light_color4_loc, 0.0f, 1.0f, 0.0f); // Green
     }
 
     if (texture_loc != -1) {

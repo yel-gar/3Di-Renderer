@@ -43,6 +43,10 @@ uniform vec3 uLightColor1;
 uniform vec3 uLightPos2;
 uniform vec3 uLightColor2;
 uniform bool uUseLight2;
+uniform vec3 uLightPos3;
+uniform vec3 uLightColor3;
+uniform vec3 uLightPos4;
+uniform vec3 uLightColor4;
 void main() {
     vec3 normal = normalize(vNormal);
     vec3 ambient = vec3(0.1);
@@ -52,15 +56,29 @@ void main() {
     float diff1 = max(dot(normal, lightDir1), 0.0);
     vec3 diffuse1 = diff1 * uLightColor1 * 0.8;
     
-    // Second light (top light) - only if enabled
+    // Additional lights (2, 3, 4) - only active when uUseLight2 is true
     vec3 diffuse2 = vec3(0.0);
+    vec3 diffuse3 = vec3(0.0);
+    vec3 diffuse4 = vec3(0.0);
+    
     if (uUseLight2) {
+        // Second light (top light)
         vec3 lightDir2 = normalize(uLightPos2 - vWorldPos);
         float diff2 = max(dot(normal, lightDir2), 0.0);
         diffuse2 = diff2 * uLightColor2;
+        
+        // Third light (left blue light)
+        vec3 lightDir3 = normalize(uLightPos3 - vWorldPos);
+        float diff3 = max(dot(normal, lightDir3), 0.0);
+        diffuse3 = diff3 * uLightColor3;
+        
+        // Fourth light (right green light)
+        vec3 lightDir4 = normalize(uLightPos4 - vWorldPos);
+        float diff4 = max(dot(normal, lightDir4), 0.0);
+        diffuse4 = diff4 * uLightColor4;
     }
     
-    vec3 result = (ambient + diffuse1 + diffuse2) * vColor;
+    vec3 result = (ambient + diffuse1 + diffuse2 + diffuse3 + diffuse4) * vColor;
     
     if (uUseTexture) {
         vec4 texColor = texture(uTexture, vUV);
